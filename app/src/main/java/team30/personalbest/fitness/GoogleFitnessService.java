@@ -1,10 +1,11 @@
-package team30.personalbest.walk;
+package team30.personalbest.fitness;
 
 import java.util.Date;
 
 import team30.personalbest.fitness.Callback;
 import team30.personalbest.fitness.FitnessService;
 import team30.personalbest.fitness.FitnessSnapshot;
+import team30.personalbest.walk.WalkStats;
 
 public class GoogleFitnessService implements FitnessService
 {

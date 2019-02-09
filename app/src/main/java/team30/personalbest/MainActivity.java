@@ -6,7 +6,6 @@ import android.os.Bundle;
 
 import java.util.Date;
 
-import team30.personalbest.fitness.Callback;
 import team30.personalbest.fitness.FitnessService;
 import team30.personalbest.fitness.FitnessSnapshot;
 import team30.personalbest.goal.CustomGoalAchiever;
@@ -14,7 +13,7 @@ import team30.personalbest.goal.CustomStepGoal;
 import team30.personalbest.goal.GoalAchiever;
 import team30.personalbest.goal.GoalListener;
 import team30.personalbest.goal.StepGoal;
-import team30.personalbest.walk.GoogleFitnessService;
+import team30.personalbest.fitness.GoogleFitnessService;
 import team30.personalbest.walk.StepListener;
 import team30.personalbest.walk.WalkSteps;
 import team30.personalbest.walk.intentional.IntentionalWalkSteps;
