@@ -11,10 +11,13 @@ import android.support.v4.util.Consumer;
 public final class Callback<T>
 {
     private Consumer<T> callback;
+    private T result;
 
-    public Callback()
+    public Callback() {}
+
+    public Callback(T result)
     {
-        this.callback = null;
+        this.result = result;
     }
 
     /**
@@ -22,6 +25,7 @@ public final class Callback<T>
      */
     public void resolve(T result)
     {
+        this.result = result;
         this.callback.accept(result);
     }
 
@@ -31,5 +35,9 @@ public final class Callback<T>
     public void onResult(Consumer<T> callback)
     {
         this.callback = callback;
+        if (this.result != null)
+        {
+            this.callback.accept(this.result);
+        }
     }
 }
