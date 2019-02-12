@@ -1,65 +1,56 @@
 package team30.personalbest;
 
+import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v4.util.Consumer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.Button;
+import android.widget.TextView;
 
-import java.util.Date;
-
-import team30.personalbest.fitness.FitnessService;
-import team30.personalbest.fitness.FitnessSnapshot;
-import team30.personalbest.goal.CustomGoalAchiever;
-import team30.personalbest.goal.CustomStepGoal;
-import team30.personalbest.goal.GoalAchiever;
-import team30.personalbest.goal.GoalListener;
-import team30.personalbest.goal.StepGoal;
-import team30.personalbest.fitness.GoogleFitnessService;
-import team30.personalbest.walk.StepListener;
-import team30.personalbest.walk.WalkSteps;
-import team30.personalbest.walk.intentional.IntentionalWalkSteps;
+import team30.personalbest.fitness.GoogleFitAdapter;
+import team30.personalbest.fitness.service.ActiveFitnessService;
+import team30.personalbest.fitness.service.FitnessService;
+import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
 public class MainActivity extends AppCompatActivity {
+    private GoogleFitAdapter googleFitAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //TODO: This should REALLY not live here, but somewhere safe.
-        final FitnessService fitnessService = new GoogleFitnessService(this);
-        final WalkSteps walkSteps = new IntentionalWalkSteps(fitnessService);
 
-        final StepGoal stepGoal = new CustomStepGoal(fitnessService);
-        final GoalAchiever goalAchiever = new CustomGoalAchiever(stepGoal);
+        final TextView textView = findViewById(R.id.hello_world);
+        final Button button = findViewById(R.id.button);
 
-        //Initialize goal achiever (this should be called every startup and when step goal changes)
-        goalAchiever.startAchievingGoal();
+        this.googleFitAdapter = new GoogleFitAdapter();
 
-        //TODO: EVERYTHING BELOW HERE is trash and is just for an example.
-        walkSteps.addStepListener(new StepListener() {
+        this.googleFitAdapter.setOnReadyListener(new Consumer<GoogleFitAdapter>() {
             @Override
-            public void onStepUpdate(WalkSteps handler, FitnessSnapshot snapshot) {
-                //Do something step-related....
+            public void accept(GoogleFitAdapter googleFitAdapter) {
+                final FitnessService fitnessService = new FitnessService(googleFitAdapter);
+                final ActiveFitnessService activeFitnessService = new ActiveFitnessService(googleFitAdapter);
+
+                fitnessService.getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
+                    @Override
+                    public void accept(IFitnessSnapshot iFitnessSnapshot) {
+                        final String string = iFitnessSnapshot.getStartTime()
+                                + ": "
+                                + iFitnessSnapshot.getTotalSteps();
+
+                        textView.setText(string);
+                    }
+                });
             }
         });
 
-        goalAchiever.addGoalListener(new GoalListener() {
-            @Override
-            public void onGoalAchievement(StepGoal goal) {
-                //Do something goal-related...
-            }
-        });
+        this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
+    }
 
-        fitnessService.getFitnessSnapshot(0).onResult(new Consumer<FitnessSnapshot>() {
-            @Override
-            public void accept(FitnessSnapshot fitnessSnapshot) {
-                //Do something with the most recent fitness snapshot data...
-            }
-        });
-
-        fitnessService.getProgressSteps().onResult(new Consumer<Integer>() {
-            @Override
-            public void accept(Integer integer) {
-                //Do something with the progress data...
-            }
-        });
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        this.googleFitAdapter.onActivityResult(this, requestCode, resultCode, data);
     }
 }

@@ -1,20 +1,20 @@
 package team30.personalbest.goal;
 
-import team30.personalbest.fitness.FitnessService;
+import team30.personalbest.fitness.service.IFitnessService;
 
 public class CustomStepGoal implements StepGoal
 {
     private static final int DEFAULT_GOAL = 5000;
 
-    private final FitnessService fitnessService;
+    private final IFitnessService fitnessService;
     private int goalValue;
 
-    public CustomStepGoal(FitnessService fitnessService)
+    public CustomStepGoal(IFitnessService fitnessService)
     {
         this(fitnessService, DEFAULT_GOAL);
     }
 
-    public CustomStepGoal(FitnessService fitnessService, int initialGoal)
+    public CustomStepGoal(IFitnessService fitnessService, int initialGoal)
     {
         this.fitnessService = fitnessService;
         this.goalValue = initialGoal;
