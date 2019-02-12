@@ -23,10 +23,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         //TODO: This should REALLY not live here, but somewhere safe.
-        final FitnessService fitnessService = new GoogleFitnessService();
+        final FitnessService fitnessService = new GoogleFitnessService(this);
         final WalkSteps walkSteps = new IntentionalWalkSteps(fitnessService);
+
         final StepGoal stepGoal = new CustomStepGoal(fitnessService);
         final GoalAchiever goalAchiever = new CustomGoalAchiever(stepGoal);
 
@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        fitnessService.getFitnessSnapshot(new Date()).onResult(new Consumer<FitnessSnapshot>() {
+        fitnessService.getFitnessSnapshot(0).onResult(new Consumer<FitnessSnapshot>() {
             @Override
             public void accept(FitnessSnapshot fitnessSnapshot) {
                 //Do something with the most recent fitness snapshot data...

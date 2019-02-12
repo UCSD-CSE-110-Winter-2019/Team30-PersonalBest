@@ -10,19 +10,19 @@ import team30.personalbest.fitness.StepType;
  */
 public class WalkStats implements FitnessSnapshot
 {
-    private final Date date;
+    private final long time;
     private final int intentionalSteps;
     private final int incidentalSteps;
     private final double distance;
     private final double mph;
 
-    public WalkStats(Date date,
+    public WalkStats(long time,
                      int intentionalSteps,
                      int incidentalSteps,
                      double distance,
                      double mph)
     {
-        this.date = date;
+        this.time = time;
         this.intentionalSteps = intentionalSteps;
         this.incidentalSteps = incidentalSteps;
         this.distance = distance;
@@ -58,8 +58,8 @@ public class WalkStats implements FitnessSnapshot
     }
 
     @Override
-    public Date getDate()
+    public long getTime()
     {
-        return this.date;
+        return this.time;
     }
 }

@@ -3,7 +3,6 @@ package team30.personalbest.walk.intentional;
 import android.location.Location;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import team30.personalbest.fitness.FitnessService;
@@ -33,7 +32,7 @@ public class IntentionalWalkSteps implements WalkSteps
     }
 
     @Override
-    public IntentionalWalkStats startRecording(Location location, Date date)
+    public IntentionalWalkStats startRecording(Location location, long time)
     {
         //TODO: Return a new IntentionalWalkStats object for others to use and save it
         //IntentionalWalkStats should be updated in real-time
@@ -41,7 +40,7 @@ public class IntentionalWalkSteps implements WalkSteps
     }
 
     @Override
-    public IntentionalWalkStats stopRecording(Location location, Date date)
+    public IntentionalWalkStats stopRecording(Location location, long time)
     {
         //TODO: Return the just finished IntentionalWalkStats
         return null;

@@ -1,7 +1,5 @@
 package team30.personalbest.walk.intentional;
 
-import java.util.Date;
-
 import team30.personalbest.fitness.StepType;
 import team30.personalbest.fitness.FitnessSnapshot;
 
@@ -47,7 +45,7 @@ public class IntentionalWalkStats implements FitnessSnapshot
     }
 
     @Override
-    public Date getDate()
+    public long getTime()
     {
         //TODO: Implementation here.
         return null;
