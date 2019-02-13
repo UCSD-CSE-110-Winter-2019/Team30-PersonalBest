@@ -41,6 +41,7 @@ public class HeightPrompt extends AppCompatActivity {
                         editor.putString("height", height);
 
                         editor.apply();
+
                         Toast.makeText(HeightPrompt.this, "HEIGHT ENTERED", Toast.LENGTH_SHORT).show();
 
                         launchMainActivity();
