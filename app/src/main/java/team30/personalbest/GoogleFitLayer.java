@@ -44,17 +44,25 @@ public class GoogleFitLayer {
     private final String LOG_TAG = "PersonalBest";
     private int dailyStepCount = 0;
 
-//    private static DataSource userStats = new DataSource.Builder()
-//            .setDataType( DataType.TYPE_HEIGHT)
-//            .setDataType( DataType.TYPE_SPEED)
-//            .build();
-//    private static DataPoint userHeight = DataPoint.create( userStats );
+    private static float height;
+
+    private DataSource userStats;
+    private DataPoint userHeight;
+
+
 
 
     @TargetApi(Build.VERSION_CODES.N)
     @RequiresApi(api = Build.VERSION_CODES.N)
     public GoogleFitLayer(MainActivity activity) {
         this.activity = activity;
+
+
+//          userStats = new DataSource.Builder()
+//                .setDataType( DataType.TYPE_HEIGHT)
+//                .setDataType( DataType.TYPE_SPEED)
+//                .build();
+//         this.userHeight = DataPoint.create( userStats );
 
 
 
@@ -80,6 +88,9 @@ public class GoogleFitLayer {
             //accessGoogleFit();
             subscribe();
         }
+
+        Log.i(LOG_TAG, "Height = " + height );
+
     }
 
     /* Starts recoding steps */
@@ -145,6 +156,8 @@ public class GoogleFitLayer {
                 .addOnSuccessListener(new OnSuccessListener<DataSet>() {
                     @Override
                     public void onSuccess(DataSet dataSet) {
+
+                        if( dataSet.isEmpty() ){ Log.i(LOG_TAG, "Dataset is empty"); }
                         long total =
                                 dataSet.isEmpty()
                                         ? 0
@@ -186,7 +199,7 @@ public class GoogleFitLayer {
     }
 
     public static void setHeight( float height ) {
-  //      userHeight.getValue(Field.FIELD_HEIGHT).setFloat(height);
+        GoogleFitLayer.height = height;
         System.out.println("Success");
     }
 

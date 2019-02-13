@@ -42,6 +42,8 @@ public class HeightPrompt extends AppCompatActivity {
 
                         editor.apply();
 
+                        GoogleFitLayer.setHeight( Float.parseFloat( height ));
+
                         Toast.makeText(HeightPrompt.this, "HEIGHT ENTERED", Toast.LENGTH_SHORT).show();
 
                         launchMainActivity();
