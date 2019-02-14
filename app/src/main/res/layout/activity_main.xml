@@ -1,18 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="10dp"
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/curr_steps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:textSize="40dp" />
+    <TextView
+        android:id="@+id/steps_goal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="40dp" />
 
-</android.support.constraint.ConstraintLayout>
+    <Button
+        android:id="@+id/button_start"
+        android:layout_height="50dp"
+        android:layout_width="200dp"
+        android:layout_marginTop="0sp"
+        android:background="@android:color/holo_green_light"
+        android:textColor="@android:color/white"
+        android:text="start walk/run"/>
+
+    <Button
+        android:id="@+id/button_end"
+        android:layout_height="50dp"
+        android:layout_width="200dp"
+        android:layout_marginTop="0sp"
+        android:background="@android:color/holo_red_light"
+        android:textColor="@android:color/white"
+        android:text="end walk/run now"/>
+
+    <TextView
+        android:id="@+id/total_run_steps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100sp"
+        android:layout_marginStart="110sp"
+        android:layout_marginLeft="85sp"
+        android:textSize="30sp"
+        android:text="h"/>
+
+    <TextView
+        android:id="@+id/distance_run"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100sp"
+        android:layout_marginStart="110sp"
+        android:layout_marginLeft="85sp"
+        android:textSize="30sp"
+        android:text="h"/>
+
+    <TextView
+        android:id="@+id/velocity_run"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100sp"
+        android:layout_marginStart="110sp"
+        android:layout_marginLeft="85sp"
+        android:textSize="30sp"
+        android:text="dksd"/>
+
+
+</LinearLayout>
