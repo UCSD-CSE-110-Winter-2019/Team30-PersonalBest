@@ -11,21 +11,25 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/curr_steps"
+        android:id="@+id/total_steps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="40dp" />
+        android:layout_marginTop="30sp"
+        android:text="Total steps: "
+        android:textSize="20dp" />
+
     <TextView
         android:id="@+id/steps_goal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="40dp" />
+        android:text="Steps goal: "
+        android:textSize="20dp" />
 
     <Button
         android:id="@+id/button_start"
         android:layout_height="50dp"
         android:layout_width="200dp"
-        android:layout_marginTop="0sp"
+        android:layout_marginTop="20sp"
         android:background="@android:color/holo_green_light"
         android:textColor="@android:color/white"
         android:text="start walk/run"/>
@@ -34,39 +38,41 @@
         android:id="@+id/button_end"
         android:layout_height="50dp"
         android:layout_width="200dp"
-        android:layout_marginTop="0sp"
+        android:layout_marginTop="20sp"
         android:background="@android:color/holo_red_light"
         android:textColor="@android:color/white"
         android:text="end walk/run now"/>
 
     <TextView
-        android:id="@+id/total_run_steps"
+        android:id="@+id/curr_steps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100sp"
-        android:layout_marginStart="110sp"
-        android:layout_marginLeft="85sp"
-        android:textSize="30sp"
-        android:text="h"/>
+        android:layout_marginTop="50sp"
+        android:textSize="20sp"
+        android:text="Current steps: "/>
 
     <TextView
-        android:id="@+id/distance_run"
+        android:id="@+id/time_elapsed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100sp"
-        android:layout_marginStart="110sp"
-        android:layout_marginLeft="85sp"
-        android:textSize="30sp"
-        android:text="h"/>
+        android:textSize="20sp"
+        android:text="Time elapsed: "/>
 
     <TextView
-        android:id="@+id/velocity_run"
+        android:id="@+id/mph"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100sp"
-        android:layout_marginStart="110sp"
-        android:layout_marginLeft="85sp"
-        android:textSize="30sp"
-        android:text="dksd"/>
+        android:textSize="20sp"
+        android:text="Miles per hour: "/>
+
+    <Button
+        android:id="@+id/stats_button"
+        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_marginLeft="120sp"
+        android:layout_marginTop="90sp"
+        android:background="@android:color/darker_gray"
+        android:textColor="@android:color/white"
+        android:text="weekly snapshot"/>
 
 </LinearLayout>

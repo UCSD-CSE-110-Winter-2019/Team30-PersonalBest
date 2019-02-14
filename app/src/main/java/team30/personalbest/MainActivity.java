@@ -15,11 +15,13 @@ public class MainActivity extends AppCompatActivity {
 
     Button startButton;
     Button endButton;
+    TextView stepsGoalText;
     TextView totalRunStepsText;
-    TextView distanceRunText;
-    TextView velocityRunText;
-    double distanceRun;
-    double velocityRun;
+    TextView currStepsText;
+    TextView timeElapsedText;
+    TextView mphText;
+    double timeElapsed;
+    double mph;
     int totalRunSteps;
 
     @Override
@@ -30,14 +32,16 @@ public class MainActivity extends AppCompatActivity {
         this.googleFitAdapter = new GoogleFitAdapter();
 
         // Run statistic textview
-        totalRunStepsText = findViewById(R.id.total_run_steps);
-        distanceRunText = findViewById(R.id.distance_run);
-        velocityRunText = findViewById(R.id.velocity_run);
+        totalRunStepsText = findViewById(R.id.total_steps);
+        stepsGoalText = findViewById(R.id.steps_goal);
+        currStepsText = findViewById(R.id.curr_steps);
+        timeElapsedText = findViewById(R.id.time_elapsed);
+        mphText = findViewById(R.id.mph);
 
-        // Will only show after end run
-        totalRunStepsText.setVisibility(View.INVISIBLE);
-        distanceRunText.setVisibility(View.INVISIBLE);
-        velocityRunText.setVisibility(View.INVISIBLE);
+        // Will only show during run
+        currStepsText.setVisibility(View.INVISIBLE);
+        timeElapsedText.setVisibility(View.INVISIBLE);
+        mphText.setVisibility(View.INVISIBLE);
 
         // Start Walk/Run buttons
         startButton = findViewById(R.id.button_start);
@@ -47,27 +51,27 @@ public class MainActivity extends AppCompatActivity {
         endButton.setVisibility(View.GONE);
 
         startButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Set endButton visible
-                startButton.setVisibility(View.GONE);
-                endButton.setVisibility(View.VISIBLE);
+           public void onClick(View v) {
+               // Set endButton visible
+               startButton.setVisibility(View.GONE);
+               endButton.setVisibility(View.VISIBLE);
 
                 // Get current walk step number
                 //.startRecording(null, null);
 
-                // Make sure statistics is hidden
-                totalRunStepsText.setVisibility(View.INVISIBLE);
-                distanceRunText.setVisibility(View.INVISIBLE);
-                velocityRunText.setVisibility(View.INVISIBLE);
-            }
+               // Make sure statistics are shown
+               currStepsText.setVisibility(View.VISIBLE);
+               timeElapsedText.setVisibility(View.VISIBLE);
+               mphText.setVisibility(View.VISIBLE);
+           }
         });
 
 
         endButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Show start button again
-                startButton.setVisibility(View.VISIBLE);
-                endButton.setVisibility(View.GONE);
+           public void onClick(View v) {
+               // Show start button again
+               startButton.setVisibility(View.VISIBLE);
+               endButton.setVisibility(View.GONE);
 
                 // Get current walk step number
                 //walkSteps.stopRecording(null, null);
@@ -82,12 +86,11 @@ public class MainActivity extends AppCompatActivity {
 
                velocityRun = walkSteps.getActiveStats().getMilesPerHour();
                velocityRunText.setText("Average Velocity: "+velocityRun);
-*/
-                // Show statistics
-                totalRunStepsText.setVisibility(View.VISIBLE);
-                distanceRunText.setVisibility(View.VISIBLE);
-                velocityRunText.setVisibility(View.VISIBLE);
-
+               */
+               // Show statistics
+        //        totalRunStepsText.setVisibility(View.VISIBLE);
+        //        distanceRunText.setVisibility(View.VISIBLE);
+        //        velocityRunText.setVisibility(View.VISIBLE);
             }
         });
 
