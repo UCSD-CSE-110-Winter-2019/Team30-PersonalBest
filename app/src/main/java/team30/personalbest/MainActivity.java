@@ -1,12 +1,16 @@
 package team30.personalbest;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.text.InputType;
 
 import team30.personalbest.fitness.GoogleFitAdapter;
 
@@ -15,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
 
     Button startButton;
     Button endButton;
+    Button setNewGoalButton;
     TextView stepsGoalText;
     TextView totalRunStepsText;
     TextView currStepsText;
@@ -23,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     double timeElapsed;
     double mph;
     int totalRunSteps;
+    private String goal_Text = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         // Start Walk/Run buttons
         startButton = findViewById(R.id.button_start);
         endButton = findViewById(R.id.button_end);
+        setNewGoalButton = findViewById(R.id.newStepGoalButton);
 
         // endButton invisible/gone in the beginning
         endButton.setVisibility(View.GONE);
@@ -93,6 +100,41 @@ public class MainActivity extends AppCompatActivity {
         //        velocityRunText.setVisibility(View.VISIBLE);
             }
         });
+
+        // Listener for New step steps_goal
+
+        setNewGoalButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Set New Step Goal");
+
+                // Set up the input
+                final EditText input = new EditText(MainActivity.this);
+                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
+
+                // Set up the buttons
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        goal_Text = input.getText().toString();
+                        stepsGoalText.setText("New Step Goal: "+goal_Text);
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
+
+
+            }
+        });
+
 
         this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
     }
