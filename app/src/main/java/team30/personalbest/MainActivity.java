@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     Button startButton;
     Button endButton;
     Button setNewGoalButton;
+    Button launchWeeklySnapshot;
     TextView stepsGoalText;
     TextView totalRunStepsText;
     TextView currStepsText;
@@ -36,6 +37,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.googleFitAdapter = new GoogleFitAdapter();
+
+        // Switch to weekly snapshot
+        launchWeeklySnapshot = findViewById(R.id.button_weekly_stats);
+        launchWeeklySnapshot.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                launchActivity();
+            }
+        });
 
         // Run statistic textview
         totalRunStepsText = findViewById(R.id.total_steps);
@@ -137,6 +147,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
+    }
+
+    public void launchActivity() {
+        Intent intent = new Intent(this, GraphActivity.class);
+        startActivity(intent);
     }
 
     @Override

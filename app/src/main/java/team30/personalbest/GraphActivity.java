@@ -7,6 +7,8 @@ package team30.personalbest;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -15,9 +17,7 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,15 @@ public class GraphActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_graph);
 
+        // Switch between activities
+        Button switchScreen = (Button) findViewById(R.id.button_back);
+        switchScreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
         BarChart chart = (BarChart) findViewById(R.id.chart);
         chart.getDescription().setEnabled(false);
         chart.setDrawGridBackground(false);
@@ -37,6 +46,10 @@ public class GraphActivity extends AppCompatActivity {
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setTextSize(10f);
         xAxis.setDrawGridLines(false);
+        xAxis.setGranularity(1f);
+        xAxis.setGranularityEnabled(true);
+        xAxis.setAxisMinimum(0f);
+        xAxis.setAxisMaximum(7f);
        // xAxis.setLabelCount(7, true);
 
         // Creating week labels for x-axis
@@ -50,14 +63,19 @@ public class GraphActivity extends AppCompatActivity {
                 "Sat"
         };
 
-        IAxisValueFormatter formatter = new IAxisValueFormatter() {
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-                return xLabels[(int) (value-1)];
+                if ((int) value < xLabels.length && (int) value >= 0) {
+                    return xLabels[(int) value];
+                }
+                else {
+                    return "";
+                }
             }
-        };
-        xAxis.setGranularity(1f);
-        xAxis.setValueFormatter(formatter);
+        });
+
+     //   xAxis.setValueFormatter(formatter);
         xAxis.setCenterAxisLabels(true);
 
         // Add entries for intentional steps
@@ -87,9 +105,9 @@ public class GraphActivity extends AppCompatActivity {
         incidentDataSet.setColor(Color.BLUE);
 
         xAxis.setLabelCount(incidentStepEntries.size());
-        float groupSpace = 0.06f;
+        float groupSpace = 0.12f;
         float barSpace = 0.02f;
-        float barWidth = 0.45f;
+        float barWidth = 0.42f;
 
         ArrayList<IBarDataSet> dataSets = new ArrayList<>();
         dataSets.add(intentDataSet);
