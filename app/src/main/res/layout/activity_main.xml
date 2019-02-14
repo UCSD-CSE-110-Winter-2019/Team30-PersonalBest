@@ -43,6 +43,12 @@
         android:textColor="@android:color/white"
         android:text="end walk/run now"/>
 
+    <Button
+        android:id="@+id/newStepGoalButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Step Goal"/>
+
     <TextView
         android:id="@+id/curr_steps"
         android:layout_width="wrap_content"
