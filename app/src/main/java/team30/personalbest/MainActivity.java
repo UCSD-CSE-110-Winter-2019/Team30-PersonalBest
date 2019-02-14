@@ -5,46 +5,40 @@ import android.support.annotation.Nullable;
 import android.support.v4.util.Consumer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import team30.personalbest.fitness.GoogleFitAdapter;
+import team30.personalbest.fitness.OnGoogleFitReadyListener;
 import team30.personalbest.fitness.service.ActiveFitnessService;
 import team30.personalbest.fitness.service.FitnessService;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyListener
+{
     private GoogleFitAdapter googleFitAdapter;
+    private FitnessService fitnessService;
+    private ActiveFitnessService activeFitnessService;
+
+    private Button updateDailyStep_btn;
+    private TextView dailyStep_textView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final TextView textView = findViewById(R.id.hello_world);
-        final Button button = findViewById(R.id.button);
+        this.googleFitAdapter = new GoogleFitAdapter(this);
 
-        this.googleFitAdapter = new GoogleFitAdapter();
+        this.fitnessService = new FitnessService(this.googleFitAdapter);
+        this.activeFitnessService = new ActiveFitnessService(this.googleFitAdapter);
 
-        this.googleFitAdapter.setOnReadyListener(new Consumer<GoogleFitAdapter>() {
-            @Override
-            public void accept(GoogleFitAdapter googleFitAdapter) {
-                final FitnessService fitnessService = new FitnessService(googleFitAdapter);
-                final ActiveFitnessService activeFitnessService = new ActiveFitnessService(googleFitAdapter);
+        this.updateDailyStep_btn = (Button) findViewById(R.id.getDailyStepCount);
+        this.dailyStep_textView = (TextView) findViewById(R.id.StepCountTemp);
 
-                fitnessService.getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
-                    @Override
-                    public void accept(IFitnessSnapshot iFitnessSnapshot) {
-                        final String string = iFitnessSnapshot.getStartTime()
-                                + ": "
-                                + iFitnessSnapshot.getTotalSteps();
-
-                        textView.setText(string);
-                    }
-                });
-            }
-        });
-
+        this.googleFitAdapter.addOnReadyListener(this);
         this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
     }
 
@@ -52,5 +46,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
         this.googleFitAdapter.onActivityResult(this, requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onGoogleFitReady(final GoogleFitAdapter googleFitAdapter)
+    {
+        this.updateDailyStep_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.this.fitnessService.getFitnessSnapshot()
+                        .onResult(new Consumer<IFitnessSnapshot>() {
+                            @Override
+                            public void accept(IFitnessSnapshot iFitnessSnapshot) {
+                                String totalSteps = "" + iFitnessSnapshot.getTotalSteps();
+                                dailyStep_textView.setText(totalSteps);
+                            }
+                        });
+            }
+        });
     }
 }

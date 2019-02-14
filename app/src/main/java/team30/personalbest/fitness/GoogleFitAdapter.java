@@ -6,41 +6,84 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Consumer;
+import android.telecom.Call;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import team30.personalbest.fitness.service.ActiveFitnessService;
+import team30.personalbest.fitness.service.FitnessService;
 
 public class GoogleFitAdapter
 {
     public static final String TAG = "GoogleFitAdapter";
     private static final int REQUEST_OAUTH_REQUEST_CODE = 0x1001;
 
-    private Consumer<GoogleFitAdapter> onReadyListener;
+    private List<OnGoogleFitReadyListener> onReadyListeners = new ArrayList<>();
+    private boolean ready = false;
     private Activity activity;
 
-    public GoogleFitAdapter setOnReadyListener(Consumer<GoogleFitAdapter> listener)
+    public GoogleFitAdapter(Activity activity)
     {
-        this.onReadyListener = listener;
+        this.activity = activity;
+    }
+
+    public GoogleFitAdapter addOnReadyListener(OnGoogleFitReadyListener listener)
+    {
+        this.onReadyListeners.add(listener);
+
+        //Call it now, since it won't be called.
+        if (this.ready)
+        {
+            listener.onGoogleFitReady(this);
+        }
+
         return this;
+    }
+
+    public void removeOnReadyListener(OnGoogleFitReadyListener listener)
+    {
+        this.onReadyListeners.remove(listener);
     }
 
     public void onActivityCreate(Activity activity, Bundle savedInstanceState)
     {
         this.activity = activity;
 
+        //Default access is ACCESS_READ
         FitnessOptions fitnessOptions =
                 FitnessOptions.builder()
+                        //This is since the beginning of time.
                         .addDataType(DataType.TYPE_STEP_COUNT_CUMULATIVE)
-                        .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
                         .addDataType(DataType.TYPE_DISTANCE_CUMULATIVE)
+                        //This is since the duration of time.
+                        .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA)
+                        .addDataType(DataType.AGGREGATE_DISTANCE_DELTA)
+                        .addDataType(DataType.AGGREGATE_SPEED_SUMMARY)
+                        //This is any time.
+                        .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
                         .addDataType(DataType.TYPE_DISTANCE_DELTA)
                         .addDataType(DataType.TYPE_SPEED)
+                        .addDataType(DataType.TYPE_MOVE_MINUTES)
+                        //I want to write height :P
+                        .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_WRITE)
                         .build();
 
         if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this.activity), fitnessOptions))
@@ -75,10 +118,20 @@ public class GoogleFitAdapter
                     @Override
                     public void onSuccess(Void aVoid) {
                         GoogleFitAdapter googleFitAdapter = GoogleFitAdapter.this;
-                        if (googleFitAdapter.onReadyListener != null)
+
+                        for(OnGoogleFitReadyListener listener : googleFitAdapter.onReadyListeners)
                         {
-                            googleFitAdapter.onReadyListener.accept(googleFitAdapter);
+                            try
+                            {
+                                listener.onGoogleFitReady(googleFitAdapter);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.w(TAG, "Failed to handle google fit ready event", e);
+                            }
                         }
+
+                        googleFitAdapter.ready = true;
 
                         Log.i(TAG, "Successfully subscribed google services");
                     }
@@ -104,5 +157,10 @@ public class GoogleFitAdapter
     public long getCurrentTime()
     {
         return System.currentTimeMillis();
+    }
+
+    public boolean isReady()
+    {
+        return this.ready;
     }
 }
