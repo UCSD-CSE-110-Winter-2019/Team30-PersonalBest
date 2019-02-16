@@ -14,7 +14,6 @@
         android:id="@+id/heightText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30sp"
         android:text="Your height in meters: "
         android:textSize="20dp" />
 
@@ -87,6 +86,7 @@
         android:layout_marginTop="90sp"
         android:background="@android:color/darker_gray"
         android:textColor="@android:color/white"
+        android:layout_alignParentBottom="true"
         android:text="weekly snapshot"/>
 
 </LinearLayout>

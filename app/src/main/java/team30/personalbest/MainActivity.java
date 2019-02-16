@@ -104,27 +104,27 @@ public class MainActivity extends AppCompatActivity {
         endButton.setVisibility(View.GONE);
 
         startButton.setOnClickListener(new View.OnClickListener() {
-           public void onClick(View v) {
-               // Set endButton visible
-               startButton.setVisibility(View.GONE);
-               endButton.setVisibility(View.VISIBLE);
+            public void onClick(View v) {
+                // Set endButton visible
+                startButton.setVisibility(View.GONE);
+                endButton.setVisibility(View.VISIBLE);
 
                 // Get current walk step number
                 //.startRecording(null, null);
 
-               // Make sure statistics are shown
-               currStepsText.setVisibility(View.VISIBLE);
-               timeElapsedText.setVisibility(View.VISIBLE);
-               mphText.setVisibility(View.VISIBLE);
-           }
+                // Make sure statistics are shown
+                currStepsText.setVisibility(View.VISIBLE);
+                timeElapsedText.setVisibility(View.VISIBLE);
+                mphText.setVisibility(View.VISIBLE);
+            }
         });
 
 
         endButton.setOnClickListener(new View.OnClickListener() {
-           public void onClick(View v) {
-               // Show start button again
-               startButton.setVisibility(View.VISIBLE);
-               endButton.setVisibility(View.GONE);
+            public void onClick(View v) {
+                // Show start button again
+                startButton.setVisibility(View.VISIBLE);
+                endButton.setVisibility(View.GONE);
 
                 // Get current walk step number
                 //walkSteps.stopRecording(null, null);
@@ -140,10 +140,10 @@ public class MainActivity extends AppCompatActivity {
                velocityRun = walkSteps.getActiveStats().getMilesPerHour();
                velocityRunText.setText("Average Velocity: "+velocityRun);
                */
-               // Show statistics
-        //        totalRunStepsText.setVisibility(View.VISIBLE);
-        //        distanceRunText.setVisibility(View.VISIBLE);
-        //        velocityRunText.setVisibility(View.VISIBLE);
+                // Show statistics
+                //        totalRunStepsText.setVisibility(View.VISIBLE);
+                //        distanceRunText.setVisibility(View.VISIBLE);
+                //        velocityRunText.setVisibility(View.VISIBLE);
             }
         });
 
