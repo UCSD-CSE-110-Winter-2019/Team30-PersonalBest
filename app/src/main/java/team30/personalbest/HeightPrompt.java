@@ -32,6 +32,7 @@ public class HeightPrompt extends AppCompatActivity implements OnGoogleFitReadyL
         setContentView(R.layout.activity_height_prompt);
 
         this.googleFitAdapter = new GoogleFitAdapter(this);
+
         this.heightService = new HeightService(this.googleFitAdapter);
 
         this.heightValue = (EditText) findViewById(R.id.heightbox);

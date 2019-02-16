@@ -8,18 +8,26 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import team30.personalbest.fitness.GoogleFitAdapter;
 import team30.personalbest.fitness.OnGoogleFitReadyListener;
 import team30.personalbest.fitness.service.ActiveFitnessService;
 import team30.personalbest.fitness.service.FitnessService;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
+import team30.personalbest.goal.CustomGoalAchiever;
+import team30.personalbest.goal.CustomStepGoal;
+import team30.personalbest.goal.GoalAchiever;
+import team30.personalbest.goal.GoalListener;
+import team30.personalbest.goal.StepGoal;
 
-public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyListener
+public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyListener, GoalListener
 {
     private GoogleFitAdapter googleFitAdapter;
     private FitnessService fitnessService;
     private ActiveFitnessService activeFitnessService;
+
+    private GoalAchiever goalAchiever;
 
     private Button updateDailyStep_btn;
     private TextView dailyStep_textView;
@@ -34,6 +42,11 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
         this.fitnessService = new FitnessService(this.googleFitAdapter);
         this.activeFitnessService = new ActiveFitnessService(this.googleFitAdapter);
+
+        this.goalAchiever = new CustomGoalAchiever();
+        this.goalAchiever.addGoalListener(this);
+        //Update step goal to match current user goal...
+        //this.goalAchiever.setStepGoal(new CustomStepGoal());
 
         this.updateDailyStep_btn = (Button) findViewById(R.id.getDailyStepCount);
         this.dailyStep_textView = (TextView) findViewById(R.id.StepCountTemp);
@@ -64,5 +77,12 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                         });
             }
         });
+    }
+
+    @Override
+    public void onGoalAchievement(StepGoal goal)
+    {
+        //Achieved Goal!
+        Toast.makeText(this, "Achievement get!", Toast.LENGTH_SHORT).show();
     }
 }
