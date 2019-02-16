@@ -11,11 +11,16 @@ import android.view.View;
 import android.widget.Button;
 
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.CombinedData;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
@@ -38,7 +43,7 @@ public class GraphActivity extends AppCompatActivity {
             }
         });
 
-        BarChart chart = (BarChart) findViewById(R.id.chart);
+        CombinedChart chart = (CombinedChart) findViewById(R.id.chart);
         chart.getDescription().setEnabled(false);
         chart.setDrawGridBackground(false);
 
@@ -50,7 +55,6 @@ public class GraphActivity extends AppCompatActivity {
         xAxis.setGranularityEnabled(true);
         xAxis.setAxisMinimum(0f);
         xAxis.setAxisMaximum(7f);
-       // xAxis.setLabelCount(7, true);
 
         // Creating week labels for x-axis
         final String[] xLabels = new String[] {
@@ -75,7 +79,7 @@ public class GraphActivity extends AppCompatActivity {
             }
         });
 
-     //   xAxis.setValueFormatter(formatter);
+
         xAxis.setCenterAxisLabels(true);
 
         // Add entries for intentional steps
@@ -89,9 +93,9 @@ public class GraphActivity extends AppCompatActivity {
         intentStepEntries.add(new BarEntry(6, 7));
 
         BarDataSet intentDataSet = new BarDataSet(intentStepEntries, "Intentional Steps");
-        intentDataSet.setColor(Color.MAGENTA);
+        intentDataSet.setColor(Color.CYAN);
 
-        // Add entries for intentional steps
+        // Add entries for intentional steps (dummy data for now..)
         List<BarEntry> incidentStepEntries = new ArrayList<>();
         incidentStepEntries.add(new BarEntry(0,2));
         incidentStepEntries.add(new BarEntry(1,5));
@@ -102,22 +106,43 @@ public class GraphActivity extends AppCompatActivity {
         incidentStepEntries.add(new BarEntry(6,5));
 
         BarDataSet incidentDataSet = new BarDataSet(incidentStepEntries, "Incidental Steps");
-        incidentDataSet.setColor(Color.BLUE);
+        incidentDataSet.setColor(Color.LTGRAY);
 
         xAxis.setLabelCount(incidentStepEntries.size());
         float groupSpace = 0.12f;
         float barSpace = 0.02f;
         float barWidth = 0.42f;
 
+        // Graph lines for step goal & intentional walk stats
+        List<Entry> stepGoalEntries = new ArrayList<>();
+        stepGoalEntries.add(new Entry(.5f,0));
+        stepGoalEntries.add(new Entry(1.5f,5));
+        stepGoalEntries.add(new Entry(2.5f,5));
+        stepGoalEntries.add(new Entry(3.5f,5));
+        stepGoalEntries.add(new Entry(4.5f,5));
+        stepGoalEntries.add(new Entry(5.5f,5));
+        stepGoalEntries.add(new Entry(6.5f,7));
+
+        LineDataSet stepGoalDataSet = new LineDataSet(stepGoalEntries, "Step Goal");
+        LineData stepGoalData = new LineData();
+        stepGoalDataSet.setColor(Color.RED);
+        stepGoalDataSet.setLineWidth(6f);
+        stepGoalData.addDataSet(stepGoalDataSet);
+
         ArrayList<IBarDataSet> dataSets = new ArrayList<>();
         dataSets.add(intentDataSet);
         dataSets.add(incidentDataSet);
-        BarData data = new BarData(dataSets);
 
-        data.setBarWidth(barWidth);
-        chart.setData(data);
-        chart.setFitBars(true);
-        chart.groupBars(0,groupSpace,barSpace);
+        BarData barData = new BarData(dataSets);
+        barData.setBarWidth(barWidth);
+        barData.groupBars(0,groupSpace,barSpace);
+
+        CombinedData combinedData = new CombinedData();
+        combinedData.setData(barData);
+        combinedData.setData(stepGoalData);
+
+
+        chart.setData(combinedData);
         chart.invalidate();
 
     }
