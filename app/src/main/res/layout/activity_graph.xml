@@ -7,20 +7,210 @@
     android:orientation="vertical"
     android:padding="10dp"
     tools:context=".GraphActivity">
-
-    <Button
-        android:id="@+id/button_back"
-        android:layout_width="80dp"
-        android:layout_height="25dp"
-        android:text="back"
-        android:textColor="@android:color/black"
-        android:textSize="20sp"
-        android:background="@android:color/background_light"/>
-
-    <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/chart"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
 
+            <Button
+                android:id="@+id/button_back"
+                android:layout_width="80dp"
+                android:layout_height="25dp"
+                android:text="back"
+                android:textColor="@android:color/black"
+                android:textSize="20sp"
+                android:background="@android:color/background_light"/>
+
+            <com.github.mikephil.charting.charts.CombinedChart
+                android:id="@+id/chart"
+                android:layout_width="fill_parent"
+                android:layout_height="400dp"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30sp"
+                android:text="Intentional Walk Stats"
+                android:textSize="20dp" />
+
+            <TextView
+                android:id="@+id/sun"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:text="Sunday: "
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/sunMph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="MPH: "
+                android:textSize="10dp" />
+            <TextView
+                android:id="@+id/sunTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="Time elapsed: "
+                android:textSize="10dp" />
+
+            <TextView
+                android:id="@+id/mon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:text="Monday: "
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/monMph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="MPH: "
+                android:textSize="10dp" />
+            <TextView
+                android:id="@+id/monTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="Time elapsed: "
+                android:textSize="10dp" />
+
+            <TextView
+                android:id="@+id/tue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:text="Tuesday: "
+                android:textSize="15dp" />
+            <TextView
+                android:id="@+id/tueMph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="MPH: "
+                android:textSize="10dp" />
+            <TextView
+                android:id="@+id/tueTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="Time elapsed: "
+                android:textSize="10dp" />
+
+            <TextView
+                android:id="@+id/wed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:text="Wednesday: "
+                android:textSize="15dp" />
+            <TextView
+                android:id="@+id/wedMph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="MPH: "
+                android:textSize="10dp" />
+            <TextView
+                android:id="@+id/wedTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="Time elapsed: "
+                android:textSize="10dp" />
+
+            <TextView
+                android:id="@+id/thu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:text="Thursday: "
+                android:textSize="15dp" />
+            <TextView
+                android:id="@+id/thuMph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="MPH: "
+                android:textSize="10dp" />
+            <TextView
+                android:id="@+id/thuTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="Time elapsed: "
+                android:textSize="10dp" />
+
+            <TextView
+                android:id="@+id/fri"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:text="Friday: "
+                android:textSize="15dp" />
+            <TextView
+                android:id="@+id/friMph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="MPH: "
+                android:textSize="10dp" />
+            <TextView
+                android:id="@+id/friTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="Time elapsed: "
+                android:textSize="10dp" />
+
+            <TextView
+                android:id="@+id/sat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:text="Saturday: "
+                android:textSize="15dp" />
+            <TextView
+                android:id="@+id/satMph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="MPH: "
+                android:textSize="10dp" />
+            <TextView
+                android:id="@+id/satTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0sp"
+                android:layout_marginLeft="20sp"
+                android:text="Time elapsed: "
+                android:textSize="10dp" />
+
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

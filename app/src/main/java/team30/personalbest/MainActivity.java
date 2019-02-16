@@ -26,10 +26,13 @@ public class MainActivity extends AppCompatActivity {
     TextView currStepsText;
     TextView timeElapsedText;
     TextView mphText;
+    TextView heightText;
     double timeElapsed;
     double mph;
     int totalRunSteps;
+    float height;
     private String goal_Text = "";
+    private String height_Text = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +40,38 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.googleFitAdapter = new GoogleFitAdapter();
+
+        // Prompt height on initial launch of app
+        if(height == 0) { // TODO: Needs to be changed when we get height
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Enter your height in meters");
+
+            // Set up the input
+            final EditText input = new EditText(MainActivity.this);
+
+            // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            builder.setView(input);
+
+            // Set up the buttons
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    height_Text = input.getText().toString();
+                    heightText.setText("Your Height in Meters: " + height_Text);
+                    height = Float.parseFloat(height_Text);
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+            builder.show();
+
+        }
 
         // Switch to weekly snapshot
         launchWeeklySnapshot = findViewById(R.id.button_weekly_stats);
@@ -53,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         currStepsText = findViewById(R.id.curr_steps);
         timeElapsedText = findViewById(R.id.time_elapsed);
         mphText = findViewById(R.id.mph);
+        heightText = findViewById(R.id.heightText);
 
         // Will only show during run
         currStepsText.setVisibility(View.INVISIBLE);
