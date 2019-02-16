@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import team30.personalbest.fitness.Callback;
 import team30.personalbest.fitness.GoogleFitAdapter;
+import team30.personalbest.fitness.OnGoogleFitReadyListener;
 import team30.personalbest.fitness.snapshot.FitnessSnapshot;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
@@ -106,10 +107,8 @@ public class FitnessService implements IFitnessService
                             snapshot.setStartTime(data.getStartTime(TimeUnit.MILLISECONDS));
                             snapshot.setStopTime(data.getEndTime(TimeUnit.MILLISECONDS));
                             snapshot.setTotalSteps(data.getValue(Field.FIELD_STEPS).asInt());
-                            /*
-                            snapshot.setDistanceTravelled(
-                                    data.getValue(Field.FIELD_DISTANCE).asFloat());
-                            */
+                            //TODO: get dist!
+                            //TODO: get speed!
                         }
 
                         callback.resolve(snapshot);

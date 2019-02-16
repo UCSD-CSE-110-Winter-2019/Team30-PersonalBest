@@ -2,33 +2,50 @@ package team30.personalbest;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Consumer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.text.InputType;
+import android.widget.Toast;
 
 import team30.personalbest.fitness.GoogleFitAdapter;
+import team30.personalbest.fitness.OnGoogleFitReadyListener;
+import team30.personalbest.fitness.service.ActiveFitnessService;
+import team30.personalbest.fitness.service.FitnessService;
+import team30.personalbest.goal.CustomGoalAchiever;
+import team30.personalbest.goal.GoalAchiever;
+import team30.personalbest.goal.GoalListener;
+import team30.personalbest.goal.StepGoal;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyListener, GoalListener
+{
     private GoogleFitAdapter googleFitAdapter;
+    private FitnessService fitnessService;
+    private ActiveFitnessService activeFitnessService;
 
-    Button startButton;
-    Button endButton;
-    Button setNewGoalButton;
-    Button launchWeeklySnapshot;
-    TextView stepsGoalText;
-    TextView totalRunStepsText;
-    TextView currStepsText;
-    TextView timeElapsedText;
-    TextView mphText;
-    double timeElapsed;
-    double mph;
-    int totalRunSteps;
+    private GoalAchiever goalAchiever;
+
+    //private Button updateDailyStep_btn;
+    //private TextView dailyStep_textView;
+
+    private Button startButton;
+    private Button endButton;
+    private Button setNewGoalButton;
+    private Button launchWeeklySnapshot;
+    private TextView stepsGoalText;
+    private TextView totalRunStepsText;
+    private TextView currStepsText;
+    private TextView timeElapsedText;
+    private TextView mphText;
+    private double timeElapsed;
+    private double mph;
+    private int totalRunSteps;
     private String goal_Text = "";
 
     @Override
@@ -36,7 +53,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.googleFitAdapter = new GoogleFitAdapter();
+        this.googleFitAdapter = new GoogleFitAdapter(this);
+
+        this.fitnessService = new FitnessService(this.googleFitAdapter);
+        this.activeFitnessService = new ActiveFitnessService(this.googleFitAdapter);
+
+        this.goalAchiever = new CustomGoalAchiever();
+        this.goalAchiever.addGoalListener(this);
+        //Update step goal to match current user goal...
+        //this.goalAchiever.setStepGoal(new CustomStepGoal());
+
+        //this.updateDailyStep_btn = (Button) findViewById(R.id.getDailyStepCount);
+        //this.dailyStep_textView = (TextView) findViewById(R.id.StepCountTemp);
+
+        this.googleFitAdapter.addOnReadyListener(this);
+        this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
+
+        /** GUI STUFF */
 
         // Switch to weekly snapshot
         launchWeeklySnapshot = findViewById(R.id.button_weekly_stats);
@@ -68,27 +101,27 @@ public class MainActivity extends AppCompatActivity {
         endButton.setVisibility(View.GONE);
 
         startButton.setOnClickListener(new View.OnClickListener() {
-           public void onClick(View v) {
-               // Set endButton visible
-               startButton.setVisibility(View.GONE);
-               endButton.setVisibility(View.VISIBLE);
+            public void onClick(View v) {
+                // Set endButton visible
+                startButton.setVisibility(View.GONE);
+                endButton.setVisibility(View.VISIBLE);
 
                 // Get current walk step number
                 //.startRecording(null, null);
 
-               // Make sure statistics are shown
-               currStepsText.setVisibility(View.VISIBLE);
-               timeElapsedText.setVisibility(View.VISIBLE);
-               mphText.setVisibility(View.VISIBLE);
-           }
+                // Make sure statistics are shown
+                currStepsText.setVisibility(View.VISIBLE);
+                timeElapsedText.setVisibility(View.VISIBLE);
+                mphText.setVisibility(View.VISIBLE);
+            }
         });
 
 
         endButton.setOnClickListener(new View.OnClickListener() {
-           public void onClick(View v) {
-               // Show start button again
-               startButton.setVisibility(View.VISIBLE);
-               endButton.setVisibility(View.GONE);
+            public void onClick(View v) {
+                // Show start button again
+                startButton.setVisibility(View.VISIBLE);
+                endButton.setVisibility(View.GONE);
 
                 // Get current walk step number
                 //walkSteps.stopRecording(null, null);
@@ -104,10 +137,10 @@ public class MainActivity extends AppCompatActivity {
                velocityRun = walkSteps.getActiveStats().getMilesPerHour();
                velocityRunText.setText("Average Velocity: "+velocityRun);
                */
-               // Show statistics
-        //        totalRunStepsText.setVisibility(View.VISIBLE);
-        //        distanceRunText.setVisibility(View.VISIBLE);
-        //        velocityRunText.setVisibility(View.VISIBLE);
+                // Show statistics
+                //        totalRunStepsText.setVisibility(View.VISIBLE);
+                //        distanceRunText.setVisibility(View.VISIBLE);
+                //        velocityRunText.setVisibility(View.VISIBLE);
             }
         });
 
@@ -140,23 +173,46 @@ public class MainActivity extends AppCompatActivity {
                 });
 
                 builder.show();
-
-
             }
         });
-
-
-        this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
-    }
-
-    public void launchActivity() {
-        Intent intent = new Intent(this, GraphActivity.class);
-        startActivity(intent);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
         this.googleFitAdapter.onActivityResult(this, requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onGoogleFitReady(final GoogleFitAdapter googleFitAdapter)
+    {
+        /*
+        this.updateDailyStep_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.this.fitnessService.getFitnessSnapshot()
+                        .onResult(new Consumer<IFitnessSnapshot>() {
+                            @Override
+                            public void accept(IFitnessSnapshot iFitnessSnapshot) {
+                                String totalSteps = "" + iFitnessSnapshot.getTotalSteps();
+                                dailyStep_textView.setText(totalSteps);
+                            }
+                        });
+            }
+        });
+        */
+    }
+
+    @Override
+    public void onGoalAchievement(StepGoal goal)
+    {
+        //Achieved Goal!
+        Toast.makeText(this, "Achievement get!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void launchActivity()
+    {
+        Intent intent = new Intent(this, GraphActivity.class);
+        startActivity(intent);
     }
 }
