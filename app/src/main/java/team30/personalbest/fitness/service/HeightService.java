@@ -76,7 +76,8 @@ public class HeightService implements IHeightService
     @Override
     public Callback<Float> getHeight()
     {
-        if (!this.googleFitAdapter.isReady()) throw new IllegalStateException("Google Fit services is not ready!");
+        if (!this.googleFitAdapter.isReady())
+            throw new IllegalStateException("Google Fit services is not ready!");
 
         final Activity activity = this.googleFitAdapter.getActivity();
         final Callback<Float> callback = new Callback<>();

@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import team30.personalbest.fitness.service.ActiveFitnessService;
 import team30.personalbest.fitness.service.FitnessService;
 
-public class GoogleFitAdapter
+public class GoogleFitAdapter implements IGoogleFitAdapter
 {
     public static final String TAG = "GoogleFitAdapter";
     private static final int REQUEST_OAUTH_REQUEST_CODE = 0x1001;
@@ -45,6 +45,7 @@ public class GoogleFitAdapter
         this.activity = activity;
     }
 
+    @Override
     public GoogleFitAdapter addOnReadyListener(OnGoogleFitReadyListener listener)
     {
         this.onReadyListeners.add(listener);
@@ -58,11 +59,13 @@ public class GoogleFitAdapter
         return this;
     }
 
+    @Override
     public void removeOnReadyListener(OnGoogleFitReadyListener listener)
     {
         this.onReadyListeners.remove(listener);
     }
 
+    @Override
     public void onActivityCreate(Activity activity, Bundle savedInstanceState)
     {
         this.activity = activity;
@@ -100,6 +103,7 @@ public class GoogleFitAdapter
         }
     }
 
+    @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, @Nullable Intent data)
     {
         if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_OAUTH_REQUEST_CODE)
@@ -118,6 +122,7 @@ public class GoogleFitAdapter
                     @Override
                     public void onSuccess(Void aVoid) {
                         GoogleFitAdapter googleFitAdapter = GoogleFitAdapter.this;
+                        googleFitAdapter.ready = true;
 
                         for(OnGoogleFitReadyListener listener : googleFitAdapter.onReadyListeners)
                         {
@@ -131,8 +136,6 @@ public class GoogleFitAdapter
                             }
                         }
 
-                        googleFitAdapter.ready = true;
-
                         Log.i(TAG, "Successfully subscribed google services");
                     }
                 })
@@ -144,21 +147,25 @@ public class GoogleFitAdapter
                 });
     }
 
+    @Override
     public GoogleSignInAccount getCurrentGoogleAccount()
     {
         return GoogleSignIn.getLastSignedInAccount(this.activity);
     }
 
+    @Override
     public Activity getActivity()
     {
         return this.activity;
     }
 
+    @Override
     public long getCurrentTime()
     {
         return System.currentTimeMillis();
     }
 
+    @Override
     public boolean isReady()
     {
         return this.ready;

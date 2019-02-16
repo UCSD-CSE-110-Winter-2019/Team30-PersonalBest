@@ -8,6 +8,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +19,7 @@ import team30.personalbest.fitness.GoogleFitAdapter;
 import team30.personalbest.fitness.OnGoogleFitReadyListener;
 import team30.personalbest.fitness.service.ActiveFitnessService;
 import team30.personalbest.fitness.service.FitnessService;
+import team30.personalbest.fitness.service.HeightService;
 import team30.personalbest.goal.CustomGoalAchiever;
 import team30.personalbest.goal.GoalAchiever;
 import team30.personalbest.goal.GoalListener;
@@ -25,7 +27,14 @@ import team30.personalbest.goal.StepGoal;
 
 public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyListener, GoalListener
 {
+    public static final String TAG = "MainActivity";
+
+    private static final String TITLE_HEIGHT_PROMPT = "Enter your height in meters:";
+    private static final String TITLE_STEP_GOAL_PROMPT = "Set your new step goal:";
+
     private GoogleFitAdapter googleFitAdapter;
+
+    private HeightService heightService;
     private FitnessService fitnessService;
     private ActiveFitnessService activeFitnessService;
 
@@ -47,9 +56,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     private double timeElapsed;
     private double mph;
     private int totalRunSteps;
-    private float height;
     private String goal_Text = "";
-    private String height_Text = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
         this.googleFitAdapter = new GoogleFitAdapter(this);
 
+        this.heightService = new HeightService(this.googleFitAdapter);
         this.fitnessService = new FitnessService(this.googleFitAdapter);
         this.activeFitnessService = new ActiveFitnessService(this.googleFitAdapter);
 
@@ -74,96 +82,63 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
         /** GUI STUFF */
 
-        // Prompt height on initial launch of app
-        if(height == 0) { // TODO: Needs to be changed when we get height
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle("Enter your height in meters");
-
-            // Set up the input
-            final EditText input = new EditText(MainActivity.this);
-
-            // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-            input.setInputType(InputType.TYPE_CLASS_TEXT);
-            builder.setView(input);
-
-            // Set up the buttons
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    height_Text = input.getText().toString();
-                    heightText.setText("Your Height in Meters: " + height_Text);
-                    height = Float.parseFloat(height_Text);
-                }
-            });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
-
-            builder.show();
-
-        }
-
         // Switch to weekly snapshot
-        launchWeeklySnapshot = findViewById(R.id.button_weekly_stats);
-        launchWeeklySnapshot.setOnClickListener(new View.OnClickListener() {
+        this.launchWeeklySnapshot = findViewById(R.id.button_weekly_stats);
+        this.launchWeeklySnapshot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                launchActivity();
+                MainActivity.this.launchGraphActivity();
             }
         });
 
         // Run statistic textview
-        totalRunStepsText = findViewById(R.id.total_steps);
-        stepsGoalText = findViewById(R.id.steps_goal);
-        currStepsText = findViewById(R.id.curr_steps);
-        timeElapsedText = findViewById(R.id.time_elapsed);
-        mphText = findViewById(R.id.mph);
-        heightText = findViewById(R.id.heightText);
+        this.totalRunStepsText = findViewById(R.id.total_steps);
+        this.stepsGoalText = findViewById(R.id.steps_goal);
+        this.currStepsText = findViewById(R.id.curr_steps);
+        this.timeElapsedText = findViewById(R.id.time_elapsed);
+        this.mphText = findViewById(R.id.mph);
+        this.heightText = findViewById(R.id.heightText);
 
         // Will only show during run
-        currStepsText.setVisibility(View.INVISIBLE);
-        timeElapsedText.setVisibility(View.INVISIBLE);
-        mphText.setVisibility(View.INVISIBLE);
+        this.currStepsText.setVisibility(View.INVISIBLE);
+        this.timeElapsedText.setVisibility(View.INVISIBLE);
+        this.mphText.setVisibility(View.INVISIBLE);
 
         // Start Walk/Run buttons
-        startButton = findViewById(R.id.button_start);
-        endButton = findViewById(R.id.button_end);
-        setNewGoalButton = findViewById(R.id.newStepGoalButton);
+        this.startButton = findViewById(R.id.button_start);
+        this.endButton = findViewById(R.id.button_end);
+        this.setNewGoalButton = findViewById(R.id.newStepGoalButton);
 
         // endButton invisible/gone in the beginning
-        endButton.setVisibility(View.GONE);
+        this.endButton.setVisibility(View.GONE);
 
-        startButton.setOnClickListener(new View.OnClickListener() {
+        this.startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Set endButton visible
-                startButton.setVisibility(View.GONE);
-                endButton.setVisibility(View.VISIBLE);
+                MainActivity.this.startButton.setVisibility(View.GONE);
+                MainActivity.this.endButton.setVisibility(View.VISIBLE);
 
-                // Get current walk step number
-                //.startRecording(null, null);
+                // Start recording current run
+                MainActivity.this.activeFitnessService.startRecording();
 
                 // Make sure statistics are shown
-                currStepsText.setVisibility(View.VISIBLE);
-                timeElapsedText.setVisibility(View.VISIBLE);
-                mphText.setVisibility(View.VISIBLE);
+                MainActivity.this.currStepsText.setVisibility(View.VISIBLE);
+                MainActivity.this.timeElapsedText.setVisibility(View.VISIBLE);
+                MainActivity.this.mphText.setVisibility(View.VISIBLE);
             }
         });
 
 
-        endButton.setOnClickListener(new View.OnClickListener() {
+        this.endButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Show start button again
-                startButton.setVisibility(View.VISIBLE);
-                endButton.setVisibility(View.GONE);
+                MainActivity.this.startButton.setVisibility(View.VISIBLE);
+                MainActivity.this.endButton.setVisibility(View.GONE);
 
-                // Get current walk step number
-                //walkSteps.stopRecording(null, null);
+                // Stop recording current run
+                MainActivity.this.activeFitnessService.stopRecording();
 
                 // Display stats after run
-
            /*    totalRunSteps = walkSteps.getActiveStats().getTotalSteps(StepType.INTENTIONAL);
                totalRunStepsText.setText("Total Steps Taken: "+totalRunSteps);
 
@@ -182,33 +157,10 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
         // Listener for New step steps_goal
 
-        setNewGoalButton.setOnClickListener(new View.OnClickListener() {
+        this.setNewGoalButton.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Set New Step Goal");
-
-                // Set up the input
-                final EditText input = new EditText(MainActivity.this);
-                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                builder.setView(input);
-
-                // Set up the buttons
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        goal_Text = input.getText().toString();
-                        stepsGoalText.setText("New Step Goal: "+goal_Text);
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                builder.show();
+                MainActivity.this.showGoalPrompt();
             }
         });
     }
@@ -222,6 +174,25 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     @Override
     public void onGoogleFitReady(final GoogleFitAdapter googleFitAdapter)
     {
+        // Prompt height on initial launch of app (after google fit is ready)
+        this.heightService.getHeight().onResult(new Consumer<Float>() {
+            @Override
+            public void accept(Float aFloat) {
+                if (aFloat == null)
+                {
+                    //Height was never set.
+                    MainActivity.this.showHeightPrompt();
+                }
+                else
+                {
+                    //Height is already set.
+                    //TODO: This is just to show that height was set. remove this later
+                    heightText.setText("Your Height in Meters: " + aFloat.toString());
+                }
+            }
+        });
+
+
         /*
         this.updateDailyStep_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -246,9 +217,100 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         Toast.makeText(this, "Achievement get!", Toast.LENGTH_SHORT).show();
     }
 
-    private void launchActivity()
+    private void updateStepCount()
     {
-        Intent intent = new Intent(this, GraphActivity.class);
-        startActivity(intent);
+
+    }
+
+    private void showHeightPrompt()
+    {
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle(TITLE_HEIGHT_PROMPT)
+                .setView(input)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        try
+                        {
+                            final String heightString = input.getText().toString();
+                            final float heightFloat = Float.parseFloat(heightString);
+
+                            //TODO: This is just to show that height was set. remove this later
+                            heightText.setText("Your Height in Meters: " + heightString);
+
+                            heightService.setHeight(heightFloat).onResult(new Consumer<Float>() {
+                                @Override
+                                public void accept(Float aFloat) {
+                                    if (aFloat == null)
+                                        throw new IllegalArgumentException(
+                                                "Unable to set height for google services"
+                                        );
+
+                                    Log.i(TAG, "Successfully processed height");
+                                }
+                            });
+                        }
+                        catch (Exception e)
+                        {
+                            Log.w(TAG, "Failed to process height", e);
+
+                            showHeightPrompt();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                        showHeightPrompt();
+                    }
+                });
+        builder.show();
+    }
+
+    private void showGoalPrompt()
+    {
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle(TITLE_STEP_GOAL_PROMPT)
+                .setView(input)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        try
+                        {
+                            //TODO: set step goal here.
+                            final String goalString = input.getText().toString();
+                            final int goalInteger = Integer.parseInt(goalString);
+
+                            //TODO: This is just to show that height was set. remove this later
+                            stepsGoalText.setText("New Step Goal: "+goal_Text);
+
+                            Log.i(TAG, "Successfully processed step goal");
+                        }
+                        catch (Exception e)
+                        {
+                            Log.w(TAG, "Failed to process step goal", e);
+
+                            showGoalPrompt();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        builder.show();
+    }
+
+    private void launchGraphActivity()
+    {
+        final Intent intent = new Intent(this, GraphActivity.class);
+        this.startActivity(intent);
     }
 }
