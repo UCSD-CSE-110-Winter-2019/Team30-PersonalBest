@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     private ActiveFitnessService activeFitnessService;
 
     private GoalAchiever goalAchiever;
+    private StepGoal stepGoal;
+    private StepGoal subStepGoal;
 
     //private Button updateDailyStep_btn;
     //private TextView dailyStep_textView;
@@ -75,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
         this.goalAchiever = new CustomGoalAchiever();
         this.goalAchiever.addGoalListener(this);
+
         //Update step goal to match current user goal...
         //this.goalAchiever.setStepGoal(new CustomStepGoal());
 
@@ -214,6 +217,8 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                     //TODO: This is just to show that height was set. remove this later
                     heightText.setText("Your Height in Meters: " + aFloat.toString());
                 }
+
+                //MainActivity.this.goalAchiever.startAchievingGoal();
             }
         });
 
