@@ -3,6 +3,7 @@ package team30.personalbest.fitness.service;
 import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.format.Time;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -19,6 +20,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -156,11 +158,17 @@ public class ActiveFitnessService implements IFitnessService
         if (this.currentSessionID == null)
             throw new IllegalStateException("Unable to find current session");
 
+        final long time = this.googleFitAdapter.getCurrentTime();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        calendar.add(Calendar.DAY_OF_WEEK, -1);
+        final long prevDayTime = calendar.getTimeInMillis();
         SessionReadRequest readRequest = new SessionReadRequest.Builder()
                 .setSessionId(this.currentSessionID)
                 .read(DataType.TYPE_STEP_COUNT_DELTA)
                 .read(DataType.TYPE_DISTANCE_DELTA)
                 .setSessionName(SESSION_NAME)
+                .setTimeInterval(prevDayTime, time, TimeUnit.MILLISECONDS)
                 .build();
 
         Fitness.getSessionsClient(context, userAccount)

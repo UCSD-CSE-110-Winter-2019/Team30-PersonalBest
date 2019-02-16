@@ -27,7 +27,24 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GraphActivity extends AppCompatActivity {
+public class GraphActivity extends AppCompatActivity
+{
+    public static final String BUNDLE_WEEKLY_STATS = "weekly_stats";
+    public static final String BUNDLE_WEEKLY_PREFIX = "weekly_day_";
+    public static final String BUNDLE_DAILY_ACTIVE_STEPS = "daily_active_steps";
+    public static final String BUNDLE_DAILY_STEPS = "daily_steps";
+    public static final String BUNDLE_DAILY_MPH = "daily_mph";
+    public static final String BUNDLE_DAILY_TIMES = "daily_times";
+    public static final String BUNDLE_DAILY_DISTANCE = "daily_dist";
+    public static final String BUNDLE_DAILY_GOALS = "daily_goals";
+    public static final int BUNDLE_WEEK_LENGTH = 7;
+
+    public static final String[] WEEK_DAY_LABELS = new String[] {
+            "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+    };
+    public static final String LABEL_INTENTIONAL_STEPS = "Intentional Steps";
+    public static final String LABEL_INCIDENTAL_STEPS = "Incidental Steps";
+    public static final String LABEL_STEP_GOAL = "Step Goal";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,16 +74,7 @@ public class GraphActivity extends AppCompatActivity {
         xAxis.setAxisMaximum(7f);
 
         // Creating week labels for x-axis
-        final String[] xLabels = new String[] {
-                "Sun",
-                "Mon",
-                "Tue",
-                "Wed",
-                "Thu",
-                "Fri",
-                "Sat"
-        };
-
+        final String[] xLabels = WEEK_DAY_LABELS;
         xAxis.setValueFormatter(new IAxisValueFormatter() {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
@@ -78,34 +86,57 @@ public class GraphActivity extends AppCompatActivity {
                 }
             }
         });
-
-
         xAxis.setCenterAxisLabels(true);
+
+        final Bundle bundle = this.getIntent().getExtras();
+        if (bundle == null)
+        {
+            this.finish();
+            return;
+        }
+        final Bundle weeklyBundle = bundle.getBundle(BUNDLE_WEEKLY_STATS);
+        if (weeklyBundle == null)
+        {
+            this.finish();
+            return;
+        }
 
         // Add entries for intentional steps
         List<BarEntry> intentStepEntries = new ArrayList<>();
-        intentStepEntries.add(new BarEntry(0,1));
-        intentStepEntries.add(new BarEntry(1, 2));
-        intentStepEntries.add(new BarEntry(2,4));
-        intentStepEntries.add(new BarEntry(3, 4));
-        intentStepEntries.add(new BarEntry(4, 5));
-        intentStepEntries.add(new BarEntry(5, 6));
-        intentStepEntries.add(new BarEntry(6, 7));
-
-        BarDataSet intentDataSet = new BarDataSet(intentStepEntries, "Intentional Steps");
-        intentDataSet.setColor(Color.CYAN);
-
-        // Add entries for intentional steps (dummy data for now..)
+        // Add entries for intentional steps
         List<BarEntry> incidentStepEntries = new ArrayList<>();
-        incidentStepEntries.add(new BarEntry(0,2));
-        incidentStepEntries.add(new BarEntry(1,5));
-        incidentStepEntries.add(new BarEntry(2,5));
-        incidentStepEntries.add(new BarEntry(3,5));
-        incidentStepEntries.add(new BarEntry(4,5));
-        incidentStepEntries.add(new BarEntry(5,5));
-        incidentStepEntries.add(new BarEntry(6,5));
+        // Graph lines for step goal
+        List<Entry> stepGoalEntries = new ArrayList<>();
 
-        BarDataSet incidentDataSet = new BarDataSet(incidentStepEntries, "Incidental Steps");
+        int prevStepGoal = 0;
+        for(int i = 0; i < BUNDLE_WEEK_LENGTH; ++i)
+        {
+            Bundle dailyBundle = weeklyBundle.getBundle(BUNDLE_WEEKLY_PREFIX + i);
+
+            int stepCount;
+            int activeCount;
+            int stepGoal = prevStepGoal;
+            if (dailyBundle != null)
+            {
+                stepCount = dailyBundle.getInt(BUNDLE_DAILY_STEPS, 0);
+                activeCount = dailyBundle.getInt(BUNDLE_DAILY_ACTIVE_STEPS, 0);
+                prevStepGoal = stepGoal = dailyBundle.getInt(BUNDLE_DAILY_GOALS, 0);
+            }
+            else
+            {
+                //TODO: Randomize it if you can't get anything. Just for visualization purposes.
+                stepCount = (int) Math.floor(10 * Math.random());
+                activeCount = (int) Math.floor(10 * Math.random());
+            }
+
+            intentStepEntries.add(new BarEntry(i, stepCount));
+            incidentStepEntries.add(new BarEntry(i, activeCount));
+            stepGoalEntries.add(new Entry(i + 0.5F, stepGoal));
+        }
+
+        BarDataSet intentDataSet = new BarDataSet(intentStepEntries, LABEL_INTENTIONAL_STEPS);
+        intentDataSet.setColor(Color.CYAN);
+        BarDataSet incidentDataSet = new BarDataSet(incidentStepEntries, LABEL_INCIDENTAL_STEPS);
         incidentDataSet.setColor(Color.LTGRAY);
 
         xAxis.setLabelCount(incidentStepEntries.size());
@@ -113,17 +144,7 @@ public class GraphActivity extends AppCompatActivity {
         float barSpace = 0.02f;
         float barWidth = 0.42f;
 
-        // Graph lines for step goal & intentional walk stats
-        List<Entry> stepGoalEntries = new ArrayList<>();
-        stepGoalEntries.add(new Entry(.5f,0));
-        stepGoalEntries.add(new Entry(1.5f,5));
-        stepGoalEntries.add(new Entry(2.5f,5));
-        stepGoalEntries.add(new Entry(3.5f,5));
-        stepGoalEntries.add(new Entry(4.5f,5));
-        stepGoalEntries.add(new Entry(5.5f,5));
-        stepGoalEntries.add(new Entry(6.5f,7));
-
-        LineDataSet stepGoalDataSet = new LineDataSet(stepGoalEntries, "Step Goal");
+        LineDataSet stepGoalDataSet = new LineDataSet(stepGoalEntries, LABEL_STEP_GOAL);
         LineData stepGoalData = new LineData();
         stepGoalDataSet.setColor(Color.RED);
         stepGoalDataSet.setLineWidth(6f);
@@ -141,9 +162,7 @@ public class GraphActivity extends AppCompatActivity {
         combinedData.setData(barData);
         combinedData.setData(stepGoalData);
 
-
         chart.setData(combinedData);
         chart.invalidate();
-
     }
 }

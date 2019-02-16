@@ -15,11 +15,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Calendar;
+import java.util.Iterator;
+
 import team30.personalbest.fitness.GoogleFitAdapter;
 import team30.personalbest.fitness.OnGoogleFitReadyListener;
 import team30.personalbest.fitness.service.ActiveFitnessService;
 import team30.personalbest.fitness.service.FitnessService;
 import team30.personalbest.fitness.service.HeightService;
+import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 import team30.personalbest.goal.CustomGoalAchiever;
 import team30.personalbest.goal.GoalAchiever;
 import team30.personalbest.goal.GoalListener;
@@ -139,19 +143,40 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                 MainActivity.this.activeFitnessService.stopRecording();
 
                 // Display stats after run
-           /*    totalRunSteps = walkSteps.getActiveStats().getTotalSteps(StepType.INTENTIONAL);
-               totalRunStepsText.setText("Total Steps Taken: "+totalRunSteps);
+                MainActivity.this.activeFitnessService.getFitnessSnapshot().onResult(
+                        new Consumer<IFitnessSnapshot>() {
+                            @Override
+                            public void accept(IFitnessSnapshot iFitnessSnapshot) {
+                                if (iFitnessSnapshot == null)
+                                    throw new IllegalStateException("Unable to find recent valid active fitness snapshot");
 
-               distanceRun = walkSteps.getActiveStats().getDistanceTravelled();
-               distanceRunText.setText("Total Distance Travelled: "+distanceRun);
+                                final double mph = iFitnessSnapshot.getMilesPerHour();
+                                final long duration = iFitnessSnapshot.getStopTime() - iFitnessSnapshot.getStartTime();
+                                final int steps = iFitnessSnapshot.getTotalSteps();
 
-               velocityRun = walkSteps.getActiveStats().getMilesPerHour();
-               velocityRunText.setText("Average Velocity: "+velocityRun);
-               */
-                // Show statistics
-                //        totalRunStepsText.setVisibility(View.VISIBLE);
-                //        distanceRunText.setVisibility(View.VISIBLE);
-                //        velocityRunText.setVisibility(View.VISIBLE);
+                                MainActivity.this.totalRunStepsText.setText(steps + " steps");
+                            }
+                        }
+                );
+
+                // Display stats after run
+                MainActivity.this.fitnessService.getFitnessSnapshot().onResult(
+                        new Consumer<IFitnessSnapshot>() {
+                            @Override
+                            public void accept(IFitnessSnapshot iFitnessSnapshot) {
+                                if (iFitnessSnapshot == null)
+                                    throw new IllegalStateException("Unable to find recent valid active fitness snapshot");
+
+                                final double mph = iFitnessSnapshot.getMilesPerHour();
+                                final long duration = iFitnessSnapshot.getStopTime() - iFitnessSnapshot.getStartTime();
+                                final int steps = iFitnessSnapshot.getTotalSteps();
+
+                                MainActivity.this.currStepsText.setText(steps + " steps");
+                                MainActivity.this.timeElapsedText.setText(duration + " ms");
+                                MainActivity.this.mphText.setText(mph + " mph");
+                            }
+                        }
+                );
             }
         });
 
@@ -310,7 +335,82 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
     private void launchGraphActivity()
     {
-        final Intent intent = new Intent(this, GraphActivity.class);
-        this.startActivity(intent);
+        final long currentTime = this.googleFitAdapter.getCurrentTime();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(currentTime);
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        final long sundayTime = calendar.getTimeInMillis();
+
+        final long minTime = Math.min(sundayTime, currentTime);
+        final long maxTime = Math.max(sundayTime, currentTime);
+        this.fitnessService.getFitnessSnapshots(minTime, maxTime)
+                .onResult(new Consumer<Iterable<IFitnessSnapshot>>() {
+                    @Override
+                    public void accept(final Iterable<IFitnessSnapshot> incidentalSnapshots) {
+                        if (incidentalSnapshots == null)
+                            throw new IllegalStateException("Cannot find valid incidental fitness snapshots");
+
+                        MainActivity.this.activeFitnessService.getFitnessSnapshots(minTime, maxTime)
+                                .onResult(new Consumer<Iterable<IFitnessSnapshot>>() {
+                                    @Override
+                                    public void accept(final Iterable<IFitnessSnapshot> intentionalSnapshots) {
+                                        if (intentionalSnapshots == null)
+                                            throw new IllegalStateException("Cannot find valid intentional fitness snapshots");
+
+                                        final Intent intent = new Intent(MainActivity.this, GraphActivity.class);
+                                        final Bundle weeklyBundle = MainActivity.this.buildWeeklyBundle(incidentalSnapshots, intentionalSnapshots);
+
+                                        final Bundle bundle = new Bundle();
+                                        bundle.putBundle(GraphActivity.BUNDLE_WEEKLY_STATS, weeklyBundle);
+                                        intent.putExtras(bundle);
+
+                                        MainActivity.this.startActivity(intent);
+                                    }
+                                });
+                    }
+                });
+    }
+
+    private Bundle buildWeeklyBundle(Iterable<IFitnessSnapshot> incidentalSnapshots, Iterable<IFitnessSnapshot> intentionalSnapshots)
+    {
+        final Iterator<IFitnessSnapshot> incidentalIterator = incidentalSnapshots.iterator();
+        final Iterator<IFitnessSnapshot> intentionalIterator = intentionalSnapshots.iterator();
+
+        final Bundle result = new Bundle();
+
+        int dayCount = 0;
+        while(dayCount < GraphActivity.BUNDLE_WEEK_LENGTH)
+        {
+            final Bundle dailyBundle = new Bundle();
+
+            //Calculate incidental
+            if (incidentalIterator.hasNext())
+            {
+                IFitnessSnapshot snapshot = incidentalIterator.next();
+                dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_STEPS,
+                        snapshot.getTotalSteps());
+                //dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS, snapshot.getGoal());
+            }
+
+            //Calculate intentional
+            if (intentionalIterator.hasNext())
+            {
+                IFitnessSnapshot snapshot = intentionalIterator.next();
+                dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_ACTIVE_STEPS,
+                        snapshot.getTotalSteps());
+                dailyBundle.putLong(GraphActivity.BUNDLE_DAILY_TIMES,
+                        snapshot.getStopTime() - snapshot.getStartTime());
+                dailyBundle.putDouble(GraphActivity.BUNDLE_DAILY_MPH,
+                        snapshot.getMilesPerHour());
+                dailyBundle.putDouble(GraphActivity.BUNDLE_DAILY_DISTANCE,
+                        snapshot.getDistanceTravelled());
+            }
+
+            //Insert into result
+            result.putBundle(GraphActivity.BUNDLE_WEEKLY_PREFIX + dayCount, dailyBundle);
+            ++dayCount;
+        }
+
+        return result;
     }
 }
