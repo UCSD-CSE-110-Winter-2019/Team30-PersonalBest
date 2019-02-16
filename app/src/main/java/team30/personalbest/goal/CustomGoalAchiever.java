@@ -1,18 +1,30 @@
 package team30.personalbest.goal;
 
+import android.os.AsyncTask;
+import android.support.v4.util.Consumer;
+
+import com.google.android.gms.fitness.Fitness;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import team30.personalbest.fitness.service.FitnessService;
+import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
 public class CustomGoalAchiever implements GoalAchiever
 {
     private final List<GoalListener> listeners = new ArrayList<>();
     private StepGoal goal;
     private boolean running = false;
+    private FitnessService fitnessService;
+    private GoalChecker goalChecker;
+    private boolean hasImporoved = false;
 
     public CustomGoalAchiever() {}
 
-    public CustomGoalAchiever(StepGoal goal)
+    public CustomGoalAchiever(StepGoal goal, FitnessService fs )
     {
+        this.fitnessService = fs;
         this.goal = goal;
     }
 
@@ -43,7 +55,13 @@ public class CustomGoalAchiever implements GoalAchiever
         //Will need to call doAchieveGoal when achieved.
 
         //If achieved... call:
-        this.doAchieveGoal();
+
+        if( goalChecker != null && !goalChecker.isCancelled() ){
+            goalChecker.cancel(true);
+        }
+
+        goalChecker = new GoalChecker();
+        goalChecker.execute();
     }
 
     @Override
@@ -94,5 +112,67 @@ public class CustomGoalAchiever implements GoalAchiever
     public StepGoal getStepGoal()
     {
         return this.goal;
+    }
+
+    public boolean hasSignificantlyImproved() {
+
+        /* TODO: Check for imporvements.
+         * Perhaps do while updating steps on GoalChecker?
+         */
+        return hasImporoved;
+    }
+
+    private class GoalChecker extends AsyncTask<Void, Void, Void> {
+
+        private int steps;
+        private int timeInterval = 4000; // Check every 4 seconds
+
+        @Override
+        protected Void doInBackground( Void... voids) {
+
+            try{
+
+                while( steps < goal.getGoalValue()  ){
+                    Thread.sleep(timeInterval);
+                    updateSteps();
+                }
+            } catch( Exception e ) {
+
+            }
+            return voids[0];
+        }
+
+
+        @Override
+        protected void onPostExecute( Void v) {
+            if( steps < goal.getGoalValue() ) {
+                doAchieveGoal();
+            }
+        }
+
+
+
+        @Override
+        protected void onPreExecute() {
+            updateSteps();
+        }
+
+        @Override
+        protected void onProgressUpdate( Void... v ) {
+
+            /* Maybe update steps real-time?
+             */
+        }
+
+        protected void updateSteps() {
+            fitnessService.getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
+                @Override
+                public void accept(IFitnessSnapshot iFitnessSnapshot) {
+                    steps = iFitnessSnapshot.getTotalSteps();
+                }
+            });
+
+        }
+
     }
 }
