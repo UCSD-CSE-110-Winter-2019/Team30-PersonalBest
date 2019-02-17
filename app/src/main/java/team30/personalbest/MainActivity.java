@@ -239,8 +239,11 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
     @Override
     public void onFitnessUpdate(IFitnessSnapshot snapshot)
     {
-        int steps = snapshot.getTotalSteps();
-        this.totalRunStepsText.setText(steps + " steps");
+        if (snapshot != null)
+        {
+            int steps = snapshot.getTotalSteps();
+            this.totalRunStepsText.setText(steps + " steps");
+        }
     }
 
     @Override

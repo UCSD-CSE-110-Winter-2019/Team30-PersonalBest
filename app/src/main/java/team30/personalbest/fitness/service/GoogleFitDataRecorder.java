@@ -59,6 +59,7 @@ public class GoogleFitDataRecorder implements OnDataPointListener
     @Override
     public void onDataPoint(DataPoint dataPoint)
     {
+        Log.d(TAG, "...Found active data point...");
         if (dataPoint.getDataType().equals(this.dataType))
         {
             Log.d(TAG, "Processing data point for type " + this.dataType.getName() + "...");
@@ -69,7 +70,7 @@ public class GoogleFitDataRecorder implements OnDataPointListener
                 {
                     final DataPoint result = this.handler.onProcessDataPoint(
                             this.dataSource, this.dataSet, dataPoint, this.dataType);
-                    this.dataSet.add(result);
+                    //this.dataSet.add(result);
                 }
                 catch (Exception e)
                 {
@@ -94,6 +95,7 @@ public class GoogleFitDataRecorder implements OnDataPointListener
         {
             Fitness.getSensorsClient(this.activity, lastSignedInAccount)
                     .add(new SensorRequest.Builder()
+                                    .setDataSource(this.dataSource)
                                     .setDataType(this.dataType)
                                     .setSamplingRate(this.samplingRate, TimeUnit.SECONDS)
                                     .build(),

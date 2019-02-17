@@ -58,8 +58,8 @@ public class RecordingSnapshot extends FitnessSnapshot implements IRecordingFitn
             {
                 this.setTotalSteps(result - this.initialSteps);
             }
-
-            dst.setTimestamp(this.getStopTime(), TimeUnit.MILLISECONDS);
+            long millis = System.currentTimeMillis();
+            dst.setTimeInterval(millis, millis + 1000, TimeUnit.MILLISECONDS);
             dst.getValue(Field.FIELD_STEPS).setInt(result);
         }
         else if (dataPoint.getDataType().equals(DataType.TYPE_DISTANCE_CUMULATIVE))
@@ -67,7 +67,8 @@ public class RecordingSnapshot extends FitnessSnapshot implements IRecordingFitn
             float result = dataPoint.getValue(Field.FIELD_DISTANCE).asFloat();
             this.setSpeed(result);
 
-            dst.setTimestamp(this.getStopTime(), TimeUnit.MILLISECONDS);
+            long millis = System.currentTimeMillis();
+            dst.setTimeInterval(millis, millis + 1000, TimeUnit.MILLISECONDS);
             dst.getValue(Field.FIELD_DISTANCE).setFloat(result);
         }
         else

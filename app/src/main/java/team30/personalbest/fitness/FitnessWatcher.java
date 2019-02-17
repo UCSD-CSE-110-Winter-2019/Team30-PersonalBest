@@ -14,7 +14,7 @@ public class FitnessWatcher
 {
     public static final String TAG = "FitnessWatcher";
 
-    public static final int WATCH_SAMPLE_RATE = 4000;
+    public static final int WATCH_SAMPLE_RATE = 10000;
 
     private final List<OnFitnessUpdateListener> listeners = new ArrayList<>();
     private final IFitnessService fitnessService;
@@ -93,6 +93,7 @@ public class FitnessWatcher
                 {
                     Thread.sleep(WATCH_SAMPLE_RATE);
 
+                    Log.d(TAG, "Watching...");
                     this.publishProgress();
                 }
             }
