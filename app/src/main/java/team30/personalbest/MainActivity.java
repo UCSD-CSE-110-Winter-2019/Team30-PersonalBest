@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     private TextView timeElapsedText;
     private TextView mphText;
     private TextView heightText;
-    private String goal_Text = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -315,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                             final int goalInteger = Integer.parseInt(goalString);
 
                             //TODO: This is just to show that height was set. remove this later
-                            stepsGoalText.setText("New Step Goal: " + goal_Text);
+                            stepsGoalText.setText("New Step Goal: " + goalString);
 
                             Log.i(TAG, "Successfully processed step goal");
                         }
