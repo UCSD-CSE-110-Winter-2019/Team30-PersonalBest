@@ -41,46 +41,37 @@ public class CustomStepGoal implements StepGoal
     private List<Goal> goals;
 
     private final IFitnessService fitnessService;
+    private final GoogleFitAdapter googleFitAdapter;
     private int goalValue;
 
-    public CustomStepGoal(IFitnessService fitnessService)
+    public CustomStepGoal(IFitnessService fitnessService, GoogleFitAdapter googleFitAdapter)
     {
-        this(fitnessService, DEFAULT_GOAL);
+        this(fitnessService, googleFitAdapter, DEFAULT_GOAL);
     }
 
-    public CustomStepGoal(IFitnessService fitnessService, int initialGoal)
+    public CustomStepGoal(IFitnessService fitnessService, GoogleFitAdapter googleFitAdapter, int initialGoal)
     {
         this.fitnessService = fitnessService;
+        this.googleFitAdapter = googleFitAdapter;
 
         this.goalValue = initialGoal;
         stepGoal = new Goal.MetricObjective( "Daily Steps", 0, initialGoal );
 
-
         //TODO: Implementation here.
         //Initialize here (i.e. Load from SharedPrefs)
-    }
-
-
-
-    public void setGoalValue(int value)
-    {
-        this.goalValue = value;
-
-        //TODO (Chen) : Make Custom DataType for Goals
 
         // 1. Build a request to create a new data type
         DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
-                // The prefix of your data type name must match your app's package name
                 .setName("team30.personalbest.goal")
-                // Add some custom fields, both int and float
-                .addField("goal", Field.FORMAT_INT32)
-                // Add some common fields
-                .addField(Field.FIELD_ACTIVITY)
+                .addField("value", Field.FORMAT_INT32)
                 .build();
 
         // 2. Invoke the Config API with:
         // - The Google API client object
         // - The create data type request
+        GoogleApiClient apiClient = new GoogleApiClient.Builder(this.googleFitAdapter.getActivity().getApplicationContext())
+                .addApi(Fitness.CONFIG_API).build();
+
         ConfigApi configApi = new ConfigApi() {
             @Override
             public PendingResult<DataTypeResult> createCustomDataType(GoogleApiClient googleApiClient, DataTypeCreateRequest dataTypeCreateRequest) {
@@ -97,9 +88,8 @@ public class CustomStepGoal implements StepGoal
                 return null;
             }
         };
-
         PendingResult<DataTypeResult> pendingResult =
-                configApi.createCustomDataType(null, request);
+                configApi.createCustomDataType(apiClient, request);
 
         // 3. Check the result asynchronously
         // (The result may not be immediately available)
@@ -114,7 +104,13 @@ public class CustomStepGoal implements StepGoal
                     }
                 }
         );
+    }
 
+    public void setGoalValue(int value)
+    {
+        this.goalValue = value;
+
+        //TODO (Chen) : Make Custom DataType for Goals
         //Save to SharedPrefs here.
     }
 
