@@ -94,7 +94,7 @@ public class FitnessService implements IFitnessService
         final GoogleSignInAccount userAccount = this.googleFitAdapter.getCurrentGoogleAccount();
 
         Fitness.getHistoryClient(activity, userAccount)
-                .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
+                .readDailyTotal(DataType.TYPE_STEP_COUNT_CUMULATIVE)
                 .addOnSuccessListener(new OnSuccessListener<DataSet>() {
                     @Override
                     public void onSuccess(DataSet dataSet) {
@@ -103,9 +103,14 @@ public class FitnessService implements IFitnessService
                         if (!dataSet.isEmpty())
                         {
                             final DataPoint data = dataSet.getDataPoints().get(0);
+                            final long startTime = data.getStartTime(TimeUnit.MILLISECONDS);
+                            final long stopTime = data.getEndTime(TimeUnit.MILLISECONDS);
+
                             snapshot.setStartTime(data.getStartTime(TimeUnit.MILLISECONDS));
                             snapshot.setStopTime(data.getEndTime(TimeUnit.MILLISECONDS));
                             snapshot.setTotalSteps(data.getValue(Field.FIELD_STEPS).asInt());
+
+                            System.out.println(startTime + " -> " + stopTime + " = " + (stopTime - startTime));
                             //TODO: get dist!
                             //TODO: get speed!
                         }

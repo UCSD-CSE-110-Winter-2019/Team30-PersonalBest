@@ -63,6 +63,11 @@ public class FitnessChecker
 
     private void onFitnessUpdate(IFitnessSnapshot fitnessSnapshot)
     {
+        if (fitnessSnapshot == null)
+        {
+            Log.e(TAG, "Unable to find fitness snapshot for update");
+        }
+
         for(IFitnessUpdateListener listener : this.listeners)
         {
             listener.onStepUpdate(fitnessSnapshot);

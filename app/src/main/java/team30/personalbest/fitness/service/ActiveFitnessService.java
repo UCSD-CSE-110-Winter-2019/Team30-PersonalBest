@@ -12,8 +12,10 @@ import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Session;
+import com.google.android.gms.fitness.request.SessionInsertRequest;
 import com.google.android.gms.fitness.request.SessionReadRequest;
 import com.google.android.gms.fitness.result.SessionReadResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -38,6 +40,7 @@ public class ActiveFitnessService implements IFitnessService
     private final GoogleFitAdapter googleFitAdapter;
 
     private String currentSessionID;
+    private Session currentSession;
     private IFitnessSnapshot currentSnapshot;
     private boolean active = false;
 
@@ -51,7 +54,7 @@ public class ActiveFitnessService implements IFitnessService
         final long time = this.googleFitAdapter.getCurrentTime();
 
         this.currentSessionID = "personalBestRun";
-        Session session = new Session.Builder()
+        this.currentSession = new Session.Builder()
                 .setName(SESSION_NAME)
                 .setIdentifier(this.currentSessionID)
                 .setDescription(SESSION_DESCRIPTION)
@@ -59,9 +62,21 @@ public class ActiveFitnessService implements IFitnessService
                 .build();
 
         Task<Void> response = Fitness.getSessionsClient(
-                this.googleFitAdapter.getActivity().getApplicationContext(),
+                this.googleFitAdapter.getActivity(),
                 this.googleFitAdapter.getCurrentGoogleAccount())
-                .startSession(session);
+                .startSession(this.currentSession)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.i(TAG, "Successfully started fitness session");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Failed to start session", e);
+                    }
+                });
 
         this.active = true;
         //this.currentSnapshot = new ActiveFitnessService();
@@ -74,6 +89,26 @@ public class ActiveFitnessService implements IFitnessService
                 this.googleFitAdapter.getActivity().getApplicationContext(),
                 this.googleFitAdapter.getCurrentGoogleAccount())
                 .stopSession(this.currentSessionID);
+
+        response.addOnSuccessListener(new OnSuccessListener<List<Session>>() {
+            @Override
+            public void onSuccess(List<Session> sessions) {
+                if (!sessions.isEmpty())
+                {
+                    SessionInsertRequest insertRequest = new SessionInsertRequest.Builder()
+                            .setSession(sessions.get(0))
+                            .build();
+                    Fitness.getSessionsClient(ActiveFitnessService.this.googleFitAdapter.getActivity(), ActiveFitnessService.this.googleFitAdapter.getCurrentGoogleAccount())
+                            .insertSession(insertRequest)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    System.out.println("INSERED!");
+                                }
+                            });
+                }
+            }
+        });
 
         this.active = false;
         //this.currentSnapshot = new ImmutableFitnessSnapshot();
