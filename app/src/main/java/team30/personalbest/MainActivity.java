@@ -20,12 +20,11 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import team30.personalbest.fitness.FitnessChecker;
-import team30.personalbest.fitness.GoogleFitAdapter;
 import team30.personalbest.fitness.IFitnessUpdateListener;
-import team30.personalbest.fitness.OnGoogleFitReadyListener;
-import team30.personalbest.fitness.service.ActiveFitnessService;
-import team30.personalbest.fitness.service.FitnessService;
+import team30.personalbest.fitness.service.GoogleFitAdapter;
 import team30.personalbest.fitness.service.HeightService;
+import team30.personalbest.fitness.service.IFitnessService;
+import team30.personalbest.fitness.service.OnFitnessServiceReadyListener;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 import team30.personalbest.goal.CustomGoalAchiever;
 import team30.personalbest.goal.GoalAchiever;
@@ -267,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
             long currentTime = Long.parseLong(thisCurrTime);
 
             this.encouragement(currentTime);
-            googleFitAdapter.setCurrentTime(currentTime);
+            this.fitnessService.setCurrentTime(currentTime);
         }
     }
 
