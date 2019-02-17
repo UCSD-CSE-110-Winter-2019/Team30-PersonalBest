@@ -1,6 +1,7 @@
 package team30.personalbest.goal;
 
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -13,6 +14,11 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.fitness.ConfigApi;
 import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.FitnessActivities;
+import com.google.android.gms.fitness.HistoryClient;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Goal;
@@ -20,6 +26,7 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.request.GoalsReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
+import com.google.android.gms.fitness.result.DataReadResult;
 import com.google.android.gms.fitness.result.DataTypeResult;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -49,6 +56,8 @@ public class CustomStepGoal implements StepGoal
     private final GoogleFitAdapter googleFitAdapter;
     private final GoogleApiClient apiClient;
     private int goalValue;
+    private DataSource goalDataSource;
+    private final String SESSION_NAME = "GOAL";
 
     public CustomStepGoal(IFitnessService fitnessService, GoogleFitAdapter googleFitAdapter)
     {
@@ -61,10 +70,13 @@ public class CustomStepGoal implements StepGoal
         this.googleFitAdapter = googleFitAdapter;
 
         this.goalValue = initialGoal;
-        stepGoal = new Goal.MetricObjective( "Daily Steps", 0, initialGoal );
 
         this.apiClient = new GoogleApiClient.Builder(this.googleFitAdapter.getActivity().getApplicationContext())
                 .addApi(Fitness.CONFIG_API)
+                .addApi(Fitness.HISTORY_API)
+                .addApi(Fitness.SESSIONS_API)
+                .addApi(Fitness.RECORDING_API)
+                .addApi(Fitness.SENSORS_API)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
                     public void onConnected(Bundle bundle) {
@@ -84,6 +96,8 @@ public class CustomStepGoal implements StepGoal
                 })
                 .build();
         this.apiClient.connect();
+
+
     }
 
     private void setGoalDataType()
@@ -101,13 +115,16 @@ public class CustomStepGoal implements StepGoal
                         goalDataType = dataTypeResult.getDataType();
                         Log.i(LOG_TAG, "found goalDataType");
                         Log.i(LOG_TAG, goalDataType.toString());
-
                         onGoalDataTypeIsReady();
+
+
                     }
                     else
                     {
                         handleGoalDataTypeNotFound();
                     }
+
+
                 }
             }
         );
@@ -134,8 +151,8 @@ public class CustomStepGoal implements StepGoal
                         public void onResult(DataTypeResult dataTypeResult) {
                             goalDataType = dataTypeResult.getDataType();
                             Log.i(LOG_TAG, goalDataType.toString());
-
                             onGoalDataTypeIsReady();
+
                         }
                     }
             );
@@ -147,20 +164,65 @@ public class CustomStepGoal implements StepGoal
     private void onGoalDataTypeIsReady()
     {
         //TODO(sintahks): do things that require goal data type
+
+        goalDataSource = new DataSource.Builder()
+                .setAppPackageName( "team30.personalbest")
+                .setDataType( goalDataType )
+                .setName( SESSION_NAME )
+                .setType( DataSource.TYPE_RAW )
+                .build();
+
+
+        for( int  i = 1; i <= 20; i++ ) {
+            setGoalValue( i );
+        }
+        getGoalValue();
+
+
     }
 
 
     public void setGoalValue(int value)
     {
-        this.goalValue = value;
 
-        //TODO (Sintahks) : Upload and retrive with goalDataType
-        //Save to SharedPrefs here.
+        if( goalDataSource == null ) { return; }
+
+        DataSet goalDataSet = DataSet.create( goalDataSource );
+        DataPoint newGoal = goalDataSet.createDataPoint().setTimeInterval(value,value+1, TimeUnit.MILLISECONDS);
+        newGoal.getValue( goalDataType.getFields().get(0)).setInt(value);
+        goalDataSet.add( newGoal );
+
+        Fitness.getHistoryClient( googleFitAdapter.getActivity(), googleFitAdapter.getCurrentGoogleAccount()).insertData( goalDataSet );
+
     }
 
     @Override
     public int getGoalValue()
     {
-        return this.goalValue;
+
+        final DataReadRequest readRequest = new DataReadRequest.Builder()
+                .read( goalDataType )
+                .setTimeRange( 1, 20, TimeUnit.MILLISECONDS )
+                .build();
+
+        Task<DataReadResponse> response = Fitness.getHistoryClient( googleFitAdapter.getActivity(), googleFitAdapter.getCurrentGoogleAccount() ).readData(readRequest);
+
+        while( !response.isComplete() ) {
+
+        }
+        List<DataSet> dataSets = response.getResult().getDataSets();
+
+        for(DataSet goalDataSet : dataSets ) {
+            for( DataPoint dp : goalDataSet.getDataPoints() ) {
+                for( Field field : dp.getDataType().getFields() ) {
+                    Log.i( LOG_TAG, "Goal: " + dp.getValue(field));
+                }
+            }
+        }
+
+
+
+        return 0;
+
     }
 }
