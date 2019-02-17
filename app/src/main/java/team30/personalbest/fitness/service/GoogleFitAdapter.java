@@ -325,4 +325,9 @@ public class GoogleFitAdapter implements IFitnessService
     {
         return this.serviceReady;
     }
+
+    public Activity getActivity()
+    {
+        return this.activity;
+    }
 }
