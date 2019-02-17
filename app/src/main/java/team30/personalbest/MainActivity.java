@@ -263,6 +263,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
         //Achieved Goal!
         Toast.makeText(this, "Achievement get!", Toast.LENGTH_SHORT).show();
+        showGoalPrompt();
     }
 
     //@Override
@@ -276,10 +277,17 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     public void onSubmitTime(View view) {
         this.timeSubmitText = findViewById(R.id.timeText);
         String thisCurrTime = timeSubmitText.getText().toString();
-        long currentTime = Long.parseLong(thisCurrTime);
 
-        this.encouragement(currentTime);
-        googleFitAdapter.setCurrentTime(currentTime);
+        if(thisCurrTime == null || thisCurrTime == "") {
+            Toast.makeText(this, "Please enter a valid time!", Toast.LENGTH_LONG).show();
+        }
+
+        else {
+            long currentTime = Long.parseLong(thisCurrTime);
+
+            this.encouragement(currentTime);
+            googleFitAdapter.setCurrentTime(currentTime);
+        }
     }
 
 
@@ -311,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                 if (!isSameDay || this.fromMidnight <= this.twentyOClock)
                 {
                     // Update shared pref and show message
-                    Toast.makeText(this, "Congratulations, met your sub goal for today!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Good job you significantly improved your steps from yesterday!", Toast.LENGTH_LONG).show();
                     this.editor.putLong("lastcheckedtime", this.currTime);
                     this.editor.commit();
                 }
@@ -328,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                 if (!isSameDay && (this.fromMidnight) <= this.twentyOClock)
                 {
                     //Show message and show message
-                    Toast.makeText(this, "Congratulations, met your sub goal for today!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Good job you significantly improved your steps from yesterday!", Toast.LENGTH_LONG).show();
                     this.editor.putLong("lastcheckedtime", this.currTime);
                     this.editor.commit();
                 }
