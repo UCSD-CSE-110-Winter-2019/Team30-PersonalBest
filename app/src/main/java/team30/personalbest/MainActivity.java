@@ -2,8 +2,8 @@ package team30.personalbest;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Bundle;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Consumer;
 import android.support.v7.app.AlertDialog;
@@ -19,20 +19,22 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.Iterator;
 
-import team30.personalbest.fitness.FitnessChecker;
-import team30.personalbest.fitness.IFitnessUpdateListener;
+import team30.personalbest.fitness.FitnessWatcher;
+import team30.personalbest.fitness.OnFitnessUpdateListener;
 import team30.personalbest.fitness.service.GoogleFitAdapter;
 import team30.personalbest.fitness.service.HeightService;
 import team30.personalbest.fitness.service.IFitnessService;
 import team30.personalbest.fitness.service.OnFitnessServiceReadyListener;
+import team30.personalbest.fitness.snapshot.IActiveFitnessSnapshot;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
+import team30.personalbest.fitness.snapshot.OnActiveSnapshotUpdateListener;
 import team30.personalbest.goal.CustomGoalAchiever;
 import team30.personalbest.goal.GoalAchiever;
 import team30.personalbest.goal.GoalListener;
 import team30.personalbest.goal.StepGoal;
 
 public class MainActivity extends AppCompatActivity implements OnFitnessServiceReadyListener,
-        GoalListener, IFitnessUpdateListener
+        GoalListener, OnActiveSnapshotUpdateListener, OnFitnessUpdateListener
 {
     public static final String TAG = "MainActivity";
 
@@ -41,8 +43,8 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
 
     private GoogleFitAdapter fitnessService;
     private HeightService heightService;
+    private FitnessWatcher fitnessWatcher;
 
-    private FitnessChecker fitnessChecker;
     private GoalAchiever goalAchiever;
 
     private StepGoal stepGoal;
@@ -82,9 +84,8 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
         this.fitnessService = new GoogleFitAdapter(this)
                 .addOnFitnessServiceReady(this);
         this.heightService = new HeightService(this, this.fitnessService);
-
-        this.fitnessChecker = new FitnessChecker(this.fitnessService);
-        this.fitnessChecker.addListener(this);
+        this.fitnessWatcher = new FitnessWatcher(this.fitnessService);
+        this.fitnessWatcher.addFitnessListener(this);
 
         this.goalAchiever = new CustomGoalAchiever();
         this.goalAchiever.addGoalListener(this);
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
         this.weeklySnapshotButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.this.launchGraphActivity();
+                activity.launchGraphActivity();
             }
         });
 
@@ -143,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                 activity.endButton.setVisibility(View.VISIBLE);
 
                 // Start recording current run
-                activity.fitnessService.startRecording();
+                activity.fitnessService.startRecording().addOnActiveSnapshotUpdate(activity);
 
                 // Make sure statistics are shown
                 activity.currStepsText.setVisibility(View.VISIBLE);
@@ -209,6 +210,9 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
         this.newGoalButton.setEnabled(true);
         this.weeklySnapshotButton.setEnabled(true);
 
+        this.fitnessWatcher.start();
+
+        final MainActivity activity = this;
         // Prompt height on initial launch of app (after google fit is ready)
         this.heightService.getHeight().onResult(new Consumer<Float>() {
             @Override
@@ -217,23 +221,26 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                 if (aFloat == null)
                 {
                     //Height was never set.
-                    MainActivity.this.showHeightPrompt();
+                    activity.showHeightPrompt();
                 }
                 else
                 {
                     //Height is already set.
-                    //TODO: This is just to show that height was set. remove this later
-                    heightText.setText("Your Height in Meters: " + aFloat.toString());
+                    heightText.setText(activity.getString(R.string.display_height, aFloat));
                 }
 
                 //MainActivity.this.goalAchiever.startAchievingGoal();
             }
         });
 
-        //Start checking for step updates
-        this.fitnessChecker.startChecking();
-
         Log.i(TAG, "Successfully prepared app services");
+    }
+
+    @Override
+    public void onFitnessUpdate(IFitnessSnapshot snapshot)
+    {
+        int steps = snapshot.getTotalSteps();
+        this.totalRunStepsText.setText(steps + " steps");
     }
 
     @Override
@@ -324,15 +331,24 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
         }
     }
 
-    @Override
-    public void onStepUpdate(IFitnessSnapshot snapshot)
-    {
-        Log.i(TAG, "Updating step...");
 
-        if (snapshot != null)
+    @Override
+    public void onActiveSnapshotUpdate(IActiveFitnessSnapshot activeSnapshot)
+    {
+        Log.i(TAG, "Updating active step...");
+
+        if (activeSnapshot != null)
         {
-            TextView currSteps = findViewById(R.id.curr_steps);
-            currSteps.setText(snapshot.getTotalSteps() + " steps");
+            int steps = activeSnapshot.getTotalSteps();
+            double duration = (activeSnapshot.getStopTime() - activeSnapshot.getStartTime()) / 1000.0;
+            double speed = activeSnapshot.getSpeed();
+
+            Log.d(TAG, steps + " > " + duration + "s > " + speed + "mph");
+
+            //activity.totalRunStepsText.setText(steps + " steps");
+            this.currStepsText.setText(steps + " steps");
+            this.timeElapsedText.setText(duration + " s");
+            this.mphText.setText(speed + " mph");
         }
     }
 

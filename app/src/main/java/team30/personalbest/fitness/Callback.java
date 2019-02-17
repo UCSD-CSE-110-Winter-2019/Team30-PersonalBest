@@ -15,7 +15,7 @@ public final class Callback<T>
 
     public Callback() {}
 
-    public Callback(T result)
+    public <E extends T> Callback(E result)
     {
         this.result = result;
     }
@@ -23,7 +23,7 @@ public final class Callback<T>
     /**
      * Called by the async task to return the result to the listener
      */
-    public void resolve(T result)
+    public <E extends T> void resolve(E result)
     {
         this.result = result;
         if (this.callback != null)

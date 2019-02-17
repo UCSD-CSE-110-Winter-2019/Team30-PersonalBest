@@ -2,7 +2,7 @@ package team30.personalbest.fitness;
 
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
-public interface IFitnessUpdateListener
+public interface OnFitnessUpdateListener
 {
-    void onStepUpdate(IFitnessSnapshot snapshot);
+    void onFitnessUpdate(IFitnessSnapshot fitnessSnapshot);
 }

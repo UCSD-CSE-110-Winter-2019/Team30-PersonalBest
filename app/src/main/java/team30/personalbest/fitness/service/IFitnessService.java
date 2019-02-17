@@ -11,13 +11,11 @@ import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 public interface IFitnessService
 {
     IFitnessService addOnFitnessServiceReady(OnFitnessServiceReadyListener listener);
+    void removeOnFitnessServiceReady(OnFitnessServiceReadyListener listener);
 
+    /**You must call these to enable the fitness service*/
     void onActivityCreate(Activity activity, Bundle savedInstanceState);
     void onActivityResult(Activity activity, int requestCode, int resultCode, @Nullable Intent data);
-
-    void startRecording();
-    Callback<IFitnessSnapshot> stopRecording();
-    boolean isRecording();
 
     Callback<Iterable<IFitnessSnapshot>> getFitnessSnapshots(long startTime, long stopTime);
     Callback<IFitnessSnapshot> getFitnessSnapshot();
