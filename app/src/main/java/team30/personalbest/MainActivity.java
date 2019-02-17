@@ -18,7 +18,9 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.Iterator;
 
+import team30.personalbest.fitness.FitnessChecker;
 import team30.personalbest.fitness.GoogleFitAdapter;
+import team30.personalbest.fitness.IFitnessUpdateListener;
 import team30.personalbest.fitness.OnGoogleFitReadyListener;
 import team30.personalbest.fitness.service.ActiveFitnessService;
 import team30.personalbest.fitness.service.FitnessService;
@@ -29,7 +31,8 @@ import team30.personalbest.goal.GoalAchiever;
 import team30.personalbest.goal.GoalListener;
 import team30.personalbest.goal.StepGoal;
 
-public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyListener, GoalListener
+public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyListener,
+        GoalListener, IFitnessUpdateListener
 {
     public static final String TAG = "MainActivity";
 
@@ -42,12 +45,10 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     private FitnessService fitnessService;
     private ActiveFitnessService activeFitnessService;
 
+    private FitnessChecker fitnessChecker;
     private GoalAchiever goalAchiever;
     private StepGoal stepGoal;
     private StepGoal subStepGoal;
-
-    //private Button updateDailyStep_btn;
-    //private TextView dailyStep_textView;
 
     private Button startButton;
     private Button endButton;
@@ -59,9 +60,6 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     private TextView timeElapsedText;
     private TextView mphText;
     private TextView heightText;
-    private double timeElapsed;
-    private double mph;
-    private int totalRunSteps;
     private String goal_Text = "";
 
     @Override
@@ -75,14 +73,14 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         this.fitnessService = new FitnessService(this.googleFitAdapter);
         this.activeFitnessService = new ActiveFitnessService(this.googleFitAdapter);
 
+        this.fitnessChecker = new FitnessChecker(this.fitnessService);
+        this.fitnessChecker.addListener(this);
+
         this.goalAchiever = new CustomGoalAchiever();
         this.goalAchiever.addGoalListener(this);
 
         //Update step goal to match current user goal...
         //this.goalAchiever.setStepGoal(new CustomStepGoal());
-
-        //this.updateDailyStep_btn = (Button) findViewById(R.id.getDailyStepCount);
-        //this.dailyStep_textView = (TextView) findViewById(R.id.StepCountTemp);
 
         this.googleFitAdapter.addOnReadyListener(this);
         this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
@@ -116,6 +114,10 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         this.endButton = findViewById(R.id.button_end);
         this.setNewGoalButton = findViewById(R.id.newStepGoalButton);
 
+        this.startButton.setEnabled(false);
+        this.endButton.setEnabled(false);
+        this.setNewGoalButton.setEnabled(false);
+
         // endButton invisible/gone in the beginning
         this.endButton.setVisibility(View.GONE);
 
@@ -134,7 +136,6 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                 MainActivity.this.mphText.setVisibility(View.VISIBLE);
             }
         });
-
 
         this.endButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -184,7 +185,6 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         });
 
         // Listener for New step steps_goal
-
         this.setNewGoalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -202,6 +202,10 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     @Override
     public void onGoogleFitReady(final GoogleFitAdapter googleFitAdapter)
     {
+        this.startButton.setEnabled(true);
+        this.endButton.setEnabled(true);
+        this.setNewGoalButton.setEnabled(true);
+
         // Prompt height on initial launch of app (after google fit is ready)
         this.heightService.getHeight().onResult(new Consumer<Float>() {
             @Override
@@ -222,22 +226,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
             }
         });
 
-
-        /*
-        this.updateDailyStep_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MainActivity.this.fitnessService.getFitnessSnapshot()
-                        .onResult(new Consumer<IFitnessSnapshot>() {
-                            @Override
-                            public void accept(IFitnessSnapshot iFitnessSnapshot) {
-                                String totalSteps = "" + iFitnessSnapshot.getTotalSteps();
-                                dailyStep_textView.setText(totalSteps);
-                            }
-                        });
-            }
-        });
-        */
+        Log.i(TAG, "Successfully prepared app services");
     }
 
     @Override
@@ -247,9 +236,11 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         Toast.makeText(this, "Achievement get!", Toast.LENGTH_SHORT).show();
     }
 
-    private void updateStepCount()
+    @Override
+    public void onStepUpdate(IFitnessSnapshot snapshot)
     {
-
+        String totalSteps = "" + snapshot.getTotalSteps();
+        this.currStepsText.setText(totalSteps);
     }
 
     private void showHeightPrompt()
