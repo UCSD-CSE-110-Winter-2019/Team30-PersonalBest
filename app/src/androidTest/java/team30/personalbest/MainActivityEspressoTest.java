@@ -18,6 +18,8 @@ import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
@@ -73,6 +75,35 @@ public class MainActivityEspressoTest {
                                 4),
                         isDisplayed()));
         appCompatButton4.perform(click());
+
+        ViewInteraction appCompatButton5 = onView(
+                allOf(withId(R.id.newStepGoalButton), withText("New Step Goal"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(android.R.id.content),
+                                        0),
+                                5),
+                        isDisplayed()));
+        appCompatButton5.perform(click());
+
+        ViewInteraction editText = onView(
+                allOf(childAtPosition(
+                        allOf(withId(R.id.custom),
+                                childAtPosition(
+                                        withId(R.id.customPanel),
+                                        0)),
+                        0),
+                        isDisplayed()));
+        editText.perform(replaceText("500"), closeSoftKeyboard());
+
+        ViewInteraction appCompatButton6 = onView(
+                allOf(withId(android.R.id.button1), withText("OK"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.buttonPanel),
+                                        0),
+                                3)));
+        appCompatButton6.perform(scrollTo(), click());
     }
 
     private static Matcher<View> childAtPosition(
