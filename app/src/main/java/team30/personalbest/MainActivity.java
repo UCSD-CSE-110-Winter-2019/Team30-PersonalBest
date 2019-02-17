@@ -289,6 +289,9 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
             }
         });
 
+        //Start checking for step updates
+        this.fitnessChecker.startChecking();
+
         Log.i(TAG, "Successfully prepared app services");
     }
 
@@ -311,8 +314,10 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     @Override
     public void onStepUpdate(IFitnessSnapshot snapshot)
     {
-        String totalSteps = "" + snapshot.getTotalSteps();
-        this.currStepsText.setText(totalSteps);
+        Log.i(TAG, "Updating step...");
+
+        TextView currSteps = findViewById(R.id.curr_steps);
+        currSteps.setText(snapshot.getTotalSteps() + " steps");
     }
 
     private void showHeightPrompt()
@@ -380,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                             final int goalInteger = Integer.parseInt(goalString);
 
                             //TODO: This is just to show that height was set. remove this later
-                            stepsGoalText.setText("New Step Goal: "+goalString);
+                            stepsGoalText.setText("New Step Goal: " + goalString);
 
                             Log.i(TAG, "Successfully processed step goal");
                         }
