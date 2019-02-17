@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 import team30.personalbest.fitness.Callback;
 import team30.personalbest.fitness.GoogleFitAdapter;
-import team30.personalbest.fitness.OnGoogleFitReadyListener;
 import team30.personalbest.fitness.snapshot.FitnessSnapshot;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 

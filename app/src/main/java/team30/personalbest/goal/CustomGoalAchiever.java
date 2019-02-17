@@ -3,8 +3,6 @@ package team30.personalbest.goal;
 import android.os.AsyncTask;
 import android.support.v4.util.Consumer;
 
-import com.google.android.gms.fitness.Fitness;
-
 import java.util.ArrayList;
 import java.util.List;
 
