@@ -101,6 +101,8 @@ public class CustomStepGoal implements StepGoal
                         goalDataType = dataTypeResult.getDataType();
                         Log.i(LOG_TAG, "found goalDataType");
                         Log.i(LOG_TAG, goalDataType.toString());
+
+                        onGoalDataTypeIsReady();
                     }
                     else
                     {
@@ -132,6 +134,8 @@ public class CustomStepGoal implements StepGoal
                         public void onResult(DataTypeResult dataTypeResult) {
                             goalDataType = dataTypeResult.getDataType();
                             Log.i(LOG_TAG, goalDataType.toString());
+
+                            onGoalDataTypeIsReady();
                         }
                     }
             );
@@ -139,6 +143,12 @@ public class CustomStepGoal implements StepGoal
             Log.i(LOG_TAG, "pending createResult is null in CustomStepGoal()");
         }
     }
+
+    private void onGoalDataTypeIsReady()
+    {
+        //TODO(sintahks): do things that require goal data type
+    }
+
 
     public void setGoalValue(int value)
     {
