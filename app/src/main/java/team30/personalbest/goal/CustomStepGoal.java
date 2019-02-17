@@ -1,5 +1,7 @@
 package team30.personalbest.goal;
 
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -66,27 +68,15 @@ public class CustomStepGoal implements StepGoal
                 .build();
 
         GoogleApiClient apiClient = new GoogleApiClient.Builder(this.googleFitAdapter.getActivity().getApplicationContext())
-                .addApi(Fitness.CONFIG_API).build();
-        ConfigApi configApi = new ConfigApi() {
-            @Override
-            public PendingResult<DataTypeResult> createCustomDataType(GoogleApiClient googleApiClient, DataTypeCreateRequest dataTypeCreateRequest) {
-                return null;
-            }
+                .addApi(Fitness.CONFIG_API)
+                .build();
 
-            @Override
-            public PendingResult<DataTypeResult> readDataType(GoogleApiClient googleApiClient, String s) {
-                return null;
-            }
-
-            @Override
-            public PendingResult<Status> disableFit(GoogleApiClient googleApiClient) {
-                return null;
-            }
-        };
+        //TODO(sintahks): run the following code in the onConnected() callback of apiClient
         PendingResult<DataTypeResult> pendingResult =
-                configApi.createCustomDataType(apiClient, request);
-
+                Fitness.ConfigApi.createCustomDataType(apiClient, request);
         if (pendingResult != null) {
+            Log.i(LOG_TAG, "pendingResult is valid in CustomStepGoal()");
+
             pendingResult.setResultCallback(
                     new ResultCallback<DataTypeResult>() {
                         @Override
