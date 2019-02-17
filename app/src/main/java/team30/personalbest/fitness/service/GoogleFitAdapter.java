@@ -10,6 +10,7 @@ import android.util.Log;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.FitnessActivities;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
@@ -17,6 +18,7 @@ import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Session;
 import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.request.SessionInsertRequest;
 import com.google.android.gms.fitness.request.SessionReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.fitness.result.SessionReadResponse;
@@ -28,7 +30,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import team30.personalbest.fitness.Callback;
-import team30.personalbest.fitness.snapshot.ActiveSnapshot;
+import team30.personalbest.fitness.snapshot.RecordingSnapshot;
 import team30.personalbest.fitness.snapshot.FitnessSnapshot;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
@@ -52,7 +54,7 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
     private boolean recording = false;
     private GoogleFitDataRecorder stepRecorder;
     private GoogleFitDataRecorder distanceRecorder;
-    private ActiveSnapshot recordingSnapshot;
+    private RecordingSnapshot recordingSnapshot;
 
     public GoogleFitAdapter(Activity activity)
     {
@@ -105,6 +107,9 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
         final FitnessOptions fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA)
+                .addDataType(DataType.TYPE_STEP_COUNT_CUMULATIVE, FitnessOptions.ACCESS_WRITE)
+                .addDataType(DataType.TYPE_DISTANCE_DELTA)
+                .addDataType(DataType.AGGREGATE_DISTANCE_DELTA)
                 .addDataType(DataType.TYPE_SPEED)
                 .addDataType(DataType.AGGREGATE_SPEED_SUMMARY)
                 .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_WRITE)
@@ -171,17 +176,19 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
     }
 
     @Override
-    public ActiveSnapshot startRecording()
+    public RecordingSnapshot startRecording()
     {
         if (this.recording) throw new IllegalStateException("Already started recording");
         this.recording = true;
 
-        this.recordingSnapshot = new ActiveSnapshot(this);
-        this.stepRecorder = new GoogleFitDataRecorder(this.activity, DataType.TYPE_STEP_COUNT_CUMULATIVE, 2, this.recordingSnapshot);
-        this.distanceRecorder = new GoogleFitDataRecorder(this.activity, DataType.TYPE_DISTANCE_CUMULATIVE, 2, this.recordingSnapshot);
+        this.recordingSnapshot = new RecordingSnapshot(this);
+        this.stepRecorder = new GoogleFitDataRecorder(this.activity,
+                DataType.TYPE_STEP_COUNT_CUMULATIVE,
+                2).setHandler(this.recordingSnapshot);
+        //this.distanceRecorder = new GoogleFitDataRecorder(this.activity, DataType.TYPE_DISTANCE_CUMULATIVE, 2, this.recordingSnapshot);
 
         this.stepRecorder.start();
-        this.distanceRecorder.start();
+        //this.distanceRecorder.start();
 
         return this.recordingSnapshot;
 
@@ -197,41 +204,46 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
         if (lastSignedInAccount != null)
         {
             DataSet stepData = this.stepRecorder.stop();
-            DataSet distanceData = this.distanceRecorder.stop();
-            /*
+            //DataSet distanceData = this.distanceRecorder.stop();
 
-            final Session session = new Session.Builder()
-                    .setName(RECORDING_SESSION_NAME)
-                    .setDescription(RECORDING_SESSION_DESCRIPTION)
-                    .setIdentifier(RECORDING_SESSION_ID)
-                    .setActivity(FitnessActivities.RUNNING)
-                    .setStartTime(this.recordingSnapshot.getStartTime(), TimeUnit.MILLISECONDS)
-                    .setEndTime(this.recordingSnapshot.getStopTime(), TimeUnit.MILLISECONDS)
-                    .build();
-            final SessionInsertRequest insertRequest = new SessionInsertRequest.Builder()
-                    .setSession(session)
-                    .addDataSet(stepData)
-                    .addDataSet(distanceData)
-                    .build();
+            if (!stepData.isEmpty())
+            {
+                final Session session = new Session.Builder()
+                        .setName(RECORDING_SESSION_NAME)
+                        .setDescription(RECORDING_SESSION_DESCRIPTION)
+                        .setIdentifier(RECORDING_SESSION_ID)
+                        .setActivity(FitnessActivities.RUNNING)
+                        .setStartTime(this.recordingSnapshot.getStartTime(), TimeUnit.MILLISECONDS)
+                        .setEndTime(this.recordingSnapshot.getStopTime(), TimeUnit.MILLISECONDS)
+                        .build();
+                final SessionInsertRequest insertRequest = new SessionInsertRequest.Builder()
+                        .setSession(session)
+                        .addDataSet(stepData)
+                        //.addDataSet(distanceData)
+                        .build();
 
-            Fitness.getSessionsClient(this.activity, lastSignedInAccount)
-                    .insertSession(insertRequest)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Log.i(TAG, "Successfully inserted session data.");
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w(TAG, "Failed to insert session data.", e);
-                        }
-                    });
-            */
+                Fitness.getSessionsClient(this.activity, lastSignedInAccount)
+                        .insertSession(insertRequest)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.i(TAG, "Successfully inserted session data.");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.w(TAG, "Failed to insert session data.", e);
+                            }
+                        });
+            }
+            else
+            {
+                Log.w(TAG, "Found no fitness data to insert.");
+            }
         }
 
-        final ActiveSnapshot result = this.recordingSnapshot;
+        final RecordingSnapshot result = this.recordingSnapshot;
         this.recordingSnapshot = null;
         return new Callback<>(result);
     }
@@ -243,7 +255,7 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
     }
 
     @Override
-    public ActiveSnapshot getRecordingSnapshot()
+    public RecordingSnapshot getRecordingSnapshot()
     {
         if (!this.recording) throw new IllegalStateException("Cannot get inactive recording snapshot");
         return this.recordingSnapshot;

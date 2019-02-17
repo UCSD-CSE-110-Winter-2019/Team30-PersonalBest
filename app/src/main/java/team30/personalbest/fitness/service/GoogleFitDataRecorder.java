@@ -29,16 +29,16 @@ public class GoogleFitDataRecorder implements OnDataPointListener
 
     private DataSource dataSource;
     private DataSet dataSet;
-    private OnRecordDataUpdateListener listener;
 
-    public GoogleFitDataRecorder(Activity activity, DataType dataType, int samplingRate, OnRecordDataUpdateListener listener)
+    private IGoogleFitDataHandler handler;
+
+    public GoogleFitDataRecorder(Activity activity, DataType dataType, int samplingRate)
     {
         if (samplingRate <= 0) throw new IllegalArgumentException("Sampling rate must be a positive integer");
 
         this.activity = activity;
         this.dataType = dataType;
         this.samplingRate = samplingRate;
-        this.listener = listener;
 
         final String packageName = activity.getApplicationContext().getPackageName();
         this.dataSource = new DataSource.Builder()
@@ -50,6 +50,12 @@ public class GoogleFitDataRecorder implements OnDataPointListener
         this.dataSet = DataSet.create(this.dataSource);
     }
 
+    public GoogleFitDataRecorder setHandler(IGoogleFitDataHandler handler)
+    {
+        this.handler = handler;
+        return this;
+    }
+
     @Override
     public void onDataPoint(DataPoint dataPoint)
     {
@@ -57,13 +63,22 @@ public class GoogleFitDataRecorder implements OnDataPointListener
         {
             Log.d(TAG, "Processing data point for type " + this.dataType.getName() + "...");
 
-            try
+            if (this.handler != null)
             {
-                this.listener.onRecordDataUpdate(this.dataSource, this.dataSet, dataPoint, this.dataType);
+                try
+                {
+                    final DataPoint result = this.handler.onProcessDataPoint(
+                            this.dataSource, this.dataSet, dataPoint, this.dataType);
+                    this.dataSet.add(result);
+                }
+                catch (Exception e)
+                {
+                    Log.w(TAG, "Failed to process recording data", e);
+                }
             }
-            catch (Exception e)
+            else
             {
-                Log.w(TAG, "Failed to process recording data", e);
+                this.dataSet.add(dataPoint);
             }
         }
         else

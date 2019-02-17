@@ -25,16 +25,16 @@ import team30.personalbest.fitness.service.GoogleFitAdapter;
 import team30.personalbest.fitness.service.HeightService;
 import team30.personalbest.fitness.service.IFitnessService;
 import team30.personalbest.fitness.service.OnFitnessServiceReadyListener;
-import team30.personalbest.fitness.snapshot.IActiveFitnessSnapshot;
+import team30.personalbest.fitness.snapshot.IRecordingFitnessSnapshot;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
-import team30.personalbest.fitness.snapshot.OnActiveSnapshotUpdateListener;
+import team30.personalbest.fitness.snapshot.OnRecordingSnapshotUpdateListener;
 import team30.personalbest.goal.CustomGoalAchiever;
 import team30.personalbest.goal.GoalAchiever;
 import team30.personalbest.goal.GoalListener;
 import team30.personalbest.goal.StepGoal;
 
 public class MainActivity extends AppCompatActivity implements OnFitnessServiceReadyListener,
-        GoalListener, OnActiveSnapshotUpdateListener, OnFitnessUpdateListener
+        GoalListener, OnRecordingSnapshotUpdateListener, OnFitnessUpdateListener
 {
     public static final String TAG = "MainActivity";
 
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                 activity.endButton.setVisibility(View.VISIBLE);
 
                 // Start recording current run
-                activity.fitnessService.startRecording().addOnActiveSnapshotUpdate(activity);
+                activity.fitnessService.startRecording().addOnRecordingSnapshotUpdateListener(activity);
 
                 // Make sure statistics are shown
                 activity.currStepsText.setVisibility(View.VISIBLE);
@@ -333,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
 
 
     @Override
-    public void onActiveSnapshotUpdate(IActiveFitnessSnapshot activeSnapshot)
+    public void onRecordingSnapshotUpdate(IRecordingFitnessSnapshot activeSnapshot)
     {
         Log.i(TAG, "Updating active step...");
 

@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import team30.personalbest.fitness.Callback;
-import team30.personalbest.fitness.snapshot.IActiveFitnessSnapshot;
+import team30.personalbest.fitness.snapshot.IRecordingFitnessSnapshot;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
 public interface IRecorderService
@@ -15,11 +15,11 @@ public interface IRecorderService
     /**You must call these to enable the fitness service*/
     void onActivityCreate(Activity activity, Bundle savedInstanceState);
 
-    IActiveFitnessSnapshot startRecording();
+    IRecordingFitnessSnapshot startRecording();
     Callback<IFitnessSnapshot> stopRecording();
     boolean isRecording();
 
-    IActiveFitnessSnapshot getRecordingSnapshot();
+    IRecordingFitnessSnapshot getRecordingSnapshot();
     Callback<Iterable<IFitnessSnapshot>> getRecordingSnapshots(long startTime, long stopTime);
 
     boolean isServiceReady();
