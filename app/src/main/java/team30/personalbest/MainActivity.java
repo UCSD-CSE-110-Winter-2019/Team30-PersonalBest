@@ -12,6 +12,8 @@ import team30.personalbest.fitness.GoogleFitAdapter;
 import team30.personalbest.fitness.service.ActiveFitnessService;
 import team30.personalbest.fitness.service.FitnessService;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
+import team30.personalbest.goal.CustomStepGoal;
+import team30.personalbest.goal.StepGoal;
 
 public class MainActivity extends AppCompatActivity {
     private GoogleFitAdapter googleFitAdapter;
@@ -42,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
                         textView.setText(string);
                     }
                 });
+
+                final StepGoal customStepGoal = new CustomStepGoal(null, googleFitAdapter);
             }
         });
 
