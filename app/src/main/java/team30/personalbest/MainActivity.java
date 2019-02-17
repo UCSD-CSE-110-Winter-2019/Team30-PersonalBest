@@ -63,6 +63,10 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     private TextView mphText;
     private TextView heightText;
 
+    // Mocking variables
+    private Button submitTime;
+    private EditText timeSubmitText;
+
     // Time variable
     private long currTime;
     private long lastCheckedTime;
@@ -98,6 +102,9 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
 
 
+        /** Add time edittext etc for mocking purposes */
+        this.submitTime = findViewById(R.id.subTime);
+
         /** Show encouragement code */
 
         // Share pref for encouragement
@@ -108,9 +115,9 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         eightOClock = MILLIS_PER_DAY - (oneHour * 16);
 
         // Grab the current time when app is open
-        currTime = twentyOClock; // TODO: googleFitAdapter.getCurrentTime();
+        // currTime = twentyOClock; // TODO: googleFitAdapter.getCurrentTime();
         fromMidnight = currTime % MILLIS_PER_DAY;
-        lastCheckedTime = sharedPreferences.getLong("lastcheckedtime", 0);
+        lastCheckedTime = eightOClock; // TODO: sharedPreferences.getLong("lastcheckedtime", 0);
 
         if (currTime >= twentyOClock)
         {
@@ -310,6 +317,15 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         // Achieved sub goal!
         Toast.makeText(this, "Achieved sub goal!", Toast.LENGTH_SHORT).show();
     }
+
+    /** Mocking purposes **/
+    public void onSubmitTime(View view) {
+        this.timeSubmitText = findViewById(R.id.timeText);
+        String currTime = timeSubmitText.getText().toString();
+        long currentTime = Long.parseLong(currTime);
+        googleFitAdapter.setCurrentTime(currentTime);
+    }
+
 
     @Override
     public void onStepUpdate(IFitnessSnapshot snapshot)

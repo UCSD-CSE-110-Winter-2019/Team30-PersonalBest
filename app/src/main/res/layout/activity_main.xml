@@ -17,6 +17,21 @@
         android:text="@string/your_height_in_meters"
         android:textSize="20dp" />
 
+    <EditText
+        android:id="@+id/timeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter the current time "
+        android:textSize="20dp" />
+
+    <Button
+        android:id="@+id/subTime"
+        android:layout_height="50dp"
+        android:layout_width="200dp"
+        android:layout_marginTop="20sp"
+        android:text="Submit Current Time"/>
+
+
     <TextView
         android:id="@+id/total_steps"
         android:layout_width="wrap_content"
