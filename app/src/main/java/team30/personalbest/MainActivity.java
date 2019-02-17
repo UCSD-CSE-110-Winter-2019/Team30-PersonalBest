@@ -52,8 +52,8 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
     private Button startButton;
     private Button endButton;
-    private Button setNewGoalButton;
-    private Button launchWeeklySnapshot;
+    private Button newGoalButton;
+    private Button weeklySnapshotButton;
     private TextView stepsGoalText;
     private TextView totalRunStepsText;
     private TextView currStepsText;
@@ -88,8 +88,8 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         /** GUI STUFF */
 
         // Switch to weekly snapshot
-        this.launchWeeklySnapshot = findViewById(R.id.button_weekly_stats);
-        this.launchWeeklySnapshot.setOnClickListener(new View.OnClickListener() {
+        this.weeklySnapshotButton = findViewById(R.id.button_weekly_stats);
+        this.weeklySnapshotButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 MainActivity.this.launchGraphActivity();
@@ -112,11 +112,12 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         // Start Walk/Run buttons
         this.startButton = findViewById(R.id.button_start);
         this.endButton = findViewById(R.id.button_end);
-        this.setNewGoalButton = findViewById(R.id.newStepGoalButton);
+        this.newGoalButton = findViewById(R.id.newStepGoalButton);
 
         this.startButton.setEnabled(false);
         this.endButton.setEnabled(false);
-        this.setNewGoalButton.setEnabled(false);
+        this.newGoalButton.setEnabled(false);
+        this.weeklySnapshotButton.setEnabled(false);
 
         // endButton invisible/gone in the beginning
         this.endButton.setVisibility(View.GONE);
@@ -185,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         });
 
         // Listener for New step steps_goal
-        this.setNewGoalButton.setOnClickListener(new View.OnClickListener() {
+        this.newGoalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 MainActivity.this.showGoalPrompt();
@@ -204,7 +205,8 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     {
         this.startButton.setEnabled(true);
         this.endButton.setEnabled(true);
-        this.setNewGoalButton.setEnabled(true);
+        this.newGoalButton.setEnabled(true);
+        this.weeklySnapshotButton.setEnabled(true);
 
         // Prompt height on initial launch of app (after google fit is ready)
         this.heightService.getHeight().onResult(new Consumer<Float>() {
