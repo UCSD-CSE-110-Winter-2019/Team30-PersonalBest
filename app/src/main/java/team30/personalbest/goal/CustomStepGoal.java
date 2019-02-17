@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApi;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -44,6 +45,7 @@ public class CustomStepGoal implements StepGoal
 
     private final IFitnessService fitnessService;
     private final GoogleFitAdapter googleFitAdapter;
+    private final GoogleApiClient apiClient;
     private int goalValue;
 
     public CustomStepGoal(IFitnessService fitnessService, GoogleFitAdapter googleFitAdapter)
@@ -62,18 +64,39 @@ public class CustomStepGoal implements StepGoal
         //TODO: Implementation here.
         //Initialize here (i.e. Load from SharedPrefs)
 
-        DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
+        this.apiClient = new GoogleApiClient.Builder(this.googleFitAdapter.getActivity().getApplicationContext())
+                .addApi(Fitness.CONFIG_API)
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle bundle) {
+                        createGoalDataType();
+                    }
+
+                    @Override
+                    public void onConnectionSuspended(int i) {
+                        Log.i(LOG_TAG, "apiClient connection suspended");
+                    }
+                })
+                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                        Log.i(LOG_TAG, "apiClient connection failed");
+                    }
+                })
+                .build();
+        this.apiClient.connect();
+    }
+
+    public void createGoalDataType()
+    {
+        final DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
                 .setName("team30.personalbest.sintahks")
                 .addField("value", Field.FORMAT_INT32)
                 .build();
 
-        GoogleApiClient apiClient = new GoogleApiClient.Builder(this.googleFitAdapter.getActivity().getApplicationContext())
-                .addApi(Fitness.CONFIG_API)
-                .build();
-
-        //TODO(sintahks): run the following code in the onConnected() callback of apiClient
         PendingResult<DataTypeResult> pendingResult =
                 Fitness.ConfigApi.createCustomDataType(apiClient, request);
+
         if (pendingResult != null) {
             Log.i(LOG_TAG, "pendingResult is valid in CustomStepGoal()");
 
