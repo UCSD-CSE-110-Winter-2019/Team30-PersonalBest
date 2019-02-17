@@ -3,6 +3,7 @@ package team30.personalbest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Consumer;
 import android.support.v7.app.AlertDialog;
@@ -19,11 +20,12 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import team30.personalbest.fitness.FitnessChecker;
+import team30.personalbest.fitness.GoogleFitAdapter;
 import team30.personalbest.fitness.IFitnessUpdateListener;
-import team30.personalbest.fitness.service.GoogleFitAdapter;
+import team30.personalbest.fitness.OnGoogleFitReadyListener;
+import team30.personalbest.fitness.service.ActiveFitnessService;
+import team30.personalbest.fitness.service.FitnessService;
 import team30.personalbest.fitness.service.HeightService;
-import team30.personalbest.fitness.service.IFitnessService;
-import team30.personalbest.fitness.service.OnFitnessServiceReadyListener;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 import team30.personalbest.goal.CustomGoalAchiever;
 import team30.personalbest.goal.GoalAchiever;
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
 
     private FitnessChecker fitnessChecker;
     private GoalAchiever goalAchiever;
+
     private StepGoal stepGoal;
     private StepGoal subStepGoal;
 
@@ -56,6 +59,21 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
     private TextView timeElapsedText;
     private TextView mphText;
     private TextView heightText;
+
+    // Mocking variables
+    private Button submitTime;
+    private EditText timeSubmitText;
+
+    // Time variable
+    private long currTime;
+    private long lastCheckedTime;
+    private long fromMidnight;
+    private long oneHour = 3600000;
+    private long MILLIS_PER_DAY = oneHour * 24;//TimeUnit.DAYS.toMillis(1);
+    private long twentyOClock;
+    private long eightOClock;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +92,11 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
 
         //Update step goal to match current user goal...
         //this.goalAchiever.setStepGoal(new CustomStepGoal());
+
+        /** Add time edittext etc for mocking purposes */
+        this.submitTime = findViewById(R.id.subTime);
+
+        // TODO: Moved enocuragement stuff into own method
 
         /** GUI STUFF */
 
@@ -217,8 +240,89 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
     @Override
     public void onGoalAchievement(StepGoal goal)
     {
+        //TODO: Save timestamp to Shared Prefs here.
+
         //Achieved Goal!
         Toast.makeText(this, "Achievement get!", Toast.LENGTH_SHORT).show();
+        showGoalPrompt();
+    }
+
+    //@Override
+    public void onSubGoalAchievement(StepGoal goal)
+    {
+        // Achieved sub goal!
+        Toast.makeText(this, "Achieved sub goal!", Toast.LENGTH_SHORT).show();
+    }
+
+    /** Mocking purposes **/
+    public void onSubmitTime(View view) {
+        this.timeSubmitText = findViewById(R.id.timeText);
+        String thisCurrTime = timeSubmitText.getText().toString();
+
+        if(thisCurrTime == null || thisCurrTime == "") {
+            Toast.makeText(this, "Please enter a valid time!", Toast.LENGTH_LONG).show();
+        }
+
+        else {
+            long currentTime = Long.parseLong(thisCurrTime);
+
+            this.encouragement(currentTime);
+            googleFitAdapter.setCurrentTime(currentTime);
+        }
+    }
+
+
+    /** Encouragement **/
+
+    public void encouragement(long thisTime) {
+        /** Show encouragement code */
+
+        // Share pref for encouragement
+        this.sharedPreferences = getSharedPreferences("user_name", MODE_PRIVATE);
+        this.editor = sharedPreferences.edit();
+
+        this.twentyOClock = MILLIS_PER_DAY - (oneHour * 4);
+        this.eightOClock = MILLIS_PER_DAY - (oneHour * 16);
+
+        // Grab the current time when app is open
+        this.currTime = thisTime; // TODO: googleFitAdapter.getCurrentTime(); Also remember to change to GooglefitTime
+        this.fromMidnight = lastCheckedTime % MILLIS_PER_DAY;
+        this.lastCheckedTime = eightOClock; // TODO: sharedPreferences.getLong("lastcheckedtime", 0);
+
+        if (this.currTime >= this.twentyOClock)
+        {
+            //TODO: replace this with a method call to isSignificantlyImproved()
+            boolean significantlyImproved = true; //(Math.random() > 0.5);
+            if (significantlyImproved)
+            {
+                boolean isSameDay = this.currTime - this.lastCheckedTime < this.MILLIS_PER_DAY;
+
+                if (!isSameDay || this.fromMidnight <= this.twentyOClock)
+                {
+                    // Update shared pref and show message
+                    Toast.makeText(this, "Good job you significantly improved your steps from yesterday!", Toast.LENGTH_LONG).show();
+                    this.editor.putLong("lastcheckedtime", this.currTime);
+                    this.editor.commit();
+                }
+            }
+        }
+
+        else if (this.currTime >= this.eightOClock)
+        {
+            //TODO: replace this with a method call to isSignificantlyImproved()
+            boolean significantlyImproved = true; //(Math.random() > 0.5);
+            if (significantlyImproved)
+            {
+                boolean isSameDay = this.currTime - this.lastCheckedTime < this.MILLIS_PER_DAY;
+                if (!isSameDay && (this.fromMidnight) <= this.twentyOClock)
+                {
+                    //Show message and show message
+                    Toast.makeText(this, "Good job you significantly improved your steps from yesterday!", Toast.LENGTH_LONG).show();
+                    this.editor.putLong("lastcheckedtime", this.currTime);
+                    this.editor.commit();
+                }
+            }
+        }
     }
 
     @Override
