@@ -296,8 +296,8 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         this.eightOClock = MILLIS_PER_DAY - (oneHour * 16);
 
         // Grab the current time when app is open
-        currTime = thisTime; // TODO: googleFitAdapter.getCurrentTime(); Also remember to change to GooglefitTime
-        this.fromMidnight = currTime % MILLIS_PER_DAY;
+        this.currTime = thisTime; // TODO: googleFitAdapter.getCurrentTime(); Also remember to change to GooglefitTime
+        this.fromMidnight = lastCheckedTime % MILLIS_PER_DAY;
         this.lastCheckedTime = eightOClock; // TODO: sharedPreferences.getLong("lastcheckedtime", 0);
 
         if (this.currTime >= this.twentyOClock)
@@ -307,10 +307,11 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
             if (significantlyImproved)
             {
                 boolean isSameDay = this.currTime - this.lastCheckedTime < this.MILLIS_PER_DAY;
+
                 if (!isSameDay || this.fromMidnight <= this.twentyOClock)
                 {
                     // Update shared pref and show message
-                    Toast.makeText(this, "Achievement get!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Congratulations, met your sub goal for today!", Toast.LENGTH_LONG).show();
                     this.editor.putLong("lastcheckedtime", this.currTime);
                     this.editor.commit();
                 }
@@ -327,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                 if (!isSameDay && (this.fromMidnight) <= this.twentyOClock)
                 {
                     //Show message and show message
-                    Toast.makeText(this, "Achievement get!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Congratulations, met your sub goal for today!", Toast.LENGTH_LONG).show();
                     this.editor.putLong("lastcheckedtime", this.currTime);
                     this.editor.commit();
                 }
