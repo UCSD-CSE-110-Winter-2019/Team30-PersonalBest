@@ -18,10 +18,13 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Goal;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
+import com.google.android.gms.fitness.request.DataUpdateRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.fitness.result.DataTypeResult;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -36,11 +39,11 @@ public class CustomStepGoal implements StepGoal
     private static final int DEFAULT_GOAL = 5000;
     private Goal.MetricObjective stepGoal;
     private List<Goal> goals;
+    private int currentGoalValue;
 
     private final IFitnessService fitnessService;
     private final GoogleFitAdapter googleFitAdapter;
     private final GoogleApiClient apiClient;
-    private int goalValue;
     private DataSource goalDataSource;
     private final String SESSION_NAME = "GOAL";
 
@@ -54,7 +57,7 @@ public class CustomStepGoal implements StepGoal
         this.fitnessService = fitnessService;
         this.googleFitAdapter = googleFitAdapter;
 
-        this.goalValue = initialGoal;
+        this.currentGoalValue = initialGoal;
 
         this.apiClient = new GoogleApiClient.Builder(this.googleFitAdapter.getActivity().getApplicationContext())
                 .addApi(Fitness.CONFIG_API)
@@ -122,6 +125,7 @@ public class CustomStepGoal implements StepGoal
         final DataTypeCreateRequest createRequest = new DataTypeCreateRequest.Builder()
                 .setName(goalDataTypeName)
                 .addField("value", Field.FORMAT_INT32)
+                .addField( "day", Field.FORMAT_INT32)
                 .build();
 
         PendingResult<DataTypeResult> createResult =
@@ -158,36 +162,56 @@ public class CustomStepGoal implements StepGoal
                 .build();
 
 
-        for( int  i = 1; i <= 20; i++ ) {
-            setGoalValue( i );
-        }
-        getGoalValue();
-
-
     }
 
 
     public void setGoalValue(int value)
     {
 
-        if( goalDataSource == null ) { return; }
+        Log.i(LOG_TAG, "Updating Current Goal to: " + value );
+        Calendar endTime = Calendar.getInstance();
+        Calendar startTime = Calendar.getInstance();
+
+        startTime.set(Calendar.HOUR_OF_DAY, 0);
+        startTime.set(Calendar.MINUTE, 0 );
+        startTime.set(Calendar.SECOND, 1);
+
+
+        endTime.set(Calendar.HOUR_OF_DAY, 23);
+        endTime.set(Calendar.MINUTE,59 );
+        endTime.set(Calendar.SECOND, 59);
+
+
+        while( goalDataSource == null ) { }
+
+
 
         DataSet goalDataSet = DataSet.create( goalDataSource );
-        DataPoint newGoal = goalDataSet.createDataPoint().setTimeInterval(value,value+1, TimeUnit.MILLISECONDS);
+        DataPoint newGoal = goalDataSet.createDataPoint().setTimeInterval(startTime.getTimeInMillis(), System.currentTimeMillis(), TimeUnit.MILLISECONDS);
         newGoal.getValue( goalDataType.getFields().get(0)).setInt(value);
         goalDataSet.add( newGoal );
 
-        Fitness.getHistoryClient( googleFitAdapter.getActivity(), GoogleSignIn.getLastSignedInAccount(googleFitAdapter.getActivity())).insertData( goalDataSet );
+        DataUpdateRequest request = new DataUpdateRequest.Builder()
+                .setDataSet( goalDataSet )
+                .setTimeInterval( startTime.getTimeInMillis(), endTime.getTimeInMillis(), TimeUnit.MILLISECONDS )
+                .build();
+
+        Task<Void> response = Fitness.getHistoryClient( googleFitAdapter.getActivity(), GoogleSignIn.getLastSignedInAccount(googleFitAdapter.getActivity())).updateData(request);
+
+        while( !response.isComplete() ) {}
 
     }
 
-    @Override
-    public int getGoalValue()
+
+    public List<Integer> getGoalValues( long startTime, long endTime )
     {
+        Calendar cal = Calendar.getInstance();
+
+        ArrayList<Integer> result = new ArrayList();
 
         final DataReadRequest readRequest = new DataReadRequest.Builder()
                 .read( goalDataType )
-                .setTimeRange( 1, 20, TimeUnit.MILLISECONDS )
+                .setTimeRange( startTime, endTime, TimeUnit.MILLISECONDS )
                 .build();
 
         Task<DataReadResponse> response = Fitness.getHistoryClient( googleFitAdapter.getActivity(), GoogleSignIn.getLastSignedInAccount(googleFitAdapter.getActivity()) ).readData(readRequest);
@@ -200,14 +224,58 @@ public class CustomStepGoal implements StepGoal
         for(DataSet goalDataSet : dataSets ) {
             for( DataPoint dp : goalDataSet.getDataPoints() ) {
                 for( Field field : dp.getDataType().getFields() ) {
-                    Log.i( LOG_TAG, "Goal: " + dp.getValue(field));
+
+                    result.add( dp.getValue(field).asInt() );
+                    Log.i( LOG_TAG, "Heres what I got: " + dp.getValue(field));
                 }
             }
         }
 
 
 
-        return 0;
 
+
+
+
+        return result;
+
+    }
+
+    @Override
+    public int getGoalValue()
+    {
+
+        Calendar endTime = Calendar.getInstance();
+        Calendar startTime = Calendar.getInstance();
+
+        startTime.set(Calendar.HOUR_OF_DAY, 0);
+        startTime.set(Calendar.MINUTE, 0 );
+        startTime.set(Calendar.SECOND, 1);
+
+
+        endTime.set(Calendar.HOUR_OF_DAY, 23);
+        endTime.set(Calendar.MINUTE, 59 );
+        endTime.set(Calendar.SECOND, 59);
+
+
+        final DataReadRequest readRequest = new DataReadRequest.Builder()
+                .read( goalDataType )
+                .setTimeRange( startTime.getTimeInMillis(), endTime.getTimeInMillis(), TimeUnit.MILLISECONDS)
+                .setLimit(1)
+                .build();
+
+        Task<DataReadResponse> response = Fitness.getHistoryClient( googleFitAdapter.getActivity(), GoogleSignIn.getLastSignedInAccount(googleFitAdapter.getActivity()) ).readData(readRequest);
+
+        while( !response.isComplete() ) {
+
+        }
+        List<DataSet> dataSets = response.getResult().getDataSets();
+        List<DataPoint> dataPoints = dataSets.get(0).getDataPoints();
+
+        DataPoint dp = dataPoints.get(0);
+        this.currentGoalValue = dp.getValue( dp.getDataType().getFields().get(0) ).asInt();
+        Log.i( LOG_TAG, "Current Goal: " + this.currentGoalValue);
+
+        return this.currentGoalValue;
     }
 }

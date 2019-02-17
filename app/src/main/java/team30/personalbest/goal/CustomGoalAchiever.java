@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.support.v4.util.Consumer;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import team30.personalbest.fitness.service.IFitnessService;
@@ -17,6 +18,7 @@ public class CustomGoalAchiever implements GoalAchiever
     private IFitnessService fitnessService;
     private GoalChecker goalChecker;
     private boolean hasImporoved = false;
+    private int previousSteps = 0;
 
     public CustomGoalAchiever() {}
 
@@ -68,8 +70,10 @@ public class CustomGoalAchiever implements GoalAchiever
         if (!this.running) throw new IllegalStateException("Not yet started.");
 
         this.running = false;
+        if( goalChecker != null && !goalChecker.isCancelled() ) {
+            goalChecker.cancel(true);
+        }
 
-        //TODO: Stop checking if the goal is achieved...
     }
 
     @Override
@@ -114,9 +118,6 @@ public class CustomGoalAchiever implements GoalAchiever
 
     public boolean hasSignificantlyImproved() {
 
-        /* TODO: Check for imporvements.
-         * Perhaps do while updating steps on GoalChecker?
-         */
         return hasImporoved;
     }
 
@@ -131,6 +132,10 @@ public class CustomGoalAchiever implements GoalAchiever
             try{
 
                 while( steps < goal.getGoalValue()  ){
+
+                    if( !hasImporoved && steps > previousSteps ) {
+                        hasImporoved = true;
+                    }
                     Thread.sleep(timeInterval);
                     updateSteps();
                 }
@@ -152,6 +157,36 @@ public class CustomGoalAchiever implements GoalAchiever
 
         @Override
         protected void onPreExecute() {
+
+            previousSteps = 0;
+            // Get steps from previous day
+            Calendar endTime = Calendar.getInstance();
+            Calendar startTime = Calendar.getInstance();
+
+            startTime.set(Calendar.HOUR_OF_DAY, 0);
+            startTime.set(Calendar.MINUTE, 0 );
+            startTime.set(Calendar.SECOND, 1);
+            startTime.add( Calendar.DAY_OF_MONTH, -1 );
+
+
+            endTime.set(Calendar.HOUR_OF_DAY, 23);
+            endTime.set(Calendar.MINUTE,59 );
+            endTime.set(Calendar.SECOND, 59);
+            endTime.add( Calendar.DAY_OF_MONTH, -1 );
+
+
+
+            fitnessService.getFitnessSnapshots( startTime.getTimeInMillis(), endTime.getTimeInMillis() )
+                    .onResult(new Consumer<Iterable<IFitnessSnapshot>>() {
+                        @Override
+                        public void accept(Iterable<IFitnessSnapshot> snapshots) {
+
+                            for( IFitnessSnapshot snapshot : snapshots ) {
+                                previousSteps += snapshot.getTotalSteps();
+                            }
+                        }
+                    });
+
             updateSteps();
         }
 
