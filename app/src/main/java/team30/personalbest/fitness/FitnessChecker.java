@@ -17,13 +17,12 @@ public class FitnessChecker
 
     private final List<IFitnessUpdateListener> listeners = new ArrayList<>();
     private final IFitnessService fitnessService;
-    private final FitnessCheckTask checkTask;
+    private FitnessCheckTask checkTask;
     private volatile boolean running = false;
 
     public FitnessChecker(IFitnessService fitnessService)
     {
         this.fitnessService = fitnessService;
-        this.checkTask = new FitnessCheckTask(this);
     }
 
     public FitnessChecker addListener(IFitnessUpdateListener listener)
@@ -44,11 +43,13 @@ public class FitnessChecker
 
     public void startChecking()
     {
-        if (!this.checkTask.isCancelled())
+        if (this.checkTask != null && !this.checkTask.isCancelled())
         {
             this.checkTask.cancel(true);
         }
 
+        this.running = true;
+        this.checkTask = new FitnessCheckTask(this);
         this.checkTask.execute();
     }
 
@@ -60,7 +61,7 @@ public class FitnessChecker
         }
     }
 
-    public void onFitnessUpdate(IFitnessSnapshot fitnessSnapshot)
+    private void onFitnessUpdate(IFitnessSnapshot fitnessSnapshot)
     {
         for(IFitnessUpdateListener listener : this.listeners)
         {
@@ -78,7 +79,7 @@ public class FitnessChecker
         return this.fitnessService;
     }
 
-    private final class FitnessCheckTask extends AsyncTask<Void, Void, Void>
+    private static final class FitnessCheckTask extends AsyncTask<Void, Void, Void>
     {
         private final FitnessChecker checker;
 
@@ -88,38 +89,32 @@ public class FitnessChecker
         }
 
         @Override
-        protected void onPreExecute()
-        {
-            Log.i(TAG, "Started fitness checking task...");
-        }
-
-        @Override
         protected void onPostExecute(Void aVoid)
         {
-            Log.i(TAG, "Stopped fitness checking task");
+            super.onPostExecute(aVoid);
+
+            this.checker.getFitnessService().getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
+                @Override
+                public void accept(IFitnessSnapshot iFitnessSnapshot) {
+                    FitnessCheckTask.this.checker.onFitnessUpdate(iFitnessSnapshot);
+                    FitnessCheckTask.this.checker.startChecking();
+                }
+            });
         }
 
         @Override
-        protected Void doInBackground( Void... voids)
+        protected Void doInBackground(Void... voids)
         {
             try
             {
-                while(this.checker.isRunning())
-                {
-                    Thread.sleep(TIME_UPDATE_MILLIS);
-                    this.checker.getFitnessService().getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
-                        @Override
-                        public void accept(IFitnessSnapshot iFitnessSnapshot) {
-                            FitnessCheckTask.this.checker.onFitnessUpdate(iFitnessSnapshot);
-                        }
-                    });
-                }
+                Thread.sleep(TIME_UPDATE_MILLIS);
             }
             catch(Exception e)
             {
                 Log.e(TAG, "Failed to update fitness check", e);
             }
-            return voids[0];
+
+            return null;
         }
     }
 }

@@ -25,6 +25,7 @@ public class GoogleFitAdapter implements IGoogleFitAdapter
 
     private List<OnGoogleFitReadyListener> onReadyListeners = new ArrayList<>();
     private boolean ready = false;
+    private long customTime = -1;
     private Activity activity;
 
     public GoogleFitAdapter(Activity activity)
@@ -146,10 +147,23 @@ public class GoogleFitAdapter implements IGoogleFitAdapter
         return this.activity;
     }
 
+    public GoogleFitAdapter setCurrentTime(long millis)
+    {
+        this.customTime = millis;
+        return this;
+    }
+
     @Override
     public long getCurrentTime()
     {
-        return System.currentTimeMillis();
+        if (this.customTime >= 0)
+        {
+            return this.customTime;
+        }
+        else
+        {
+            return System.currentTimeMillis();
+        }
     }
 
     @Override

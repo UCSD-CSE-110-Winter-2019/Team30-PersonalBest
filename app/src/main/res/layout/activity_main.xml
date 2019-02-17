@@ -14,7 +14,7 @@
         android:id="@+id/heightText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Your height in meters: "
+        android:text="@string/your_height_in_meters"
         android:textSize="20dp" />
 
     <TextView
@@ -22,14 +22,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30sp"
-        android:text="Total steps: "
+        android:text="@string/total_steps"
         android:textSize="20dp" />
 
     <TextView
         android:id="@+id/steps_goal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Steps goal: "
+        android:text="@string/steps_goal"
         android:textSize="20dp" />
 
     <Button
@@ -39,7 +39,7 @@
         android:layout_marginTop="20sp"
         android:background="@android:color/holo_green_light"
         android:textColor="@android:color/white"
-        android:text="start walk/run"/>
+        android:text="@string/start_walk_run"/>
 
     <Button
         android:id="@+id/button_end"
@@ -48,13 +48,13 @@
         android:layout_marginTop="20sp"
         android:background="@android:color/holo_red_light"
         android:textColor="@android:color/white"
-        android:text="end walk/run now"/>
+        android:text="@string/end_walk_run"/>
 
     <Button
         android:id="@+id/newStepGoalButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Step Goal"/>
+        android:text="@string/new_step_goal"/>
 
     <TextView
         android:id="@+id/curr_steps"
@@ -62,21 +62,21 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="50sp"
         android:textSize="20sp"
-        android:text="Current steps: "/>
+        android:text="@string/current_steps"/>
 
     <TextView
         android:id="@+id/time_elapsed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20sp"
-        android:text="Time elapsed: "/>
+        android:text="@string/time_elapsed"/>
 
     <TextView
         android:id="@+id/mph"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20sp"
-        android:text="Miles per hour: "/>
+        android:text="@string/miles_per_hour"/>
 
     <Button
         android:id="@+id/button_weekly_stats"
@@ -87,6 +87,6 @@
         android:background="@android:color/darker_gray"
         android:textColor="@android:color/white"
         android:layout_alignParentBottom="true"
-        android:text="weekly snapshot"/>
+        android:text="@string/weekly_snapshot"/>
 
 </LinearLayout>
