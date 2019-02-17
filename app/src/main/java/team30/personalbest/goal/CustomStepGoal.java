@@ -39,6 +39,8 @@ import static com.google.android.gms.fitness.ConfigApi.*;
 public class CustomStepGoal implements StepGoal
 {
     private final String LOG_TAG = "PersonalBest";
+    private final String goalDataTypeName = "team30.personalbest.goal";
+    private DataType goalDataType;
     private static final int DEFAULT_GOAL = 5000;
     private Goal.MetricObjective stepGoal;
     private List<Goal> goals;
@@ -61,15 +63,12 @@ public class CustomStepGoal implements StepGoal
         this.goalValue = initialGoal;
         stepGoal = new Goal.MetricObjective( "Daily Steps", 0, initialGoal );
 
-        //TODO: Implementation here.
-        //Initialize here (i.e. Load from SharedPrefs)
-
         this.apiClient = new GoogleApiClient.Builder(this.googleFitAdapter.getActivity().getApplicationContext())
                 .addApi(Fitness.CONFIG_API)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
                     public void onConnected(Bundle bundle) {
-                        createGoalDataType();
+                        setGoalDataType();
                     }
 
                     @Override
@@ -87,32 +86,57 @@ public class CustomStepGoal implements StepGoal
         this.apiClient.connect();
     }
 
-    public void createGoalDataType()
+    private void setGoalDataType()
     {
-        final DataTypeCreateRequest request = new DataTypeCreateRequest.Builder()
-                .setName("team30.personalbest.sintahks")
+        PendingResult<DataTypeResult> readResult =
+                Fitness.ConfigApi.readDataType(this.apiClient, goalDataTypeName);
+
+        readResult.setResultCallback(
+            new ResultCallback<DataTypeResult>() {
+                @Override
+                public void onResult(DataTypeResult dataTypeResult) {
+
+                    if (dataTypeResult.getStatus().isSuccess())
+                    {
+                        goalDataType = dataTypeResult.getDataType();
+                        Log.i(LOG_TAG, "found goalDataType");
+                        Log.i(LOG_TAG, goalDataType.toString());
+                    }
+                    else
+                    {
+                        handleGoalDataTypeNotFound();
+                    }
+                }
+            }
+        );
+    }
+
+    private void handleGoalDataTypeNotFound()
+    {
+        Log.i(LOG_TAG, "failed to find goalDataType, creating a new one");
+
+        final DataTypeCreateRequest createRequest = new DataTypeCreateRequest.Builder()
+                .setName(goalDataTypeName)
                 .addField("value", Field.FORMAT_INT32)
                 .build();
 
-        PendingResult<DataTypeResult> pendingResult =
-                Fitness.ConfigApi.createCustomDataType(apiClient, request);
+        PendingResult<DataTypeResult> createResult =
+                Fitness.ConfigApi.createCustomDataType(apiClient, createRequest);
 
-        if (pendingResult != null) {
-            Log.i(LOG_TAG, "pendingResult is valid in CustomStepGoal()");
+        if (createResult != null) {
+            Log.i(LOG_TAG, "pending createResult is valid in CustomStepGoal()");
 
-            pendingResult.setResultCallback(
+            createResult.setResultCallback(
                     new ResultCallback<DataTypeResult>() {
                         @Override
                         public void onResult(DataTypeResult dataTypeResult) {
-                            DataType customType = dataTypeResult.getDataType();
-                            Log.i(LOG_TAG, customType.toString());
+                            goalDataType = dataTypeResult.getDataType();
+                            Log.i(LOG_TAG, goalDataType.toString());
                         }
                     }
             );
-        }
-        else
-        {
-            Log.i(LOG_TAG, "pendingResult is null in CustomStepGoal()");
+        } else {
+            Log.i(LOG_TAG, "pending createResult is null in CustomStepGoal()");
         }
     }
 
@@ -120,7 +144,7 @@ public class CustomStepGoal implements StepGoal
     {
         this.goalValue = value;
 
-        //TODO (Chen) : Make Custom DataType for Goals
+        //TODO (Sintahks) : Upload and retrive with goalDataType
         //Save to SharedPrefs here.
     }
 
