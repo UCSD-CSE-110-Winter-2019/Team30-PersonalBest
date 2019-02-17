@@ -38,45 +38,26 @@ public class MainActivityEspressoTest {
     @Test
     public void mainActivityEspressoTest() {
         ViewInteraction appCompatButton = onView(
-                allOf(withId(R.id.button_weekly_stats), withText("weekly snapshot"),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(android.R.id.content),
-                                        0),
-                                9),
-                        isDisplayed()));
-        appCompatButton.perform(click());
-
-        ViewInteraction appCompatButton2 = onView(
-                allOf(withId(R.id.button_back), withText("back"),
-                        childAtPosition(
-                                childAtPosition(
-                                        withClassName(is("android.widget.ScrollView")),
-                                        0),
-                                0)));
-        appCompatButton2.perform(scrollTo(), click());
-
-        ViewInteraction appCompatButton3 = onView(
-                allOf(withId(R.id.button_start), withText("start walk/run"),
+                allOf(withId(R.id.button_start), withText("Start walk/run"),
                         childAtPosition(
                                 childAtPosition(
                                         withId(android.R.id.content),
                                         0),
                                 3),
                         isDisplayed()));
-        appCompatButton3.perform(click());
+        appCompatButton.perform(click());
 
-        ViewInteraction appCompatButton4 = onView(
-                allOf(withId(R.id.button_end), withText("end walk/run now"),
+        ViewInteraction appCompatButton2 = onView(
+                allOf(withId(R.id.button_end), withText("End walk/run now"),
                         childAtPosition(
                                 childAtPosition(
                                         withId(android.R.id.content),
                                         0),
                                 4),
                         isDisplayed()));
-        appCompatButton4.perform(click());
+        appCompatButton2.perform(click());
 
-        ViewInteraction appCompatButton5 = onView(
+        ViewInteraction appCompatButton3 = onView(
                 allOf(withId(R.id.newStepGoalButton), withText("New Step Goal"),
                         childAtPosition(
                                 childAtPosition(
@@ -84,7 +65,7 @@ public class MainActivityEspressoTest {
                                         0),
                                 5),
                         isDisplayed()));
-        appCompatButton5.perform(click());
+        appCompatButton3.perform(click());
 
         ViewInteraction editText = onView(
                 allOf(childAtPosition(
@@ -94,16 +75,27 @@ public class MainActivityEspressoTest {
                                         0)),
                         0),
                         isDisplayed()));
-        editText.perform(replaceText("500"), closeSoftKeyboard());
+        editText.perform(replaceText("5"), closeSoftKeyboard());
 
-        ViewInteraction appCompatButton6 = onView(
+        ViewInteraction appCompatButton4 = onView(
                 allOf(withId(android.R.id.button1), withText("OK"),
                         childAtPosition(
                                 childAtPosition(
                                         withId(R.id.buttonPanel),
                                         0),
                                 3)));
-        appCompatButton6.perform(scrollTo(), click());
+        appCompatButton4.perform(scrollTo(), click());
+
+        ViewInteraction appCompatButton5 = onView(
+                allOf(withId(R.id.button_weekly_stats), withText("Weekly Overview"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(android.R.id.content),
+                                        0),
+                                9),
+                        isDisplayed()));
+        appCompatButton5.perform(click());
+
     }
 
     private static Matcher<View> childAtPosition(
