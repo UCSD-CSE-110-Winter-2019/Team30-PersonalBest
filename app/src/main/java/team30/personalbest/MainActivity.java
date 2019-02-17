@@ -3,6 +3,7 @@ package team30.personalbest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Consumer;
 import android.support.v7.app.AlertDialog;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
     private FitnessChecker fitnessChecker;
     private GoalAchiever goalAchiever;
+
     private StepGoal stepGoal;
     private StepGoal subStepGoal;
 
@@ -61,6 +63,17 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     private TextView mphText;
     private TextView heightText;
     private String goal_Text = "";
+
+    // Time variable
+    private long currTime;
+    private long lastCheckedTime;
+    private long fromMidnight;
+    private long oneHour = 3600000;
+    private long MILLIS_PER_DAY = oneHour * 24;//TimeUnit.DAYS.toMillis(1);
+    private long twentyOClock;
+    private long eightOClock;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +97,55 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
         this.googleFitAdapter.addOnReadyListener(this);
         this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
+
+
+        /** Show encouragement code */
+
+        // Share pref for encouragement
+        sharedPreferences = getSharedPreferences("user_name", MODE_PRIVATE);
+        editor = sharedPreferences.edit();
+
+        twentyOClock = MILLIS_PER_DAY - (oneHour * 4);
+        eightOClock = MILLIS_PER_DAY - (oneHour * 16);
+
+        // Grab the current time when app is open
+        currTime = twentyOClock; // TODO: googleFitAdapter.getCurrentTime();
+        fromMidnight = currTime % MILLIS_PER_DAY;
+        lastCheckedTime = sharedPreferences.getLong("lastcheckedtime", 0);
+
+        if (currTime >= twentyOClock)
+        {
+            //TODO: replace this with a method call to isSignificantlyImproved()
+            boolean significantlyImproved = true; //(Math.random() > 0.5);
+            if (significantlyImproved)
+            {
+                boolean isSameDay = currTime - lastCheckedTime < MILLIS_PER_DAY;
+                if (!isSameDay || fromMidnight <= twentyOClock)
+                {
+                    // Update shared pref and show message
+                    Toast.makeText(this, "Achievement get!", Toast.LENGTH_LONG).show();
+                    editor.putLong("lastcheckedtime", currTime);
+                    editor.commit();
+                }
+            }
+        }
+
+        else if (currTime >= eightOClock)
+        {
+            //TODO: replace this with a method call to isSignificantlyImproved()
+            boolean significantlyImproved = true; //(Math.random() > 0.5);
+            if (significantlyImproved)
+            {
+                boolean isSameDay = currTime - lastCheckedTime < MILLIS_PER_DAY;
+                if (!isSameDay && (fromMidnight) <= twentyOClock)
+                {
+                    //Show message and show message
+                    Toast.makeText(this, "Achievement get!", Toast.LENGTH_LONG).show();
+                    editor.putLong("lastcheckedtime", currTime);
+                    editor.commit();
+                }
+            }
+        }
 
         /** GUI STUFF */
 
@@ -234,8 +296,17 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     @Override
     public void onGoalAchievement(StepGoal goal)
     {
+        //TODO: Save timestamp to Shared Prefs here.
+
         //Achieved Goal!
         Toast.makeText(this, "Achievement get!", Toast.LENGTH_SHORT).show();
+    }
+
+    //@Override
+    public void onSubGoalAchievement(StepGoal goal)
+    {
+        // Achieved sub goal!
+        Toast.makeText(this, "Achieved sub goal!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
