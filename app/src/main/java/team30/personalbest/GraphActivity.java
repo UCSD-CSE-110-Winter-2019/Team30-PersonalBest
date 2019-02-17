@@ -34,7 +34,6 @@ public class GraphActivity extends AppCompatActivity
     public static final String BUNDLE_DAILY_STEPS = "daily_steps";
     public static final String BUNDLE_DAILY_MPH = "daily_mph";
     public static final String BUNDLE_DAILY_TIMES = "daily_times";
-    public static final String BUNDLE_DAILY_DISTANCE = "daily_dist";
     public static final String BUNDLE_DAILY_GOALS = "daily_goals";
     public static final int BUNDLE_WEEK_LENGTH = 7;
 

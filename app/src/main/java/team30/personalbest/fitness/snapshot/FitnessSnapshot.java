@@ -4,45 +4,37 @@ public class FitnessSnapshot implements IFitnessSnapshot
 {
     private long startTime;
     private long stopTime;
-    private double distance;
+    private double speed;
     private int totalSteps;
 
-    public void setStartTime(long startTime)
-    {
-        this.startTime = startTime;
-    }
-
-    public void setStopTime(long stopTime)
-    {
-        this.stopTime = stopTime;
-    }
-
-    public void setDistanceTravelled(double distance)
-    {
-        this.distance = distance;
-    }
-
-    public void setTotalSteps(int steps)
+    public FitnessSnapshot setTotalSteps(int steps)
     {
         this.totalSteps = steps;
+        return this;
+    }
+
+    public FitnessSnapshot setStartTime(long startTime)
+    {
+        this.startTime = startTime;
+        return this;
+    }
+
+    public FitnessSnapshot setStopTime(long stopTime)
+    {
+        this.stopTime = stopTime;
+        return this;
+    }
+
+    public FitnessSnapshot setSpeed(double speed)
+    {
+        this.speed = speed;
+        return this;
     }
 
     @Override
     public int getTotalSteps()
     {
         return this.totalSteps;
-    }
-
-    @Override
-    public double getDistanceTravelled()
-    {
-        return this.distance;
-    }
-
-    @Override
-    public double getMilesPerHour()
-    {
-        return this.distance / (this.stopTime - this.startTime);
     }
 
     @Override
@@ -55,5 +47,11 @@ public class FitnessSnapshot implements IFitnessSnapshot
     public long getStopTime()
     {
         return this.stopTime;
+    }
+
+    @Override
+    public double getSpeed()
+    {
+        return this.speed;
     }
 }

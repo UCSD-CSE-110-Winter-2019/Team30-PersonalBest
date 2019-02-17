@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
@@ -18,105 +20,135 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.util.concurrent.TimeUnit;
 
 import team30.personalbest.fitness.Callback;
-import team30.personalbest.fitness.GoogleFitAdapter;
 
 public class HeightService implements IHeightService
 {
     public static final String TAG = "HeightService";
 
-    private final GoogleFitAdapter googleFitAdapter;
+    private final Activity activity;
+    private final IFitnessService fitnessService;
 
-    public HeightService(GoogleFitAdapter googleFitAdapter)
+    public HeightService(Activity activity, IFitnessService fitnessService)
     {
-        this.googleFitAdapter = googleFitAdapter;
+        this.activity = activity;
+        this.fitnessService = fitnessService;
     }
 
     @Override
     public Callback<Float> setHeight(final float height)
     {
-        if (!this.googleFitAdapter.isReady()) throw new IllegalStateException("Google Fit services is not ready!");
-
-        final Activity activity = this.googleFitAdapter.getActivity();
         final Callback<Float> callback = new Callback<>();
 
-        DataSource dataSource = new DataSource.Builder()
-                .setAppPackageName(activity)
-                .setDataType(DataType.TYPE_HEIGHT)
-                .setType(DataSource.TYPE_RAW)
-                .build();
+        final Activity activity = this.activity;
+        final IFitnessService fitnessService = this.fitnessService;
 
-        DataSet dataSet = DataSet.create(dataSource);
-        DataPoint dp = dataSet.createDataPoint()
-                .setTimestamp(this.googleFitAdapter.getCurrentTime(), TimeUnit.MILLISECONDS)
-                .setFloatValues(height);
-        dataSet.add(dp);
+        if (!fitnessService.isServiceReady())
+        {
+            Log.w(TAG, "Unable to set height - fitness service is not yet ready!");
+            callback.resolve(null);
+            return callback;
+        }
 
-        Fitness.getHistoryClient(activity, this.googleFitAdapter.getCurrentGoogleAccount())
-                .insertData(dataSet)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.i(TAG, "Successfully registered user's height");
+        final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        if (lastSignedInAccount == null)
+        {
+            Log.w(TAG, "Unable to set height - unable to get google account");
+            callback.resolve(null);
+        }
+        else
+        {
+            final DataSource dataSource = new DataSource.Builder()
+                    .setAppPackageName(activity)
+                    .setDataType(DataType.TYPE_HEIGHT)
+                    .setType(DataSource.TYPE_RAW)
+                    .build();
 
-                        callback.resolve(height);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Failed to register user's height", e);
+            DataSet dataSet = DataSet.create(dataSource);
+            DataPoint dp = dataSet.createDataPoint()
+                    .setTimestamp(fitnessService.getCurrentTime(), TimeUnit.MILLISECONDS)
+                    .setFloatValues(height);
+            dataSet.add(dp);
 
-                        callback.resolve(null);
-                    }
-                });
+            Fitness.getHistoryClient(activity, lastSignedInAccount)
+                    .insertData(dataSet)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.i(TAG, "Successfully registered user's height");
 
+                            callback.resolve(height);
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w(TAG, "Failed to register user's height", e);
+
+                            callback.resolve(null);
+                        }
+                    });
+        }
         return callback;
     }
 
     @Override
     public Callback<Float> getHeight()
     {
-        if (!this.googleFitAdapter.isReady())
-            throw new IllegalStateException("Google Fit services is not ready!");
-
-        final Activity activity = this.googleFitAdapter.getActivity();
         final Callback<Float> callback = new Callback<>();
 
-        final DataReadRequest dataReadRequest = new DataReadRequest.Builder()
-                .read(DataType.TYPE_HEIGHT)
-                .setTimeRange(1, this.googleFitAdapter.getCurrentTime(), TimeUnit.MILLISECONDS)
-                .setLimit(1)
-                .build();
+        final Activity activity = this.activity;
+        final IFitnessService fitnessService = this.fitnessService;
 
-        Fitness.getHistoryClient(activity, this.googleFitAdapter.getCurrentGoogleAccount())
-                .readData(dataReadRequest)
-                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
-                    @Override
-                    public void onSuccess(DataReadResponse dataReadResponse) {
-                        Log.i(TAG, "Successfully received user's height");
+        if (!fitnessService.isServiceReady())
+        {
+            Log.w(TAG, "Unable to get height - fitness service is not yet ready!");
+            callback.resolve(null);
+            return callback;
+        }
 
-                        final DataSet dataSet = dataReadResponse.getDataSet(DataType.TYPE_HEIGHT);
-                        if (!dataSet.isEmpty())
-                        {
-                            final DataPoint data = dataSet.getDataPoints().get(0);
-                            final float height = data.getValue(Field.FIELD_HEIGHT).asFloat();
-                            callback.resolve(height);
+        final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity);
+        if (lastSignedInAccount == null)
+        {
+            Log.w(TAG, "Unable to get height - unable to get google account");
+            callback.resolve(null);
+        }
+        else
+        {
+            final DataReadRequest dataReadRequest = new DataReadRequest.Builder()
+                    .read(DataType.TYPE_HEIGHT)
+                    .setTimeRange(1, fitnessService.getCurrentTime(), TimeUnit.MILLISECONDS)
+                    .setLimit(1)
+                    .build();
+
+            Fitness.getHistoryClient(activity, lastSignedInAccount)
+                    .readData(dataReadRequest)
+                    .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
+                        @Override
+                        public void onSuccess(DataReadResponse dataReadResponse) {
+                            Log.i(TAG, "Successfully received user's height");
+
+                            final DataSet dataSet = dataReadResponse.getDataSet(DataType.TYPE_HEIGHT);
+                            if (!dataSet.isEmpty())
+                            {
+                                final DataPoint data = dataSet.getDataPoints().get(0);
+                                final float height = data.getValue(Field.FIELD_HEIGHT).asFloat();
+                                callback.resolve(height);
+                            }
+                            else
+                            {
+                                callback.resolve(null);
+                            }
                         }
-                        else
-                        {
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w(TAG, "Failed to fetch user's height", e);
+
                             callback.resolve(null);
                         }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Failed to fetch user's height", e);
-
-                        callback.resolve(null);
-                    }
-                });
-
+                    });
+        }
         return callback;
     }
 }

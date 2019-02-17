@@ -19,19 +19,18 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import team30.personalbest.fitness.FitnessChecker;
-import team30.personalbest.fitness.GoogleFitAdapter;
 import team30.personalbest.fitness.IFitnessUpdateListener;
-import team30.personalbest.fitness.OnGoogleFitReadyListener;
-import team30.personalbest.fitness.service.ActiveFitnessService;
-import team30.personalbest.fitness.service.FitnessService;
+import team30.personalbest.fitness.service.GoogleFitAdapter;
 import team30.personalbest.fitness.service.HeightService;
+import team30.personalbest.fitness.service.IFitnessService;
+import team30.personalbest.fitness.service.OnFitnessServiceReadyListener;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 import team30.personalbest.goal.CustomGoalAchiever;
 import team30.personalbest.goal.GoalAchiever;
 import team30.personalbest.goal.GoalListener;
 import team30.personalbest.goal.StepGoal;
 
-public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyListener,
+public class MainActivity extends AppCompatActivity implements OnFitnessServiceReadyListener,
         GoalListener, IFitnessUpdateListener
 {
     public static final String TAG = "MainActivity";
@@ -39,11 +38,8 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     private static final String TITLE_HEIGHT_PROMPT = "Enter your height in meters:";
     private static final String TITLE_STEP_GOAL_PROMPT = "Set your new step goal:";
 
-    private GoogleFitAdapter googleFitAdapter;
-
+    private GoogleFitAdapter fitnessService;
     private HeightService heightService;
-    private FitnessService fitnessService;
-    private ActiveFitnessService activeFitnessService;
 
     private FitnessChecker fitnessChecker;
     private GoalAchiever goalAchiever;
@@ -66,11 +62,9 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.googleFitAdapter = new GoogleFitAdapter(this);
-
-        this.heightService = new HeightService(this.googleFitAdapter);
-        this.fitnessService = new FitnessService(this.googleFitAdapter);
-        this.activeFitnessService = new ActiveFitnessService(this.googleFitAdapter);
+        this.fitnessService = new GoogleFitAdapter(this)
+                .addOnFitnessServiceReady(this);
+        this.heightService = new HeightService(this, this.fitnessService);
 
         this.fitnessChecker = new FitnessChecker(this.fitnessService);
         this.fitnessChecker.addListener(this);
@@ -81,10 +75,9 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         //Update step goal to match current user goal...
         //this.goalAchiever.setStepGoal(new CustomStepGoal());
 
-        this.googleFitAdapter.addOnReadyListener(this);
-        this.googleFitAdapter.onActivityCreate(this, savedInstanceState);
-
         /** GUI STUFF */
+
+        final MainActivity activity = this;
 
         // Switch to weekly snapshot
         this.weeklySnapshotButton = findViewById(R.id.button_weekly_stats);
@@ -124,63 +117,46 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         this.startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Set endButton visible
-                MainActivity.this.startButton.setVisibility(View.GONE);
-                MainActivity.this.endButton.setVisibility(View.VISIBLE);
+                activity.startButton.setVisibility(View.GONE);
+                activity.endButton.setVisibility(View.VISIBLE);
 
                 // Start recording current run
-                MainActivity.this.activeFitnessService.startRecording();
+                activity.fitnessService.startRecording();
 
                 // Make sure statistics are shown
-                MainActivity.this.currStepsText.setVisibility(View.VISIBLE);
-                MainActivity.this.timeElapsedText.setVisibility(View.VISIBLE);
-                MainActivity.this.mphText.setVisibility(View.VISIBLE);
+                activity.currStepsText.setVisibility(View.VISIBLE);
+                activity.timeElapsedText.setVisibility(View.VISIBLE);
+                activity.mphText.setVisibility(View.VISIBLE);
             }
         });
 
         this.endButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Show start button again
-                MainActivity.this.startButton.setVisibility(View.VISIBLE);
-                MainActivity.this.endButton.setVisibility(View.GONE);
+                activity.startButton.setVisibility(View.VISIBLE);
+                activity.endButton.setVisibility(View.GONE);
 
-                // Stop recording current run
-                MainActivity.this.activeFitnessService.stopRecording();
-
-                // Display stats after run
-                MainActivity.this.activeFitnessService.getFitnessSnapshot().onResult(
-                        new Consumer<IFitnessSnapshot>() {
-                            @Override
-                            public void accept(IFitnessSnapshot iFitnessSnapshot) {
-                                if (iFitnessSnapshot == null)
-                                    throw new IllegalStateException("Unable to find recent valid active fitness snapshot");
-
-                                final double mph = iFitnessSnapshot.getMilesPerHour();
-                                final long duration = iFitnessSnapshot.getStopTime() - iFitnessSnapshot.getStartTime();
-                                final int steps = iFitnessSnapshot.getTotalSteps();
-
-                                MainActivity.this.totalRunStepsText.setText(steps + " steps");
-                            }
+                // Stop & display recorded current run
+                activity.fitnessService.stopRecording().onResult(new Consumer<IFitnessSnapshot>() {
+                    @Override
+                    public void accept(IFitnessSnapshot fitnessSnapshot) {
+                        if (fitnessSnapshot == null)
+                        {
+                            throw new IllegalStateException("Unable to find recent valid active fitness snapshot");
                         }
-                );
 
-                // Display stats after run
-                MainActivity.this.fitnessService.getFitnessSnapshot().onResult(
-                        new Consumer<IFitnessSnapshot>() {
-                            @Override
-                            public void accept(IFitnessSnapshot iFitnessSnapshot) {
-                                if (iFitnessSnapshot == null)
-                                    throw new IllegalStateException("Unable to find recent valid active fitness snapshot");
+                        int steps = fitnessSnapshot.getTotalSteps();
+                        double duration = (fitnessSnapshot.getStopTime() - fitnessSnapshot.getStartTime()) / 1000.0;
+                        double speed = fitnessSnapshot.getSpeed();
 
-                                final double mph = iFitnessSnapshot.getMilesPerHour();
-                                final long duration = iFitnessSnapshot.getStopTime() - iFitnessSnapshot.getStartTime();
-                                final int steps = iFitnessSnapshot.getTotalSteps();
+                        Log.d(TAG, steps + " > " + duration + "s > " + speed + "mph");
 
-                                MainActivity.this.currStepsText.setText(steps + " steps");
-                                MainActivity.this.timeElapsedText.setText(duration + " ms");
-                                MainActivity.this.mphText.setText(mph + " mph");
-                            }
-                        }
-                );
+                        //activity.totalRunStepsText.setText(steps + " steps");
+                        activity.currStepsText.setText(steps + " steps");
+                        activity.timeElapsedText.setText(duration + " s");
+                        activity.mphText.setText(speed + " mph");
+                    }
+                });
             }
         });
 
@@ -188,19 +164,23 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         this.newGoalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.this.showGoalPrompt();
+                activity.showGoalPrompt();
             }
         });
+
+        //Initialize fitness service...
+        this.fitnessService.onActivityCreate(this, savedInstanceState);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
-        this.googleFitAdapter.onActivityResult(this, requestCode, resultCode, data);
+        //Initialize fitness service...
+        this.fitnessService.onActivityResult(this, requestCode, resultCode, data);
     }
 
     @Override
-    public void onGoogleFitReady(final GoogleFitAdapter googleFitAdapter)
+    public void onFitnessServiceReady(IFitnessService fitnessService)
     {
         this.startButton.setEnabled(true);
         this.endButton.setEnabled(true);
@@ -211,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         this.heightService.getHeight().onResult(new Consumer<Float>() {
             @Override
             public void accept(Float aFloat) {
+                Log.d(TAG, "Retrieved height...");
                 if (aFloat == null)
                 {
                     //Height was never set.
@@ -245,14 +226,17 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     {
         Log.i(TAG, "Updating step...");
 
-        TextView currSteps = findViewById(R.id.curr_steps);
-        currSteps.setText(snapshot.getTotalSteps() + " steps");
+        if (snapshot != null)
+        {
+            TextView currSteps = findViewById(R.id.curr_steps);
+            currSteps.setText(snapshot.getTotalSteps() + " steps");
+        }
     }
 
     private void showHeightPrompt()
     {
         final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
         final AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle(TITLE_HEIGHT_PROMPT)
                 .setView(input)
@@ -337,7 +321,9 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
 
     private void launchGraphActivity()
     {
-        final long currentTime = this.googleFitAdapter.getCurrentTime();
+        final MainActivity activity = this;
+
+        final long currentTime = this.fitnessService.getCurrentTime();
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(currentTime);
         calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
@@ -352,21 +338,21 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                         if (incidentalSnapshots == null)
                             throw new IllegalStateException("Cannot find valid incidental fitness snapshots");
 
-                        MainActivity.this.activeFitnessService.getFitnessSnapshots(minTime, maxTime)
+                        activity.fitnessService.getFitnessSnapshots(minTime, maxTime)
                                 .onResult(new Consumer<Iterable<IFitnessSnapshot>>() {
                                     @Override
                                     public void accept(final Iterable<IFitnessSnapshot> intentionalSnapshots) {
                                         if (intentionalSnapshots == null)
                                             throw new IllegalStateException("Cannot find valid intentional fitness snapshots");
 
-                                        final Intent intent = new Intent(MainActivity.this, GraphActivity.class);
-                                        final Bundle weeklyBundle = MainActivity.this.buildWeeklyBundle(incidentalSnapshots, intentionalSnapshots);
+                                        final Intent intent = new Intent(activity, GraphActivity.class);
+                                        final Bundle weeklyBundle = activity.buildWeeklyBundle(incidentalSnapshots, intentionalSnapshots);
 
                                         final Bundle bundle = new Bundle();
                                         bundle.putBundle(GraphActivity.BUNDLE_WEEKLY_STATS, weeklyBundle);
                                         intent.putExtras(bundle);
 
-                                        MainActivity.this.startActivity(intent);
+                                        activity.startActivity(intent);
                                     }
                                 });
                     }
@@ -403,9 +389,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
                 dailyBundle.putLong(GraphActivity.BUNDLE_DAILY_TIMES,
                         snapshot.getStopTime() - snapshot.getStartTime());
                 dailyBundle.putDouble(GraphActivity.BUNDLE_DAILY_MPH,
-                        snapshot.getMilesPerHour());
-                dailyBundle.putDouble(GraphActivity.BUNDLE_DAILY_DISTANCE,
-                        snapshot.getDistanceTravelled());
+                        snapshot.getSpeed());
             }
 
             //Insert into result

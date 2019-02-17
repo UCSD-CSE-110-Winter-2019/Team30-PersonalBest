@@ -26,7 +26,10 @@ public final class Callback<T>
     public void resolve(T result)
     {
         this.result = result;
-        this.callback.accept(result);
+        if (this.callback != null)
+        {
+            this.callback.accept(result);
+        }
     }
 
     /**

@@ -6,7 +6,7 @@ import android.support.v4.util.Consumer;
 import java.util.ArrayList;
 import java.util.List;
 
-import team30.personalbest.fitness.service.FitnessService;
+import team30.personalbest.fitness.service.IFitnessService;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
 public class CustomGoalAchiever implements GoalAchiever
@@ -14,13 +14,13 @@ public class CustomGoalAchiever implements GoalAchiever
     private final List<GoalListener> listeners = new ArrayList<>();
     private StepGoal goal;
     private boolean running = false;
-    private FitnessService fitnessService;
+    private IFitnessService fitnessService;
     private GoalChecker goalChecker;
     private boolean hasImporoved = false;
 
     public CustomGoalAchiever() {}
 
-    public CustomGoalAchiever(StepGoal goal, FitnessService fs )
+    public CustomGoalAchiever(StepGoal goal, IFitnessService fs )
     {
         this.fitnessService = fs;
         this.goal = goal;
