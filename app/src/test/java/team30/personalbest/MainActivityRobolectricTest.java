@@ -10,6 +10,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowToast;
 
+
 import static org.junit.Assert.assertEquals;
 
 @RunWith(RobolectricTestRunner.class)
@@ -32,9 +33,15 @@ public class MainActivityRobolectricTest {
     }
 
     @Test
-    public void testToastEncouragement() {
+    public void testImprovementToastEncouragement() {
         submitTime.performClick();
         assertEquals("Good job you significantly improved your steps from yesterday!", ShadowToast.getTextOfLatestToast());
+    }
+
+    @Test
+    public void testGoalToastEncouragement() {
+        activity.onGoalAchievement(null);
+        assertEquals("Achievement get!", ShadowToast.getTextOfLatestToast());
     }
 
 }
