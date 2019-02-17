@@ -105,53 +105,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
         /** Add time edittext etc for mocking purposes */
         this.submitTime = findViewById(R.id.subTime);
 
-        /** Show encouragement code */
-
-        // Share pref for encouragement
-        sharedPreferences = getSharedPreferences("user_name", MODE_PRIVATE);
-        editor = sharedPreferences.edit();
-
-        twentyOClock = MILLIS_PER_DAY - (oneHour * 4);
-        eightOClock = MILLIS_PER_DAY - (oneHour * 16);
-
-        // Grab the current time when app is open
-        // currTime = twentyOClock; // TODO: googleFitAdapter.getCurrentTime();
-        fromMidnight = currTime % MILLIS_PER_DAY;
-        lastCheckedTime = eightOClock; // TODO: sharedPreferences.getLong("lastcheckedtime", 0);
-
-        if (currTime >= twentyOClock)
-        {
-            //TODO: replace this with a method call to isSignificantlyImproved()
-            boolean significantlyImproved = true; //(Math.random() > 0.5);
-            if (significantlyImproved)
-            {
-                boolean isSameDay = currTime - lastCheckedTime < MILLIS_PER_DAY;
-                if (!isSameDay || fromMidnight <= twentyOClock)
-                {
-                    // Update shared pref and show message
-                    Toast.makeText(this, "Achievement get!", Toast.LENGTH_LONG).show();
-                    editor.putLong("lastcheckedtime", currTime);
-                    editor.commit();
-                }
-            }
-        }
-
-        else if (currTime >= eightOClock)
-        {
-            //TODO: replace this with a method call to isSignificantlyImproved()
-            boolean significantlyImproved = true; //(Math.random() > 0.5);
-            if (significantlyImproved)
-            {
-                boolean isSameDay = currTime - lastCheckedTime < MILLIS_PER_DAY;
-                if (!isSameDay && (fromMidnight) <= twentyOClock)
-                {
-                    //Show message and show message
-                    Toast.makeText(this, "Achievement get!", Toast.LENGTH_LONG).show();
-                    editor.putLong("lastcheckedtime", currTime);
-                    editor.commit();
-                }
-            }
-        }
+        // TODO: Moved enocuragement stuff into own method
 
         /** GUI STUFF */
 
@@ -321,11 +275,65 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     /** Mocking purposes **/
     public void onSubmitTime(View view) {
         this.timeSubmitText = findViewById(R.id.timeText);
-        String currTime = timeSubmitText.getText().toString();
-        long currentTime = Long.parseLong(currTime);
+        String thisCurrTime = timeSubmitText.getText().toString();
+        long currentTime = Long.parseLong(thisCurrTime);
+
+        this.encouragement(currentTime);
         googleFitAdapter.setCurrentTime(currentTime);
     }
 
+
+    /** Encouragement **/
+
+    public void encouragement(long thisTime) {
+        /** Show encouragement code */
+
+        // Share pref for encouragement
+        this.sharedPreferences = getSharedPreferences("user_name", MODE_PRIVATE);
+        this.editor = sharedPreferences.edit();
+
+        this.twentyOClock = MILLIS_PER_DAY - (oneHour * 4);
+        this.eightOClock = MILLIS_PER_DAY - (oneHour * 16);
+
+        // Grab the current time when app is open
+        currTime = thisTime; // TODO: googleFitAdapter.getCurrentTime(); Also remember to change to GooglefitTime
+        this.fromMidnight = currTime % MILLIS_PER_DAY;
+        this.lastCheckedTime = eightOClock; // TODO: sharedPreferences.getLong("lastcheckedtime", 0);
+
+        if (this.currTime >= this.twentyOClock)
+        {
+            //TODO: replace this with a method call to isSignificantlyImproved()
+            boolean significantlyImproved = true; //(Math.random() > 0.5);
+            if (significantlyImproved)
+            {
+                boolean isSameDay = this.currTime - this.lastCheckedTime < this.MILLIS_PER_DAY;
+                if (!isSameDay || this.fromMidnight <= this.twentyOClock)
+                {
+                    // Update shared pref and show message
+                    Toast.makeText(this, "Achievement get!", Toast.LENGTH_LONG).show();
+                    this.editor.putLong("lastcheckedtime", this.currTime);
+                    this.editor.commit();
+                }
+            }
+        }
+
+        else if (this.currTime >= this.eightOClock)
+        {
+            //TODO: replace this with a method call to isSignificantlyImproved()
+            boolean significantlyImproved = true; //(Math.random() > 0.5);
+            if (significantlyImproved)
+            {
+                boolean isSameDay = this.currTime - this.lastCheckedTime < this.MILLIS_PER_DAY;
+                if (!isSameDay && (this.fromMidnight) <= this.twentyOClock)
+                {
+                    //Show message and show message
+                    Toast.makeText(this, "Achievement get!", Toast.LENGTH_LONG).show();
+                    this.editor.putLong("lastcheckedtime", this.currTime);
+                    this.editor.commit();
+                }
+            }
+        }
+    }
 
     @Override
     public void onStepUpdate(IFitnessSnapshot snapshot)
