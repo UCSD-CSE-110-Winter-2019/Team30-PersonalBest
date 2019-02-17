@@ -66,6 +66,7 @@ public class FitnessChecker
         if (fitnessSnapshot == null)
         {
             Log.e(TAG, "Unable to find fitness snapshot for update");
+            return;
         }
 
         for(IFitnessUpdateListener listener : this.listeners)
