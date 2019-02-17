@@ -88,6 +88,18 @@ public class FitnessChecker
         }
 
         @Override
+        protected void onPreExecute()
+        {
+            Log.i(TAG, "Started fitness checking task...");
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid)
+        {
+            Log.i(TAG, "Stopped fitness checking task");
+        }
+
+        @Override
         protected Void doInBackground( Void... voids)
         {
             try

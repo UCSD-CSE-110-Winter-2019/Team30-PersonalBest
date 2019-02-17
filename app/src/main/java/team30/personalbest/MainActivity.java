@@ -228,6 +228,9 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
             }
         });
 
+        //Start checking for step updates
+        this.fitnessChecker.startChecking();
+
         Log.i(TAG, "Successfully prepared app services");
     }
 
@@ -241,6 +244,7 @@ public class MainActivity extends AppCompatActivity implements OnGoogleFitReadyL
     @Override
     public void onStepUpdate(IFitnessSnapshot snapshot)
     {
+        Log.i(TAG, "Updating step...");
         String totalSteps = "" + snapshot.getTotalSteps();
         this.currStepsText.setText(totalSteps);
     }
