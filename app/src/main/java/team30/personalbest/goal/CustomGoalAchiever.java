@@ -17,6 +17,7 @@ public class CustomGoalAchiever implements GoalAchiever {
     private boolean running = false;
     private IFitnessService fitnessService;
     private GoalChecker goalChecker;
+    private final String LOG_TAG = "GoalChecker";
 
     public CustomGoalAchiever(IFitnessService fs) {
         this.fitnessService = fs;
@@ -38,14 +39,17 @@ public class CustomGoalAchiever implements GoalAchiever {
         if (this.running) throw new IllegalStateException("Already started.");
         if (this.goal == null) throw new IllegalStateException("Missing step goal");
 
+
         this.running = true;
 
+        Log.i(LOG_TAG, "Starting to achieve goal");
         if (this.goalChecker != null && !this.goalChecker.isCancelled()) {
             goalChecker.cancel(true);
         }
 
         this.goalChecker = new GoalChecker(this, this.fitnessService, this.goal);
-        this.goalChecker.execute();
+
+        goalChecker.executeOnExecutor( AsyncTask.THREAD_POOL_EXECUTOR );
     }
 
     @Override
@@ -127,6 +131,7 @@ public class CustomGoalAchiever implements GoalAchiever {
         @Override
         protected void onPreExecute() {
 
+            Log.i("GoalChecker", "In PreExecute of GoalChecker" );
             this.previousSteps = 0;
             // Get steps from previous day
             Calendar endTime = Calendar.getInstance();
@@ -162,6 +167,9 @@ public class CustomGoalAchiever implements GoalAchiever {
 
         @Override
         protected void onPostExecute(Void v) {
+
+            Log.i("GoalChecker", "Goal Achieved. Notifying Listeners." );
+
             if (this.currentSteps < this.goalSteps) {
                 this.achiever.doAchieveGoal();
             }
@@ -172,9 +180,12 @@ public class CustomGoalAchiever implements GoalAchiever {
             /* Maybe update steps real-time? */
         }
 
+
         @Override
         protected Void doInBackground(Void... voids) {
             try {
+
+                Log.i("GoalChecker", "Checking Goal" );
                 while (this.currentSteps < this.goalSteps) {
                     if (!this.hasImproved && this.currentSteps > this.previousSteps) {
                         this.hasImproved = true;
