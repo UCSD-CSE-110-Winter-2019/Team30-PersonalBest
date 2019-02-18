@@ -18,6 +18,8 @@ import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Session;
 import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.request.OnDataPointListener;
+import com.google.android.gms.fitness.request.SensorRequest;
 import com.google.android.gms.fitness.request.SessionInsertRequest;
 import com.google.android.gms.fitness.request.SessionReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
@@ -55,6 +57,7 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
     private GoogleFitDataRecorder stepRecorder;
     private GoogleFitDataRecorder distanceRecorder;
     private RecordingSnapshot recordingSnapshot;
+    private OnDataPointListener listener;
 
     public GoogleFitAdapter(Activity activity)
     {
@@ -182,14 +185,21 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
         this.recording = true;
 
         this.recordingSnapshot = new RecordingSnapshot(this);
+
         this.stepRecorder = new GoogleFitDataRecorder(this.activity,
                 DataType.TYPE_STEP_COUNT_CUMULATIVE,
-                2).setHandler(this.recordingSnapshot);
+                1).setHandler(this.recordingSnapshot);
+        this.stepRecorder.start();
+
+        /*
+        this.stepRecorder = new GoogleFitDataRecorder(this.activity,
+                DataType.TYPE_STEP_COUNT_CUMULATIVE,
+                4).setHandler(this.recordingSnapshot);
         //this.distanceRecorder = new GoogleFitDataRecorder(this.activity, DataType.TYPE_DISTANCE_CUMULATIVE, 2, this.recordingSnapshot);
 
         this.stepRecorder.start();
         //this.distanceRecorder.start();
-
+        */
         return this.recordingSnapshot;
 
     }
@@ -206,7 +216,7 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
             DataSet stepData = this.stepRecorder.stop();
             //DataSet distanceData = this.distanceRecorder.stop();
 
-            if (!stepData.isEmpty())
+            if (stepData != null && !stepData.isEmpty())
             {
                 final Session session = new Session.Builder()
                         .setName(RECORDING_SESSION_NAME)

@@ -448,7 +448,8 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
         final long currentTime = this.fitnessService.getCurrentTime();
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(currentTime);
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        calendar.add(Calendar.WEEK_OF_YEAR, -1);
+        //calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
         final long sundayTime = calendar.getTimeInMillis();
 
         final long minTime = Math.min(sundayTime, currentTime);

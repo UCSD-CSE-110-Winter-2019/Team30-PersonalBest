@@ -18,7 +18,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.concurrent.TimeUnit;
 
-public class GoogleFitDataRecorder implements OnDataPointListener
+public class GoogleFitDataRecorder
 {
     public static final String TAG = "GoogleFitDataRecorder";
     public static final String DATASET_NAME_PREFIX = "PersonalBestData-";
@@ -30,6 +30,7 @@ public class GoogleFitDataRecorder implements OnDataPointListener
     private DataSource dataSource;
     private DataSet dataSet;
 
+    private OnDataPointListener listener;
     private IGoogleFitDataHandler handler;
 
     public GoogleFitDataRecorder(Activity activity, DataType dataType, int samplingRate)
@@ -40,12 +41,11 @@ public class GoogleFitDataRecorder implements OnDataPointListener
         this.dataType = dataType;
         this.samplingRate = samplingRate;
 
-        final String packageName = activity.getApplicationContext().getPackageName();
         this.dataSource = new DataSource.Builder()
-                .setAppPackageName(packageName)
-                .setDataType(this.dataType)
                 .setName(DATASET_NAME_PREFIX + dataType.getName())
                 .setType(DataSource.TYPE_RAW)
+                .setDataType(this.dataType)
+                .setAppPackageName(activity)
                 .build();
         this.dataSet = DataSet.create(this.dataSource);
     }
@@ -56,50 +56,24 @@ public class GoogleFitDataRecorder implements OnDataPointListener
         return this;
     }
 
-    @Override
-    public void onDataPoint(DataPoint dataPoint)
-    {
-        Log.d(TAG, "...Found active data point...");
-        if (dataPoint.getDataType().equals(this.dataType))
-        {
-            Log.d(TAG, "Processing data point for type " + this.dataType.getName() + "...");
-
-            if (this.handler != null)
-            {
-                try
-                {
-                    final DataPoint result = this.handler.onProcessDataPoint(
-                            this.dataSource, this.dataSet, dataPoint, this.dataType);
-                    //this.dataSet.add(result);
-                }
-                catch (Exception e)
-                {
-                    Log.w(TAG, "Failed to process recording data", e);
-                }
-            }
-            else
-            {
-                this.dataSet.add(dataPoint);
-            }
-        }
-        else
-        {
-            Log.w(TAG, "Found unknown data point of type " + dataPoint.getDataType().toString());
-        }
-    }
-
     public void start()
     {
         final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(this.activity);
         if (lastSignedInAccount != null)
         {
+            this.listener = new OnDataPointListener() {
+                @Override
+                public void onDataPoint(DataPoint dataPoint) {
+                    GoogleFitDataRecorder.this.handleDataPoint(dataPoint);
+                }
+            };
+
             Fitness.getSensorsClient(this.activity, lastSignedInAccount)
                     .add(new SensorRequest.Builder()
-                                    .setDataSource(this.dataSource)
                                     .setDataType(this.dataType)
                                     .setSamplingRate(this.samplingRate, TimeUnit.SECONDS)
                                     .build(),
-                            this)
+                            this.listener)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -125,11 +99,12 @@ public class GoogleFitDataRecorder implements OnDataPointListener
         if (lastSignedInAccount != null)
         {
             Fitness.getSensorsClient(this.activity, lastSignedInAccount)
-                    .remove(this)
+                    .remove(this.listener)
                     .addOnSuccessListener(new OnSuccessListener<Boolean>() {
                         @Override
                         public void onSuccess(Boolean aBoolean) {
                             Log.i(TAG, "Successfully removed sensor data listeners for type " + GoogleFitDataRecorder.this.dataType.toString());
+                            GoogleFitDataRecorder.this.listener = null;
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -144,6 +119,54 @@ public class GoogleFitDataRecorder implements OnDataPointListener
             throw new IllegalStateException("Unable to find user account for recorder.");
         }
 
-        return this.dataSet;
+        final DataSet result = this.dataSet;
+        this.dataSet = null;
+        return result;
+    }
+
+    private void handleDataPoint(DataPoint dataPoint)
+    {
+        Log.d(TAG, "...found active data point...");
+        if (dataPoint.getDataType().equals(this.dataType))
+        {
+            Log.d(TAG, "Processing data point for type " + this.dataType.getName() + "...");
+
+            if (this.handler != null)
+            {
+                try
+                {
+                    if (this.dataSet == null)
+                    {
+                        this.dataSource = dataPoint.getDataSource();
+                        this.dataSet = DataSet.create(this.dataSource);
+                    }
+                    final DataPoint result = this.handler.onProcessDataPoint(
+                            this.dataSource, this.dataSet, dataPoint, this.dataType);
+                    if (result != null)
+                    {
+                        this.dataSet.add(result);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.w(TAG, "Failed to process recording data", e);
+                }
+            }
+            else
+            {
+                if (this.dataSet != null)
+                {
+                    this.dataSet.add(dataPoint);
+                }
+                else
+                {
+                    Log.w(TAG, "Cannot add data point to uninitialized data set");
+                }
+            }
+        }
+        else
+        {
+            Log.w(TAG, "Found unknown data point of type " + dataPoint.getDataType().toString());
+        }
     }
 }

@@ -29,7 +29,7 @@ public class RecordingSnapshot extends FitnessSnapshot implements IRecordingFitn
     public RecordingSnapshot(GoogleFitAdapter googleFitAdapter)
     {
         this.googleFitAdapter = googleFitAdapter;
-        this.setStartTime(this.googleFitAdapter.getCurrentTime());
+        this.setStartTime(googleFitAdapter.getCurrentTime());
     }
 
     @Override
@@ -44,9 +44,12 @@ public class RecordingSnapshot extends FitnessSnapshot implements IRecordingFitn
                                         DataPoint dataPoint, DataType dataType)
     {
         Log.d(TAG, "Updating for data point..." + dataPoint.toString());
+        final long startTime = dataPoint.getStartTime(TimeUnit.MILLISECONDS);
+        if (this.getStartTime() > startTime) this.setStartTime(startTime);
+        final long endTime = dataPoint.getEndTime(TimeUnit.MILLISECONDS);
+        if (this.getStopTime() < endTime) this.setStopTime(endTime);
 
         final DataPoint dst = dataSet.createDataPoint();
-
         if (dataPoint.getDataType().equals(DataType.TYPE_STEP_COUNT_CUMULATIVE))
         {
             int result = dataPoint.getValue(Field.FIELD_STEPS).asInt();
@@ -58,8 +61,8 @@ public class RecordingSnapshot extends FitnessSnapshot implements IRecordingFitn
             {
                 this.setTotalSteps(result - this.initialSteps);
             }
-            long millis = System.currentTimeMillis();
-            dst.setTimeInterval(millis, millis + 1000, TimeUnit.MILLISECONDS);
+
+            dst.setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
             dst.getValue(Field.FIELD_STEPS).setInt(result);
         }
         else if (dataPoint.getDataType().equals(DataType.TYPE_DISTANCE_CUMULATIVE))
@@ -67,16 +70,13 @@ public class RecordingSnapshot extends FitnessSnapshot implements IRecordingFitn
             float result = dataPoint.getValue(Field.FIELD_DISTANCE).asFloat();
             this.setSpeed(result);
 
-            long millis = System.currentTimeMillis();
-            dst.setTimeInterval(millis, millis + 1000, TimeUnit.MILLISECONDS);
+            dst.setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
             dst.getValue(Field.FIELD_DISTANCE).setFloat(result);
         }
         else
         {
             Log.w(TAG, "Found unknown data point.");
         }
-
-        this.setStopTime(dataPoint.getEndTime(TimeUnit.MILLISECONDS));
 
         for(OnRecordingSnapshotUpdateListener listener : this.listeners)
         {
