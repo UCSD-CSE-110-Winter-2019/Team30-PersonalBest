@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">PersonalBest</string>
+    <string name="start_walk_run">Start walk/run</string>
+    <string name="end_walk_run">End walk/run</string>
+    <string name="new_step_goal">New Step Goal</string>
+    <string name="current_steps">Current steps:</string>
+    <string name="time_elapsed">Time elapsed:</string>
+    <string name="miles_per_hour">Miles per hour:</string>
+    <string name="weekly_snapshot">Weekly Overview</string>
+    <string name="steps_goal">Steps goal:</string>
+    <string name="total_steps">Total steps:</string>
+    <string name="your_height_in_meters">Your height in meters:</string>
+    <string name="the_current_time">The current time</string>
+    <string name="submit_time">Submit Time</string>
+
+    <string name="display_height">Your Height: %1$.2f m</string>
+    <string name="display_stepgoal">Your Step Goal: %1$d m</string>
 </resources>
