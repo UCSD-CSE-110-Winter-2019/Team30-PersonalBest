@@ -267,11 +267,11 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
         //TODO: Save timestamp to Shared Prefs here.
 
         //Achieved Goal!
-        Toast.makeText(this, "Achievement get!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Achieved step goal! Good job!", Toast.LENGTH_SHORT).show();
         showGoalPrompt();
     }
 
-    //@Override
+    @Override
     public void onSubGoalAchievement(StepGoal goal)
     {
         // Achieved sub goal!

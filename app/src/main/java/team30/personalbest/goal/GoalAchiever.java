@@ -8,7 +8,6 @@ public interface GoalAchiever
     void stopAchievingGoal();
 
     void doAchieveGoal();
-
     void doAchieveSubGoal();
 
     GoalAchiever addGoalListener(GoalListener listener);

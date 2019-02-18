@@ -66,6 +66,7 @@ public class CustomGoalAchiever implements GoalAchiever {
         }
     }
 
+    @Override
     public void doAchieveSubGoal() {
         for(GoalListener listener : this.listeners) {
             listener.onSubGoalAchievement(this.goal);
