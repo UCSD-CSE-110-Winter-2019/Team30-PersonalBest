@@ -29,6 +29,7 @@ import team30.personalbest.fitness.snapshot.IRecordingFitnessSnapshot;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 import team30.personalbest.fitness.snapshot.OnRecordingSnapshotUpdateListener;
 import team30.personalbest.goal.CustomGoalAchiever;
+import team30.personalbest.goal.CustomStepGoal;
 import team30.personalbest.goal.GoalAchiever;
 import team30.personalbest.goal.GoalListener;
 import team30.personalbest.goal.StepGoal;
@@ -45,10 +46,8 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
     private HeightService heightService;
     private FitnessWatcher fitnessWatcher;
 
-    private GoalAchiever goalAchiever;
-
-    private StepGoal stepGoal;
-    private StepGoal subStepGoal;
+    private CustomGoalAchiever goalAchiever;
+    private CustomStepGoal stepGoal;
 
     private Button startButton;
     private Button endButton;
@@ -87,11 +86,8 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
         this.fitnessWatcher = new FitnessWatcher(this.fitnessService);
         this.fitnessWatcher.addFitnessListener(this);
 
-        this.goalAchiever = new CustomGoalAchiever();
+        this.goalAchiever = new CustomGoalAchiever(this.fitnessService);
         this.goalAchiever.addGoalListener(this);
-
-        //Update step goal to match current user goal...
-        //this.goalAchiever.setStepGoal(new CustomStepGoal());
 
         /** Add time edittext etc for mocking purposes */
         this.submitTime = findViewById(R.id.subTime);
@@ -205,14 +201,8 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
     @Override
     public void onFitnessServiceReady(IFitnessService fitnessService)
     {
-        this.startButton.setEnabled(true);
-        this.endButton.setEnabled(true);
-        this.newGoalButton.setEnabled(true);
-        this.weeklySnapshotButton.setEnabled(true);
-
-        this.fitnessWatcher.start();
-
         final MainActivity activity = this;
+
         // Prompt height on initial launch of app (after google fit is ready)
         this.heightService.getHeight().onResult(new Consumer<Float>() {
             @Override
@@ -226,10 +216,35 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                 else
                 {
                     //Height is already set.
-                    heightText.setText(activity.getString(R.string.display_height, aFloat));
-                }
+                    activity.heightText.setText(
+                            activity.getString(R.string.display_height,
+                                    aFloat));
 
-                //MainActivity.this.goalAchiever.startAchievingGoal();
+                    //Enable the app interface
+                    activity.startButton.setEnabled(true);
+                    activity.endButton.setEnabled(true);
+                    activity.newGoalButton.setEnabled(true);
+                    activity.weeklySnapshotButton.setEnabled(true);
+
+                    //Start updating passive steps
+                    activity.fitnessWatcher.start();
+
+                    //Start achieving your goals
+                    activity.stepGoal = new CustomStepGoal(activity, activity.fitnessService);
+                    activity.goalAchiever.setStepGoal(activity.stepGoal);
+                    activity.goalAchiever.startAchievingGoal();
+
+                    //Get the current step goal
+                    activity.stepGoal.getGoalValue().onResult(new Consumer<Integer>() {
+                        @Override
+                        public void accept(Integer integer) {
+                            activity.stepsGoalText.setText(
+                                    activity.getString(R.string.display_stepgoal, integer));
+                        }
+                    });
+
+                    Log.i(TAG, "Successfully initialized app services");
+                }
             }
         });
 
@@ -418,6 +433,7 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                             //TODO: set step goal here.
                             final String goalString = input.getText().toString();
                             final int goalInteger = Integer.parseInt(goalString);
+                            MainActivity.this.stepGoal.setGoalValue(goalInteger);
 
                             //TODO: This is just to show that height was set. remove this later
                             stepsGoalText.setText("New Step Goal: " + goalString);

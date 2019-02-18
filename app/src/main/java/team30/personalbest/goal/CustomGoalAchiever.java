@@ -2,6 +2,7 @@ package team30.personalbest.goal;
 
 import android.os.AsyncTask;
 import android.support.v4.util.Consumer;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -10,202 +11,194 @@ import java.util.List;
 import team30.personalbest.fitness.service.IFitnessService;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
-public class CustomGoalAchiever implements GoalAchiever
-{
+public class CustomGoalAchiever implements GoalAchiever {
     private final List<GoalListener> listeners = new ArrayList<>();
     private StepGoal goal;
     private boolean running = false;
     private IFitnessService fitnessService;
     private GoalChecker goalChecker;
-    private boolean hasImporoved = false;
-    private int previousSteps = 0;
 
-    public CustomGoalAchiever() {}
-
-    public CustomGoalAchiever(StepGoal goal, IFitnessService fs )
-    {
+    public CustomGoalAchiever(IFitnessService fs) {
         this.fitnessService = fs;
-        this.goal = goal;
     }
 
-    public boolean isRunning()
-    {
+    public boolean isRunning() {
         return this.running;
     }
 
     @Override
-    public CustomGoalAchiever setStepGoal(StepGoal goal)
-    {
+    public CustomGoalAchiever setStepGoal(StepGoal goal) {
         if (this.running) throw new IllegalStateException("Cannot change step goal while running");
         this.goal = goal;
         return this;
     }
 
     @Override
-    public void startAchievingGoal()
-    {
+    public void startAchievingGoal() {
         if (this.running) throw new IllegalStateException("Already started.");
         if (this.goal == null) throw new IllegalStateException("Missing step goal");
 
         this.running = true;
 
-        //TODO: Start checking if the goal is achieved...
-        //Start some AsyncTask that will intermittently check the current steps
-        //Versus the step goal and call everyone.
-        //Will need to call doAchieveGoal when achieved.
-
-        //If achieved... call:
-
-        if( goalChecker != null && !goalChecker.isCancelled() ){
+        if (this.goalChecker != null && !this.goalChecker.isCancelled()) {
             goalChecker.cancel(true);
         }
 
-        goalChecker = new GoalChecker();
-        goalChecker.execute();
+        this.goalChecker = new GoalChecker(this, this.fitnessService, this.goal);
+        this.goalChecker.execute();
     }
 
     @Override
-    public void stopAchievingGoal()
-    {
+    public void stopAchievingGoal() {
         if (!this.running) throw new IllegalStateException("Not yet started.");
 
         this.running = false;
-        if( goalChecker != null && !goalChecker.isCancelled() ) {
-            goalChecker.cancel(true);
+        if (this.goalChecker != null && !this.goalChecker.isCancelled()) {
+            this.goalChecker.cancel(true);
         }
 
     }
 
     @Override
-    public void doAchieveGoal()
-    {
-        for(GoalListener listener : this.listeners)
-        {
+    public void doAchieveGoal() {
+        for (GoalListener listener : this.listeners) {
             listener.onGoalAchievement(this.goal);
         }
     }
 
     @Override
-    public CustomGoalAchiever addGoalListener(GoalListener listener)
-    {
+    public CustomGoalAchiever addGoalListener(GoalListener listener) {
         this.listeners.add(listener);
         return this;
     }
 
     @Override
-    public void removeGoalListener(GoalListener listener)
-    {
+    public void removeGoalListener(GoalListener listener) {
         this.listeners.remove(listener);
     }
 
     @Override
-    public void clearGoalListeners()
-    {
+    public void clearGoalListeners() {
         this.listeners.clear();
     }
 
     @Override
-    public Iterable<GoalListener> getGoalListeners()
-    {
+    public Iterable<GoalListener> getGoalListeners() {
         return this.listeners;
     }
 
     @Override
-    public StepGoal getStepGoal()
-    {
+    public StepGoal getStepGoal() {
         return this.goal;
     }
 
     public boolean hasSignificantlyImproved() {
-
-        return hasImporoved;
+        if (this.goalChecker == null) return false;
+        return this.goalChecker.hasImproved();
     }
 
-    private class GoalChecker extends AsyncTask<Void, Void, Void> {
+    private static class GoalChecker extends AsyncTask<Void, Void, Void> {
+        public static final String TAG = "GoalChecker";
 
-        private int steps;
+        private final GoalAchiever achiever;
+        private final IFitnessService fitnessService;
+        private final StepGoal stepGoal;
+
+        private boolean hasImproved = false;
+        private int previousSteps = 0;
+        private int goalSteps;
+        private int currentSteps;
         private int timeInterval = 4000; // Check every 4 seconds
 
-        @Override
-        protected Void doInBackground( Void... voids) {
-
-            try{
-
-                while( steps < goal.getGoalValue()  ){
-
-                    if( !hasImporoved && steps > previousSteps ) {
-                        hasImporoved = true;
-                    }
-                    Thread.sleep(timeInterval);
-                    updateSteps();
-                }
-            } catch( Exception e ) {
-
-            }
-            return voids[0];
+        public GoalChecker(GoalAchiever goalAchiever, IFitnessService fitnessService, StepGoal stepGoal) {
+            this.achiever = goalAchiever;
+            this.fitnessService = fitnessService;
+            this.stepGoal = stepGoal;
         }
-
-
-        @Override
-        protected void onPostExecute( Void v) {
-            if( steps < goal.getGoalValue() ) {
-                doAchieveGoal();
-            }
-        }
-
-
 
         @Override
         protected void onPreExecute() {
 
-            previousSteps = 0;
+            this.previousSteps = 0;
             // Get steps from previous day
             Calendar endTime = Calendar.getInstance();
             Calendar startTime = Calendar.getInstance();
 
             startTime.set(Calendar.HOUR_OF_DAY, 0);
-            startTime.set(Calendar.MINUTE, 0 );
+            startTime.set(Calendar.MINUTE, 0);
             startTime.set(Calendar.SECOND, 1);
-            startTime.add( Calendar.DAY_OF_MONTH, -1 );
-
+            startTime.add(Calendar.DAY_OF_MONTH, -1);
 
             endTime.set(Calendar.HOUR_OF_DAY, 23);
-            endTime.set(Calendar.MINUTE,59 );
+            endTime.set(Calendar.MINUTE, 59);
             endTime.set(Calendar.SECOND, 59);
-            endTime.add( Calendar.DAY_OF_MONTH, -1 );
+            endTime.add(Calendar.DAY_OF_MONTH, -1);
 
-
-
-            fitnessService.getFitnessSnapshots( startTime.getTimeInMillis(), endTime.getTimeInMillis() )
+            this.fitnessService.getFitnessSnapshots(startTime.getTimeInMillis(), endTime.getTimeInMillis())
                     .onResult(new Consumer<Iterable<IFitnessSnapshot>>() {
                         @Override
-                        public void accept(Iterable<IFitnessSnapshot> snapshots) {
-
-                            for( IFitnessSnapshot snapshot : snapshots ) {
-                                previousSteps += snapshot.getTotalSteps();
+                        public void accept(Iterable<IFitnessSnapshot> iFitnessSnapshots) {
+                            for (IFitnessSnapshot snapshot : iFitnessSnapshots) {
+                                GoalChecker.this.previousSteps += snapshot.getTotalSteps();
                             }
                         }
                     });
 
-            updateSteps();
+            this.fitnessService.getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
+                @Override
+                public void accept(IFitnessSnapshot fitnessSnapshot) {
+                    GoalChecker.this.currentSteps = fitnessSnapshot.getTotalSteps();
+                }
+            });
         }
 
         @Override
-        protected void onProgressUpdate( Void... v ) {
-
-            /* Maybe update steps real-time?
-             */
+        protected void onPostExecute(Void v) {
+            if (this.currentSteps < this.goalSteps) {
+                this.achiever.doAchieveGoal();
+            }
         }
 
-        protected void updateSteps() {
-            fitnessService.getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
-                @Override
-                public void accept(IFitnessSnapshot iFitnessSnapshot) {
-                    steps = iFitnessSnapshot.getTotalSteps();
+        @Override
+        protected void onProgressUpdate(Void... v) {
+            /* Maybe update steps real-time? */
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                while (this.currentSteps < this.goalSteps) {
+                    if (!this.hasImproved && this.currentSteps > this.previousSteps) {
+                        this.hasImproved = true;
+                    }
+
+                    Thread.sleep(this.timeInterval);
+
+                    this.fitnessService.getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
+                        @Override
+                        public void accept(IFitnessSnapshot fitnessSnapshot) {
+                            GoalChecker.this.currentSteps = fitnessSnapshot.getTotalSteps();
+                        }
+                    });
+
+                    this.stepGoal.getGoalValue().onResult(new Consumer<Integer>() {
+                        @Override
+                        public void accept(Integer integer) {
+                            GoalChecker.this.goalSteps = integer;
+                        }
+                    });
+
                 }
-            });
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to update goal checker.", e);
+            }
 
+            return null;
         }
 
+        public boolean hasImproved()
+        {
+            return this.hasImproved;
+        }
     }
 }

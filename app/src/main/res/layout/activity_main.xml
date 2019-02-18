@@ -19,7 +19,7 @@
             android:id="@+id/heightText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/your_height_in_meters"
+            android:text="@string/display_height"
             android:textSize="20dp" />
 
         <LinearLayout

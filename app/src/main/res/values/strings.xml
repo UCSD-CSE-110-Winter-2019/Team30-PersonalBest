@@ -14,4 +14,5 @@
     <string name="submit_time">Submit Time</string>
 
     <string name="display_height">Your Height: %1$.2f m</string>
+    <string name="display_stepgoal">Your Step Goal: %1$d m</string>
 </resources>

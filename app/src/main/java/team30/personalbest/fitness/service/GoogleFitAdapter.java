@@ -44,7 +44,7 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
     public static final String RECORDING_SESSION_ID = "PersonalBestRun";
     public static final String RECORDING_SESSION_NAME = "Personal Best Run";
     public static final String RECORDING_SESSION_DESCRIPTION = "Doing a run";
-    public static final int RECORDER_SAMPLING_RATE = 2;
+    public static final int RECORDER_SAMPLING_RATE = 1;
 
     private final Activity activity;
     private final List<OnFitnessServiceReadyListener> fitnessListeners = new ArrayList<>();
@@ -55,9 +55,7 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
 
     private boolean recording = false;
     private GoogleFitDataRecorder stepRecorder;
-    private GoogleFitDataRecorder distanceRecorder;
     private RecordingSnapshot recordingSnapshot;
-    private OnDataPointListener listener;
 
     public GoogleFitAdapter(Activity activity)
     {
@@ -188,20 +186,10 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
 
         this.stepRecorder = new GoogleFitDataRecorder(this.activity,
                 DataType.TYPE_STEP_COUNT_CUMULATIVE,
-                1).setHandler(this.recordingSnapshot);
+                RECORDER_SAMPLING_RATE).setHandler(this.recordingSnapshot);
         this.stepRecorder.start();
 
-        /*
-        this.stepRecorder = new GoogleFitDataRecorder(this.activity,
-                DataType.TYPE_STEP_COUNT_CUMULATIVE,
-                4).setHandler(this.recordingSnapshot);
-        //this.distanceRecorder = new GoogleFitDataRecorder(this.activity, DataType.TYPE_DISTANCE_CUMULATIVE, 2, this.recordingSnapshot);
-
-        this.stepRecorder.start();
-        //this.distanceRecorder.start();
-        */
         return this.recordingSnapshot;
-
     }
 
     @Override
@@ -214,7 +202,6 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
         if (lastSignedInAccount != null)
         {
             DataSet stepData = this.stepRecorder.stop();
-            //DataSet distanceData = this.distanceRecorder.stop();
 
             if (stepData != null && !stepData.isEmpty())
             {
@@ -229,7 +216,6 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
                 final SessionInsertRequest insertRequest = new SessionInsertRequest.Builder()
                         .setSession(session)
                         .addDataSet(stepData)
-                        //.addDataSet(distanceData)
                         .build();
 
                 Fitness.getSessionsClient(this.activity, lastSignedInAccount)
@@ -355,7 +341,6 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
                         " to " + stopTime + ", which is (" + (stopTime - startTime) + ")");
                 final DataReadRequest readRequest = new DataReadRequest.Builder()
                         .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-                        .aggregate(DataType.TYPE_SPEED, DataType.AGGREGATE_SPEED_SUMMARY)
                         .bucketByTime(1, TimeUnit.DAYS)
                         .setTimeRange(startTime, stopTime + 1, TimeUnit.MILLISECONDS)
                         .setLimit(1)
