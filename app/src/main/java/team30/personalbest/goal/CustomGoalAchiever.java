@@ -66,6 +66,12 @@ public class CustomGoalAchiever implements GoalAchiever {
         }
     }
 
+    public void doAchieveSubGoal() {
+        for(GoalListener listener : this.listeners) {
+            listener.onSubGoalAchievement(this.goal);
+        }
+    }
+
     @Override
     public CustomGoalAchiever addGoalListener(GoalListener listener) {
         this.listeners.add(listener);
@@ -104,6 +110,7 @@ public class CustomGoalAchiever implements GoalAchiever {
         private final IFitnessService fitnessService;
         private final StepGoal stepGoal;
 
+        private boolean subGoalAchieved = false;
         private boolean hasImproved = false;
         private int previousSteps = 0;
         private int goalSteps;
@@ -170,6 +177,11 @@ public class CustomGoalAchiever implements GoalAchiever {
                 while (this.currentSteps < this.goalSteps) {
                     if (!this.hasImproved && this.currentSteps > this.previousSteps) {
                         this.hasImproved = true;
+                    }
+
+                    if(!this.subGoalAchieved && this.currentSteps > (this.goalSteps / 7)) {
+                        this.achiever.doAchieveSubGoal();
+                        this.subGoalAchieved = true;
                     }
 
                     Thread.sleep(this.timeInterval);
