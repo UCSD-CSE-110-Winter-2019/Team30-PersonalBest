@@ -301,8 +301,8 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
 
                                             snapshot.setTotalSteps(
                                                     data.getValue(Field.FIELD_STEPS).asInt());
-                                            snapshot.setSpeed(
-                                                    data.getValue(Field.FIELD_DISTANCE).asFloat());
+                                            /*snapshot.setSpeed(
+                                                    data.getValue(Field.FIELD_DISTANCE).asFloat());*/
 
                                             snapshots.add(snapshot);
                                         }
@@ -339,11 +339,11 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
             {
                 Log.d(TAG, "Getting multiple fitness data between " + startTime +
                         " to " + stopTime + ", which is (" + (stopTime - startTime) + ")");
+
                 final DataReadRequest readRequest = new DataReadRequest.Builder()
                         .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
                         .bucketByTime(1, TimeUnit.DAYS)
                         .setTimeRange(startTime, stopTime + 1, TimeUnit.MILLISECONDS)
-                        .setLimit(1)
                         .build();
                 Fitness.getHistoryClient(this.activity, lastSignedInAccount)
                         .readData(readRequest)
@@ -353,6 +353,7 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
                                 Log.d(TAG, "Retrieving multiple fitness data...");
                                 final List<IFitnessSnapshot> result = new ArrayList<>();
                                 final List<DataSet> dataSets = dataReadResponse.getDataSets();
+                                Log.d(TAG, "Data: " + dataSets.size());
                                 for(DataSet dataSet : dataSets)
                                 {
                                     Log.d(TAG, "..." + dataSet.toString());

@@ -16,8 +16,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.request.DataReadRequest;
+
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import team30.personalbest.fitness.FitnessWatcher;
 import team30.personalbest.fitness.OnFitnessUpdateListener;
@@ -477,31 +481,41 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                         if (incidentalSnapshots == null)
                             throw new IllegalStateException("Cannot find valid incidental fitness snapshots");
 
-                        activity.fitnessService.getFitnessSnapshots(minTime, maxTime)
+                        activity.fitnessService.getRecordingSnapshots(minTime, maxTime)
                                 .onResult(new Consumer<Iterable<IFitnessSnapshot>>() {
                                     @Override
                                     public void accept(final Iterable<IFitnessSnapshot> intentionalSnapshots) {
                                         if (intentionalSnapshots == null)
                                             throw new IllegalStateException("Cannot find valid intentional fitness snapshots");
 
-                                        final Intent intent = new Intent(activity, GraphActivity.class);
-                                        final Bundle weeklyBundle = activity.buildWeeklyBundle(incidentalSnapshots, intentionalSnapshots);
+                                        activity.stepGoal.getGoalValues(minTime, maxTime)
+                                                .onResult(new Consumer<Iterable<Integer>>() {
+                                                    @Override
+                                                    public void accept(Iterable<Integer> integers) {
+                                                        if (integers == null)
+                                                            throw new IllegalStateException("Cannot find valid step goals");
 
-                                        final Bundle bundle = new Bundle();
-                                        bundle.putBundle(GraphActivity.BUNDLE_WEEKLY_STATS, weeklyBundle);
-                                        intent.putExtras(bundle);
+                                                        final Intent intent = new Intent(activity, GraphActivity.class);
+                                                        final Bundle weeklyBundle = activity.buildWeeklyBundle(incidentalSnapshots, intentionalSnapshots, integers);
 
-                                        activity.startActivity(intent);
+                                                        final Bundle bundle = new Bundle();
+                                                        bundle.putBundle(GraphActivity.BUNDLE_WEEKLY_STATS, weeklyBundle);
+                                                        intent.putExtras(bundle);
+
+                                                        activity.startActivity(intent);
+                                                    }
+                                                });
                                     }
                                 });
                     }
                 });
     }
 
-    private Bundle buildWeeklyBundle(Iterable<IFitnessSnapshot> incidentalSnapshots, Iterable<IFitnessSnapshot> intentionalSnapshots)
+    private Bundle buildWeeklyBundle(Iterable<IFitnessSnapshot> incidentalSnapshots, Iterable<IFitnessSnapshot> intentionalSnapshots, Iterable<Integer> stepGoals)
     {
         final Iterator<IFitnessSnapshot> incidentalIterator = incidentalSnapshots.iterator();
         final Iterator<IFitnessSnapshot> intentionalIterator = intentionalSnapshots.iterator();
+        final Iterator<Integer> stepGoalIterator = stepGoals.iterator();
 
         final Bundle result = new Bundle();
 
