@@ -170,9 +170,7 @@ public class CustomGoalAchiever implements GoalAchiever {
 
             Log.i("GoalChecker", "Goal Achieved. Notifying Listeners." );
 
-            if (this.currentSteps < this.goalSteps) {
-                this.achiever.doAchieveGoal();
-            }
+            this.achiever.doAchieveGoal();
         }
 
         @Override
