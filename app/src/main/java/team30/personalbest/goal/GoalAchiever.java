@@ -9,6 +9,8 @@ public interface GoalAchiever
 
     void doAchieveGoal();
 
+    void doAchieveSubGoal();
+
     GoalAchiever addGoalListener(GoalListener listener);
     void removeGoalListener(GoalListener listener);
     void clearGoalListeners();

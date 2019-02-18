@@ -27,7 +27,9 @@ public class CustomGoalAchiever implements GoalAchiever
     private FitnessService fitnessService;
     private GoalChecker goalChecker;
     private boolean hasImporoved = false;
+    private boolean achievedSubGoal = false;
     private int previousSteps = 0;
+
 
     public CustomGoalAchiever() {}
 
@@ -130,6 +132,16 @@ public class CustomGoalAchiever implements GoalAchiever
         return hasImporoved;
     }
 
+    public void doAchieveSubGoal() {
+        for(GoalListener listener : this.listeners)
+        {
+            listener.onSubGoalAchievement(this.goal);
+        }
+
+        achievedSubGoal = true;
+    }
+
+
     private class GoalChecker extends AsyncTask<Void, Void, Void> {
 
         private int steps;
@@ -142,8 +154,8 @@ public class CustomGoalAchiever implements GoalAchiever
 
                 while( steps < goal.getGoalValue()  ){
 
-                    if( !hasImporoved && steps > previousSteps ) {
-                        hasImporoved = true;
+                    if( !achievedSubGoal && steps > (goal.getGoalValue() / 7 ) ) {
+                        doAchieveSubGoal();
                     }
                     Thread.sleep(timeInterval);
                     updateSteps();
