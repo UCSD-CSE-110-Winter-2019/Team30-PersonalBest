@@ -2,6 +2,6 @@ package team30.personalbest.goal;
 
 public interface GoalListener
 {
-    void onGoalAchievement(StepGoal goal);
-    void onSubGoalAchievement(StepGoal goal);
+    void onGoalAchievement(IGoalService goal);
+    void onSubGoalAchievement(IGoalService goal);
 }

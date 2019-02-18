@@ -2,7 +2,7 @@ package team30.personalbest.goal;
 
 public interface GoalAchiever
 {
-    GoalAchiever setStepGoal(StepGoal goal);
+    GoalAchiever setStepGoal(IGoalService goal);
 
     void startAchievingGoal();
     void stopAchievingGoal();
@@ -15,5 +15,5 @@ public interface GoalAchiever
     void clearGoalListeners();
     Iterable<GoalListener> getGoalListeners();
 
-    StepGoal getStepGoal();
+    IGoalService getStepGoal();
 }

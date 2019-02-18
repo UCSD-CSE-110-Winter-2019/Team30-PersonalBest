@@ -16,12 +16,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.request.DataReadRequest;
-
 import java.util.Calendar;
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 import team30.personalbest.fitness.FitnessWatcher;
 import team30.personalbest.fitness.OnFitnessUpdateListener;
@@ -33,10 +29,10 @@ import team30.personalbest.fitness.snapshot.IRecordingFitnessSnapshot;
 import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 import team30.personalbest.fitness.snapshot.OnRecordingSnapshotUpdateListener;
 import team30.personalbest.goal.CustomGoalAchiever;
-import team30.personalbest.goal.CustomStepGoal;
-import team30.personalbest.goal.GoalAchiever;
+import team30.personalbest.goal.FitnessGoalAchiever;
+import team30.personalbest.goal.GoalService;
 import team30.personalbest.goal.GoalListener;
-import team30.personalbest.goal.StepGoal;
+import team30.personalbest.goal.IGoalService;
 
 public class MainActivity extends AppCompatActivity implements OnFitnessServiceReadyListener,
         GoalListener, OnRecordingSnapshotUpdateListener, OnFitnessUpdateListener
@@ -50,8 +46,8 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
     private HeightService heightService;
     private FitnessWatcher fitnessWatcher;
 
-    private CustomGoalAchiever goalAchiever;
-    private CustomStepGoal stepGoal;
+    private GoalService goalService;
+    private FitnessGoalAchiever goalAchiever;
 
     private Button startButton;
     private Button endButton;
@@ -90,8 +86,10 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
         this.fitnessWatcher = new FitnessWatcher(this.fitnessService);
         this.fitnessWatcher.addFitnessListener(this);
 
-        this.goalAchiever = new CustomGoalAchiever(this.fitnessService);
+        this.goalService = new GoalService(this, this.fitnessService);
+        this.goalAchiever = new FitnessGoalAchiever(this.goalService);
         this.goalAchiever.addGoalListener(this);
+        this.fitnessWatcher.addFitnessListener(this.goalAchiever);
 
         /** Add time edittext etc for mocking purposes */
         this.submitTime = findViewById(R.id.subTime);
@@ -230,22 +228,20 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                     activity.newGoalButton.setEnabled(true);
                     activity.weeklySnapshotButton.setEnabled(true);
 
-                    //Start updating passive steps
-                    activity.fitnessWatcher.start();
-
                     //Start achieving your goals
-                    activity.stepGoal = new CustomStepGoal(activity, activity.fitnessService);
-                    activity.goalAchiever.setStepGoal(activity.stepGoal);
-                    activity.goalAchiever.startAchievingGoal();
+                    activity.goalService.initialize();
 
                     //Get the current step goal
-                    activity.stepGoal.getGoalValue().onResult(new Consumer<Integer>() {
+                    activity.goalService.getGoalValue().onResult(new Consumer<Integer>() {
                         @Override
                         public void accept(Integer integer) {
                             activity.stepsGoalText.setText(
                                     activity.getString(R.string.display_stepgoal, integer));
                         }
                     });
+
+                    //Start updating passive steps
+                    activity.fitnessWatcher.start();
 
                     Log.i(TAG, "Successfully initialized app services");
                 }
@@ -266,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
     }
 
     @Override
-    public void onGoalAchievement(StepGoal goal)
+    public void onGoalAchievement(IGoalService goal)
     {
         //TODO: Save timestamp to Shared Prefs here.
 
@@ -276,10 +272,10 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
     }
 
     @Override
-    public void onSubGoalAchievement(StepGoal goal)
+    public void onSubGoalAchievement(IGoalService goal)
     {
         // Achieved sub goal!
-        Toast.makeText(this, "Achieved sub goal!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Achieved daily goal! Nice work!", Toast.LENGTH_SHORT).show();
     }
 
     /** Mocking purposes **/
@@ -334,7 +330,6 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                 }
             }
         }
-
         else if (this.currTime >= this.eightOClock)
         {
             //TODO: replace this with a method call to isSignificantlyImproved()
@@ -434,13 +429,16 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                     public void onClick(DialogInterface dialog, int which) {
                         try
                         {
-                            //TODO: set step goal here.
                             final String goalString = input.getText().toString();
                             final int goalInteger = Integer.parseInt(goalString);
-                            MainActivity.this.stepGoal.setGoalValue(goalInteger);
+                            MainActivity.this.fitnessService.getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
+                                @Override
+                                public void accept(IFitnessSnapshot fitnessSnapshot) {
+                                    MainActivity.this.goalService.setGoalValue(fitnessSnapshot.getTotalSteps() + goalInteger);
+                                }
+                            });
 
-                            //TODO: This is just to show that height was set. remove this later
-                            stepsGoalText.setText("New Step Goal: " + goalString);
+                            stepsGoalText.setText("Your Step Goal: " + goalString);
 
                             Log.i(TAG, "Successfully processed step goal");
                         }
@@ -469,7 +467,6 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(currentTime);
         calendar.add(Calendar.WEEK_OF_YEAR, -1);
-        //calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
         final long sundayTime = calendar.getTimeInMillis();
 
         final long minTime = Math.min(sundayTime, currentTime);
@@ -488,7 +485,7 @@ public class MainActivity extends AppCompatActivity implements OnFitnessServiceR
                                         if (intentionalSnapshots == null)
                                             throw new IllegalStateException("Cannot find valid intentional fitness snapshots");
 
-                                        activity.stepGoal.getGoalValues(minTime, maxTime)
+                                        activity.goalService.getGoalValues(minTime, maxTime)
                                                 .onResult(new Consumer<Iterable<Integer>>() {
                                                     @Override
                                                     public void accept(Iterable<Integer> integers) {

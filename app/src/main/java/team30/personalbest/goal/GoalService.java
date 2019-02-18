@@ -18,7 +18,6 @@ import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
-import com.google.android.gms.fitness.data.Goal;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.DataTypeCreateRequest;
 import com.google.android.gms.fitness.request.DataUpdateRequest;
@@ -35,14 +34,9 @@ import java.util.concurrent.TimeUnit;
 import team30.personalbest.fitness.Callback;
 import team30.personalbest.fitness.service.IFitnessService;
 
-public class CustomStepGoal implements StepGoal {
-    public static final String TAG = "CustomStepGoal";
-    private static final int DEFAULT_GOAL = 500;
-
+public class GoalService implements IGoalService {
+    public static final String TAG = "GoalService";
     public static final String DATA_TYPE_GOAL_NAME = "team30.personalbest.goal";
-
-    private Goal.MetricObjective stepGoal;
-    private List<Goal> goals;
 
     private final IFitnessService fitnessService;
     private final Activity activity;
@@ -52,9 +46,9 @@ public class CustomStepGoal implements StepGoal {
     private final List<Callback<DataSource>> dataSourceCallbacks = new ArrayList<>();
     private volatile DataSource dataSource;
 
-    private GoogleApiClient googleApiClient;
+    private final GoogleApiClient googleApiClient;
 
-    public CustomStepGoal(final Activity activity, final IFitnessService fitnessService) {
+    public GoalService(final Activity activity, final IFitnessService fitnessService) {
         this.activity = activity;
         this.fitnessService = fitnessService;
 
@@ -65,23 +59,26 @@ public class CustomStepGoal implements StepGoal {
                 .addApi(Fitness.RECORDING_API)
                 .addApi(Fitness.SENSORS_API)
                 .build();
+    }
 
+    public void initialize()
+    {
         this.googleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
             @Override
             public void onConnected(@Nullable Bundle bundle) {
                 Log.d(TAG, "Google API client connection has succeeded.");
-                CustomStepGoal.this.createDataSource(activity)
+                GoalService.this.createDataSource(GoalService.this.activity)
                         .onResult(new Consumer<DataSource>() {
                             @Override
                             public void accept(DataSource dataSource) {
-                                synchronized (CustomStepGoal.this) {
+                                synchronized (GoalService.this) {
                                     List<Callback<DataSource>> callbacks =
-                                            CustomStepGoal.this.dataSourceCallbacks;
+                                            GoalService.this.dataSourceCallbacks;
                                     for (Callback<DataSource> callback : callbacks) {
                                         callback.resolve(dataSource);
                                     }
                                     callbacks.clear();
-                                    CustomStepGoal.this.dataSource = dataSource;
+                                    GoalService.this.dataSource = dataSource;
                                 }
                             }
                         });
@@ -118,7 +115,7 @@ public class CustomStepGoal implements StepGoal {
         return callback;
     }
 
-    public Callback<DataSource> getDataSource() {
+    private Callback<DataSource> getDataSource() {
         final Callback<DataSource> callback = new Callback<>();
         synchronized (this) {
             if (this.dataSource == null) {
@@ -148,7 +145,7 @@ public class CustomStepGoal implements StepGoal {
                                     .addField("day", Field.FORMAT_INT32)
                                     .build();
 
-                            Fitness.ConfigApi.createCustomDataType(CustomStepGoal.this.googleApiClient, createRequest)
+                            Fitness.ConfigApi.createCustomDataType(GoalService.this.googleApiClient, createRequest)
                                     .setResultCallback(new ResultCallback<DataTypeResult>() {
                                         @Override
                                         public void onResult(@NonNull DataTypeResult dataTypeResult) {
@@ -162,27 +159,29 @@ public class CustomStepGoal implements StepGoal {
         return callback;
     }
 
+    @Override
     public Callback<Integer> setGoalValue(final int value) {
         final Callback<Integer> callback = new Callback<>();
         this.getDataSource().onResult(new Consumer<DataSource>() {
             @Override
             public void accept(final DataSource dataSource) {
-                CustomStepGoal.this.getDataType().onResult(new Consumer<DataType>() {
+                GoalService.this.getDataType().onResult(new Consumer<DataType>() {
                     @Override
                     public void accept(final DataType dataType) {
-                        final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(CustomStepGoal.this.activity);
+                        final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(GoalService.this.activity);
                         if (lastSignedInAccount != null) {
-                            Calendar cend = Calendar.getInstance();
-                            Calendar cstart = Calendar.getInstance();
-                            cstart.set(Calendar.HOUR_OF_DAY, 0);
-                            cstart.set(Calendar.MINUTE, 0);
-                            cstart.set(Calendar.SECOND, 1);
-                            cend.set(Calendar.HOUR_OF_DAY, 23);
-                            cend.set(Calendar.MINUTE, 59);
-                            cend.set(Calendar.SECOND, 59);
-
-                            final long startTime = cstart.getTimeInMillis();
-                            final long stopTime = cend.getTimeInMillis();
+                            Calendar stopCal = Calendar.getInstance();
+                            Calendar startCal = Calendar.getInstance();
+                            startCal.set(Calendar.HOUR_OF_DAY, 0);
+                            startCal.set(Calendar.MINUTE, 0);
+                            startCal.set(Calendar.SECOND, 1);
+                            startCal.add(Calendar.DAY_OF_MONTH, -1);
+                            stopCal.set(Calendar.HOUR_OF_DAY, 23);
+                            stopCal.set(Calendar.MINUTE, 59);
+                            stopCal.set(Calendar.SECOND, 59);
+                            stopCal.add(Calendar.DAY_OF_MONTH, -1);
+                            final long startTime = startCal.getTimeInMillis();
+                            final long stopTime = stopCal.getTimeInMillis();
 
                             final DataSet dataSet = DataSet.create(dataSource);
                             DataPoint newGoal = dataSet.createDataPoint()
@@ -195,7 +194,7 @@ public class CustomStepGoal implements StepGoal {
                                     .setTimeInterval(startTime, stopTime, TimeUnit.MILLISECONDS)
                                     .build();
 
-                            Fitness.getHistoryClient(CustomStepGoal.this.activity, lastSignedInAccount)
+                            Fitness.getHistoryClient(GoalService.this.activity, lastSignedInAccount)
                                     .updateData(updateRequest)
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
@@ -229,14 +228,14 @@ public class CustomStepGoal implements StepGoal {
         this.getDataType().onResult(new Consumer<DataType>() {
             @Override
             public void accept(DataType dataType) {
-                final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(CustomStepGoal.this.activity);
+                final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(GoalService.this.activity);
                 if (lastSignedInAccount != null) {
                     final DataReadRequest readRequest = new DataReadRequest.Builder()
                             .read(dataType)
                             .setTimeRange(startTime, stopTime, TimeUnit.MILLISECONDS)
                             .build();
 
-                    Fitness.getHistoryClient(CustomStepGoal.this.activity, lastSignedInAccount)
+                    Fitness.getHistoryClient(GoalService.this.activity, lastSignedInAccount)
                             .readData(readRequest)
                             .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
                                 @Override
@@ -278,27 +277,29 @@ public class CustomStepGoal implements StepGoal {
         this.getDataType().onResult(new Consumer<DataType>() {
             @Override
             public void accept(DataType dataType) {
-                final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(CustomStepGoal.this.activity);
+                final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(GoalService.this.activity);
 
                 if (lastSignedInAccount != null) {
-                    Calendar endTime = Calendar.getInstance();
-                    Calendar startTime = Calendar.getInstance();
-
-                    startTime.set(Calendar.HOUR_OF_DAY, 0);
-                    startTime.set(Calendar.MINUTE, 0);
-                    startTime.set(Calendar.SECOND, 1);
-
-                    endTime.set(Calendar.HOUR_OF_DAY, 23);
-                    endTime.set(Calendar.MINUTE, 59);
-                    endTime.set(Calendar.SECOND, 59);
+                    Calendar stopCal = Calendar.getInstance();
+                    Calendar startCal = Calendar.getInstance();
+                    startCal.set(Calendar.HOUR_OF_DAY, 0);
+                    startCal.set(Calendar.MINUTE, 0);
+                    startCal.set(Calendar.SECOND, 1);
+                    startCal.add(Calendar.DAY_OF_MONTH, -1);
+                    stopCal.set(Calendar.HOUR_OF_DAY, 23);
+                    stopCal.set(Calendar.MINUTE, 59);
+                    stopCal.set(Calendar.SECOND, 59);
+                    stopCal.add(Calendar.DAY_OF_MONTH, -1);
+                    final long startTime = startCal.getTimeInMillis();
+                    final long stopTime = stopCal.getTimeInMillis();
 
                     final DataReadRequest readRequest = new DataReadRequest.Builder()
                             .read(dataType)
-                            .setTimeRange(startTime.getTimeInMillis(), endTime.getTimeInMillis(), TimeUnit.MILLISECONDS)
+                            .setTimeRange(startTime, stopTime, TimeUnit.MILLISECONDS)
                             .setLimit(1)
                             .build();
 
-                    Fitness.getHistoryClient(CustomStepGoal.this.activity, lastSignedInAccount)
+                    Fitness.getHistoryClient(GoalService.this.activity, lastSignedInAccount)
                             .readData(readRequest)
                             .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
                                 @Override

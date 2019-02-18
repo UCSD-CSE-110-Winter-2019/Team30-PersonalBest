@@ -13,7 +13,7 @@ import team30.personalbest.fitness.snapshot.IFitnessSnapshot;
 
 public class CustomGoalAchiever implements GoalAchiever {
     private final List<GoalListener> listeners = new ArrayList<>();
-    private StepGoal goal;
+    private IGoalService goal;
     private boolean running = false;
     private IFitnessService fitnessService;
     private GoalChecker goalChecker;
@@ -27,7 +27,7 @@ public class CustomGoalAchiever implements GoalAchiever {
     }
 
     @Override
-    public CustomGoalAchiever setStepGoal(StepGoal goal) {
+    public CustomGoalAchiever setStepGoal(IGoalService goal) {
         if (this.running) throw new IllegalStateException("Cannot change step goal while running");
         this.goal = goal;
         return this;
@@ -95,7 +95,7 @@ public class CustomGoalAchiever implements GoalAchiever {
     }
 
     @Override
-    public StepGoal getStepGoal() {
+    public IGoalService getStepGoal() {
         return this.goal;
     }
 
@@ -109,7 +109,7 @@ public class CustomGoalAchiever implements GoalAchiever {
 
         private final GoalAchiever achiever;
         private final IFitnessService fitnessService;
-        private final StepGoal stepGoal;
+        private final IGoalService iGoalService;
 
         private boolean subGoalAchieved = false;
         private boolean hasImproved = false;
@@ -118,15 +118,15 @@ public class CustomGoalAchiever implements GoalAchiever {
         private int currentSteps;
         private int timeInterval = 4000; // Check every 4 seconds
 
-        public GoalChecker(GoalAchiever goalAchiever, IFitnessService fitnessService, StepGoal stepGoal) {
+        public GoalChecker(GoalAchiever goalAchiever, IFitnessService fitnessService, IGoalService iGoalService) {
             this.achiever = goalAchiever;
             this.fitnessService = fitnessService;
-            this.stepGoal = stepGoal;
+            this.iGoalService = iGoalService;
         }
 
         @Override
         protected void onPreExecute() {
-
+            super.onPreExecute();
             this.previousSteps = 0;
             // Get steps from previous day
             Calendar endTime = Calendar.getInstance();
@@ -162,6 +162,7 @@ public class CustomGoalAchiever implements GoalAchiever {
 
         @Override
         protected void onPostExecute(Void v) {
+            super.onPostExecute(v);
             if (this.currentSteps < this.goalSteps) {
                 this.achiever.doAchieveGoal();
             }
@@ -194,7 +195,7 @@ public class CustomGoalAchiever implements GoalAchiever {
                         }
                     });
 
-                    this.stepGoal.getGoalValue().onResult(new Consumer<Integer>() {
+                    this.iGoalService.getGoalValue().onResult(new Consumer<Integer>() {
                         @Override
                         public void accept(Integer integer) {
                             GoalChecker.this.goalSteps = integer;
