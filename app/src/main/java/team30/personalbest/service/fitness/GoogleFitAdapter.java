@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Consumer;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -434,13 +435,20 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
 
 	@Nullable
 	@Override
-	public Callback<IService> onActivityResult(ServiceInitializer serviceInitializer, Activity activity, int requestCode, int resultCode, @Nullable Intent data)
+	public Callback<IService> onActivityResult(ServiceInitializer serviceInitializer, final Activity activity, int requestCode, int resultCode, @Nullable Intent data)
 	{
 		this.activity = activity;
 
 		if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_OAUTH_REQUEST_CODE)
 		{
-			return this.subscribeToGoogleServices(activity);
+			this.subscribeToGoogleServices(activity).onResult(new Consumer<IService>() {
+				@Override
+				public void accept(IService iService)
+				{
+					activity.recreate();
+				}
+			});
+			return null;
 		}
 		else
 		{

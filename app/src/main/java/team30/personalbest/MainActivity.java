@@ -186,16 +186,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 							throw new IllegalStateException("Unable to find recent valid active fitness snapshot");
 						}
 
-						int steps = fitnessSnapshot.getTotalSteps();
-						double duration = (fitnessSnapshot.getStopTime() - fitnessSnapshot.getStartTime()) / 1000.0;
-						double speed = fitnessSnapshot.getSpeed();
-
-						Log.d(TAG, steps + " > " + duration + "s > " + speed + "mph");
-
-						//activity.totalRunStepsText.setText(steps + " steps");
-						activity.currStepsText.setText(steps + " steps");
-						activity.timeElapsedText.setText(duration + " s");
-						activity.mphText.setText(speed + " mph");
+						activity.displayRecordingSnapshot(fitnessSnapshot);
 					}
 				});
 			}
@@ -207,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 			@Override
 			public void onClick(View v)
 			{
-				activity.showGoalPrompt();
+				activity.showGoalPrompt(false);
 			}
 		});
 
@@ -274,11 +265,11 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 	}
 
 	@Override
-	public void onFitnessUpdate(IFitnessSnapshot snapshot)
+	public void onFitnessUpdate(IFitnessSnapshot fitnessSnapshot)
 	{
-		if (snapshot != null)
+		if (fitnessSnapshot != null)
 		{
-			int steps = snapshot.getTotalSteps();
+			int steps = fitnessSnapshot.getTotalSteps();
 			this.totalRunStepsText.setText(steps + " steps");
 		}
 	}
@@ -290,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 
 		//Achieved Goal!
 		Toast.makeText(this, "Achieved step goal! Good job!", Toast.LENGTH_SHORT).show();
-		showGoalPrompt();
+		showGoalPrompt(true);
 	}
 
 	@Override
@@ -386,16 +377,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 
 		if (activeSnapshot != null)
 		{
-			int steps = activeSnapshot.getTotalSteps();
-			double duration = (activeSnapshot.getStopTime() - activeSnapshot.getStartTime()) / 1000.0;
-			double speed = activeSnapshot.getSpeed();
-
-			Log.d(TAG, steps + " > " + duration + "s > " + speed + "mph");
-
-			//activity.totalRunStepsText.setText(steps + " steps");
-			this.currStepsText.setText(steps + " steps");
-			this.timeElapsedText.setText(duration + " s");
-			this.mphText.setText(speed + " mph");
+			this.displayRecordingSnapshot(activeSnapshot);
 		}
 	}
 
@@ -483,7 +465,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		return callback;
 	}
 
-	private void showGoalPrompt()
+	private void showGoalPrompt(final boolean forceMax)
 	{
 		final EditText input = new EditText(this);
 		input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -499,14 +481,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 						{
 							final String goalString = input.getText().toString();
 							final int goalInteger = Integer.parseInt(goalString);
-							MainActivity.this.fitnessService.getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>()
-							{
-								@Override
-								public void accept(IFitnessSnapshot fitnessSnapshot)
-								{
-									MainActivity.this.goalService.setCurrentGoal(goalInteger);
-								}
-							});
+							MainActivity.this.goalService.setCurrentGoal(goalInteger);
 
 							stepsGoalText.setText("Your Step Goal: " + goalString);
 
@@ -516,7 +491,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 						{
 							Log.w(TAG, "Failed to process step goal", e);
 
-							showGoalPrompt();
+							showGoalPrompt(forceMax);
 						}
 					}
 				})
@@ -525,6 +500,11 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 					@Override
 					public void onClick(DialogInterface dialog, int which)
 					{
+						if (forceMax)
+						{
+							MainActivity.this.goalService.setCurrentGoal(Integer.MAX_VALUE);
+							MainActivity.this.stepsGoalText.setText("Your Step Goal: ---");
+						}
 						dialog.cancel();
 					}
 				});
@@ -626,5 +606,19 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		}
 
 		return result;
+	}
+
+	private void displayRecordingSnapshot(IFitnessSnapshot fitnessSnapshot)
+	{
+		int steps = fitnessSnapshot.getTotalSteps();
+		double duration = (fitnessSnapshot.getStopTime() - fitnessSnapshot.getStartTime()) / 1000.0;
+		double speed = (steps) / (Math.min(duration, 1));
+
+		Log.d(TAG, steps + " > " + duration + "s > " + speed + "fps");
+
+		//activity.totalRunStepsText.setText(steps + " steps");
+		this.currStepsText.setText(steps + " steps");
+		this.timeElapsedText.setText(duration + " s");
+		this.mphText.setText(speed + " fps");
 	}
 }
