@@ -22,11 +22,9 @@ import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard
 import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.is;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
@@ -40,20 +38,24 @@ public class MainActivityEspressoTest {
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.button_start), withText("Start walk/run"),
                         childAtPosition(
-                                childAtPosition(
+                            childAtPosition(
+                                    childAtPosition(
                                         withId(android.R.id.content),
                                         0),
-                                3),
+                                    0),
+                            4),
                         isDisplayed()));
         appCompatButton.perform(click());
 
         ViewInteraction appCompatButton2 = onView(
-                allOf(withId(R.id.button_end), withText("End walk/run now"),
+                allOf(withId(R.id.button_end), withText("End walk/run"),
                         childAtPosition(
                                 childAtPosition(
-                                        withId(android.R.id.content),
+                                        childAtPosition(
+                                                withId(android.R.id.content),
+                                                0),
                                         0),
-                                4),
+                                5),
                         isDisplayed()));
         appCompatButton2.perform(click());
 
@@ -61,9 +63,11 @@ public class MainActivityEspressoTest {
                 allOf(withId(R.id.newStepGoalButton), withText("New Step Goal"),
                         childAtPosition(
                                 childAtPosition(
-                                        withId(android.R.id.content),
+                                        childAtPosition(
+                                                withId(android.R.id.content),
+                                                0),
                                         0),
-                                5),
+                                6),
                         isDisplayed()));
         appCompatButton3.perform(click());
 
