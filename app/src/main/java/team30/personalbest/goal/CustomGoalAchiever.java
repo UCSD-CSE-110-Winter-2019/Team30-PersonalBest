@@ -160,7 +160,10 @@ public class CustomGoalAchiever implements GoalAchiever {
             this.fitnessService.getFitnessSnapshot().onResult(new Consumer<IFitnessSnapshot>() {
                 @Override
                 public void accept(IFitnessSnapshot fitnessSnapshot) {
-                    GoalChecker.this.currentSteps = fitnessSnapshot.getTotalSteps();
+                    if (fitnessSnapshot != null)
+                    {
+                        GoalChecker.this.currentSteps = fitnessSnapshot.getTotalSteps();
+                    }
                 }
             });
         }
