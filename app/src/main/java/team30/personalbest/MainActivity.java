@@ -612,7 +612,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 	{
 		int steps = fitnessSnapshot.getTotalSteps();
 		double duration = (fitnessSnapshot.getStopTime() - fitnessSnapshot.getStartTime()) / 1000.0;
-		double speed = (steps) / (Math.min(duration, 1));
+		double speed = (steps) / (Math.max(duration, 1));
 
 		Log.d(TAG, steps + " > " + duration + "s > " + speed + "fps");
 
