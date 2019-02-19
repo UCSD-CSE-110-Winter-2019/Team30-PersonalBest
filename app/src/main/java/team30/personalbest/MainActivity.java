@@ -21,10 +21,10 @@ import java.util.Iterator;
 
 import team30.personalbest.goal.FitnessGoalAchiever;
 import team30.personalbest.goal.GoalListener;
-import team30.personalbest.service.goal.GoalService;
 import team30.personalbest.service.OnServicesReadyListener;
 import team30.personalbest.service.ServiceInitializer;
 import team30.personalbest.service.fitness.GoogleFitAdapter;
+import team30.personalbest.service.goal.GoalService;
 import team30.personalbest.service.goal.IGoalService;
 import team30.personalbest.service.height.HeightService;
 import team30.personalbest.service.watcher.FitnessWatcher;
@@ -33,6 +33,7 @@ import team30.personalbest.snapshot.IFitnessSnapshot;
 import team30.personalbest.snapshot.IGoalSnapshot;
 import team30.personalbest.snapshot.IRecordingFitnessSnapshot;
 import team30.personalbest.snapshot.OnRecordingSnapshotUpdateListener;
+import team30.personalbest.util.Callback;
 
 public class MainActivity extends AppCompatActivity implements OnServicesReadyListener,
 		GoalListener, OnRecordingSnapshotUpdateListener, OnFitnessUpdateListener
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 
 	private static final String TITLE_HEIGHT_PROMPT = "Enter your height in meters:";
 	private static final String TITLE_STEP_GOAL_PROMPT = "Set your new step goal:";
+
+	public static final int DEFAULT_GOAL_VALUE = 500;
 
 	private ServiceInitializer serviceInitializer;
 	private GoogleFitAdapter fitnessService;
@@ -86,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		this.heightService = new HeightService(this.fitnessService);
 		this.fitnessWatcher = new FitnessWatcher(this.fitnessService);
 		this.fitnessWatcher.addFitnessListener(this);
-		this.goalService = new GoalService();
+		this.goalService = new GoalService(this.fitnessService);
 
 		this.serviceInitializer = new ServiceInitializer.Builder()
 				.addService(this.fitnessService)
@@ -94,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 				.addService(this.goalService)
 				.addService(this.fitnessWatcher)
 				.build();
-
+		this.serviceInitializer.addOnServicesReadyListener(this);
 
 		this.goalAchiever = new FitnessGoalAchiever(this.goalService);
 		this.goalAchiever.addGoalListener(this);
@@ -225,42 +228,45 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		final MainActivity activity = this;
 
 		// Prompt height on initial launch of app (after google fit is ready)
-		this.heightService.getHeight().onResult(new Consumer<Float>()
+		this.resolveHeight().onResult(new Consumer<Float>()
 		{
 			@Override
 			public void accept(Float aFloat)
 			{
-				Log.d(TAG, "Retrieved height...");
 				if (aFloat == null)
 				{
-					//Height was never set.
-					activity.showHeightPrompt();
+					throw new IllegalStateException("Unable to resolve height");
 				}
-				else
-				{
-					//Height is already set.
-					activity.heightText.setText(
-							activity.getString(R.string.display_height,
-							                   aFloat));
 
-					//Enable the app interface
-					activity.startButton.setEnabled(true);
-					activity.endButton.setEnabled(true);
-					activity.newGoalButton.setEnabled(true);
-					activity.weeklySnapshotButton.setEnabled(true);
+				activity.heightText.setText(
+						activity.getString(R.string.display_height,
+						                   aFloat));
 
-					//Get the current step goal
-					activity.goalService.getGoalSnapshot().onResult(new Consumer<IGoalSnapshot>() {
-						@Override
-						public void accept(IGoalSnapshot iGoalSnapshot)
+				//Enable the app interface
+				activity.startButton.setEnabled(true);
+				activity.endButton.setEnabled(true);
+				activity.newGoalButton.setEnabled(true);
+				activity.weeklySnapshotButton.setEnabled(true);
+
+				//Get the current step goal
+				activity.goalService.getGoalSnapshot().onResult(new Consumer<IGoalSnapshot>() {
+					@Override
+					public void accept(IGoalSnapshot iGoalSnapshot)
+					{
+						if (iGoalSnapshot == null)
+						{
+							activity.stepsGoalText.setText(
+									activity.getString(R.string.display_stepgoal, DEFAULT_GOAL_VALUE));
+						}
+						else
 						{
 							activity.stepsGoalText.setText(
 									activity.getString(R.string.display_stepgoal, iGoalSnapshot.getGoalValue()));
 						}
-					});
+					}
+				});
 
-					Log.i(TAG, "Successfully initialized app services");
-				}
+				Log.i(TAG, "Successfully initialized app services");
 			}
 		});
 
@@ -393,8 +399,36 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		}
 	}
 
-	private void showHeightPrompt()
+	private Callback<Float> resolveHeight()
 	{
+		final Callback<Float> callback = new Callback<>();
+		this.heightService.getHeight().onResult(new Consumer<Float>() {
+			@Override
+			public void accept(Float aFloat)
+			{
+				Log.d(TAG, "Resolving height...");
+				if (aFloat == null)
+				{
+					MainActivity.this.showHeightPrompt().onResult(new Consumer<Float>() {
+						@Override
+						public void accept(Float aFloat)
+						{
+							callback.resolve(aFloat);
+						}
+					});
+				}
+				else
+				{
+					callback.resolve(aFloat);
+				}
+			}
+		});
+		return callback;
+	}
+
+	private Callback<Float> showHeightPrompt()
+	{
+		final Callback<Float> callback = new Callback<>();
 		final EditText input = new EditText(this);
 		input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this)
@@ -424,6 +458,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 										);
 
 									Log.i(TAG, "Successfully processed height");
+									callback.resolve(aFloat);
 								}
 							});
 						}
@@ -445,6 +480,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 					}
 				});
 		builder.show();
+		return callback;
 	}
 
 	private void showGoalPrompt()
@@ -468,7 +504,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 								@Override
 								public void accept(IFitnessSnapshot fitnessSnapshot)
 								{
-									MainActivity.this.goalService.setCurrentGoal(fitnessSnapshot.getTotalSteps() + goalInteger);
+									MainActivity.this.goalService.setCurrentGoal(goalInteger);
 								}
 							});
 

@@ -28,7 +28,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +48,12 @@ public class GoalService implements IGoalService
 	private Activity activity;
 	private GoogleApiClient googleApiClient;
 	private DataSource dataSource;
+	private IFitnessService fitnessService;
+
+	public GoalService(IFitnessService fitnessService)
+	{
+		this.fitnessService = fitnessService;
+	}
 
 	@Override
 	public Callback<IGoalSnapshot> setCurrentGoal(final int goalValue)
@@ -63,18 +68,8 @@ public class GoalService implements IGoalService
 				final GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(goalService.activity);
 				if (lastSignedInAccount != null)
 				{
-					Calendar stopCal = Calendar.getInstance();
-					Calendar startCal = Calendar.getInstance();
-					startCal.set(Calendar.HOUR_OF_DAY, 0);
-					startCal.set(Calendar.MINUTE, 0);
-					startCal.set(Calendar.SECOND, 1);
-					startCal.add(Calendar.DAY_OF_MONTH, -1);
-					stopCal.set(Calendar.HOUR_OF_DAY, 23);
-					stopCal.set(Calendar.MINUTE, 59);
-					stopCal.set(Calendar.SECOND, 59);
-					stopCal.add(Calendar.DAY_OF_MONTH, -1);
-					final long startTime = startCal.getTimeInMillis();
-					final long stopTime = stopCal.getTimeInMillis();
+					final long startTime = goalService.fitnessService.getCurrentTime();
+					final long stopTime = startTime + 1;
 
 					final DataSet dataSet = DataSet.create(goalService.dataSource);
 					DataPoint newGoal = dataSet.createDataPoint()
@@ -135,18 +130,8 @@ public class GoalService implements IGoalService
 
 				if (lastSignedInAccount != null)
 				{
-					Calendar stopCal = Calendar.getInstance();
-					Calendar startCal = Calendar.getInstance();
-					startCal.set(Calendar.HOUR_OF_DAY, 0);
-					startCal.set(Calendar.MINUTE, 0);
-					startCal.set(Calendar.SECOND, 1);
-					startCal.add(Calendar.DAY_OF_MONTH, -1);
-					stopCal.set(Calendar.HOUR_OF_DAY, 23);
-					stopCal.set(Calendar.MINUTE, 59);
-					stopCal.set(Calendar.SECOND, 59);
-					stopCal.add(Calendar.DAY_OF_MONTH, -1);
-					final long startTime = startCal.getTimeInMillis();
-					final long stopTime = stopCal.getTimeInMillis();
+					final long startTime = 1;
+					final long stopTime = goalService.fitnessService.getCurrentTime();
 
 					final DataReadRequest readRequest = new DataReadRequest.Builder()
 							.read(dataType)

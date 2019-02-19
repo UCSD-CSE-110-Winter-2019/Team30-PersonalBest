@@ -1,6 +1,7 @@
 package team30.personalbest.goal;
 
 import android.support.v4.util.Consumer;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import team30.personalbest.snapshot.IGoalSnapshot;
 
 public class FitnessGoalAchiever implements OnFitnessUpdateListener
 {
+	public static final String TAG = "FitnessGoalAchiever";
 	private final List<GoalListener> listeners = new ArrayList<>();
 	private final IGoalService goalService;
 
@@ -48,10 +50,13 @@ public class FitnessGoalAchiever implements OnFitnessUpdateListener
 				@Override
 				public void accept(IGoalSnapshot iGoalSnapshot)
 				{
-
-					if (fitnessSnapshot.getTotalSteps() >= iGoalSnapshot.getGoalValue())
+					if (iGoalSnapshot != null)
 					{
-						FitnessGoalAchiever.this.achieveGoal();
+						Log.d(TAG, "Trying to achieve goal " + iGoalSnapshot.getGoalValue() + " for " + fitnessSnapshot.getTotalSteps() + "...");
+						if (fitnessSnapshot.getTotalSteps() >= iGoalSnapshot.getGoalValue())
+						{
+							FitnessGoalAchiever.this.achieveGoal();
+						}
 					}
 				}
 			});

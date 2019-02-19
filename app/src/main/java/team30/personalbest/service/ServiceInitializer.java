@@ -64,7 +64,7 @@ public class ServiceInitializer
 				final Callback<IService> serviceCallback = service.onActivityCreate(this, activity, savedInstanceState);
 				if (serviceCallback == null)
 				{
-					Log.w(TAG, "Unable to resolve service - will implicitly fail due to null return in onActivityCreate, must return Callback(this) to resolve eventually");
+					Log.w(TAG, "Unable to resolve service - will implicitly fail due to null return in onActivityCreate, must return Callback(this) to resolve eventually - " + service.getClass());
 
 					//Ignore any results from this call, and just continue.
 					this.onActivityCreateFromServiceIndex(
@@ -81,7 +81,7 @@ public class ServiceInitializer
 						{
 							if (iService == null)
 							{
-								Log.w(TAG, "Failed to create service.");
+								Log.w(TAG, "Failed to create service - " + service.getClass());
 								serviceInitializer.serviceResults.remove(service);
 							}
 							else

@@ -49,7 +49,7 @@ public class MainActivityRobolectricTest {
     @Test
     public void testGoalToastEncouragement() {
         activity.onGoalAchievement(null);
-        assertEquals("Achievement get!", ShadowToast.getTextOfLatestToast());
+        assertEquals("Achieved step goal! Good job!", ShadowToast.getTextOfLatestToast());
         assertTrue(ShadowDialog.getLatestDialog().isShowing());
     }
 
