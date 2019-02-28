@@ -1,19 +1,26 @@
 package team30.personalbest.goal;
 
+import team30.personalbest.service.goal.IGoalService;
+
 public interface GoalAchiever
 {
-    GoalAchiever setStepGoal(StepGoal goal);
+	void startAchievingGoal();
 
-    void startAchievingGoal();
-    void stopAchievingGoal();
+	void stopAchievingGoal();
 
-    void doAchieveGoal();
-    void doAchieveSubGoal();
+	void doAchieveGoal();
 
-    GoalAchiever addGoalListener(GoalListener listener);
-    void removeGoalListener(GoalListener listener);
-    void clearGoalListeners();
-    Iterable<GoalListener> getGoalListeners();
+	void doAchieveSubGoal();
 
-    StepGoal getStepGoal();
+	GoalAchiever addGoalListener(GoalListener listener);
+
+	void removeGoalListener(GoalListener listener);
+
+	void clearGoalListeners();
+
+	Iterable<GoalListener> getGoalListeners();
+
+	IGoalService getStepGoal();
+
+	GoalAchiever setStepGoal(IGoalService goal);
 }
