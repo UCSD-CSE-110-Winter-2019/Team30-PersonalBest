@@ -2,6 +2,9 @@ package team30.personalbest.util;
 
 import android.support.v4.util.Consumer;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 /**
  * This is an asynchronous callback. To get the value, call onResult() with a function to be
  * executed later with the result when complete. The callback is NOT guaranteed to resolve.
@@ -10,14 +13,16 @@ import android.support.v4.util.Consumer;
  */
 public final class Callback<T>
 {
-	private Consumer<T> callback;
+	private final Collection<Consumer<T>> callbacks = new HashSet<>();
 	private T result;
+	private boolean hasResolved = false;
 
 	public Callback() {}
 
 	public <E extends T> Callback(E result)
 	{
 		this.result = result;
+		this.hasResolved = true;
 	}
 
 	/**
@@ -25,11 +30,23 @@ public final class Callback<T>
 	 */
 	public <E extends T> void resolve(E result)
 	{
+		if (this.hasResolved) throw new IllegalStateException("Already resolved with value - \'" + result + "\'");
+		this.hasResolved = true;
+
 		this.result = result;
-		if (this.callback != null)
-		{
-			this.callback.accept(result);
-		}
+
+		if (!this.callbacks.isEmpty()) this.call(result);
+	}
+
+	/**
+	 * Called by the async task to reject null to the listener
+	 */
+	public void reject()
+	{
+		if (this.hasResolved) throw new IllegalStateException("Already resolved with value - \'" + this.result + "\'");
+		this.hasResolved = true;
+
+		if (!this.callbacks.isEmpty()) this.call(null);
 	}
 
 	/**
@@ -37,10 +54,21 @@ public final class Callback<T>
 	 */
 	public void onResult(Consumer<T> callback)
 	{
-		this.callback = callback;
-		if (this.result != null)
+		this.callbacks.add(callback);
+
+		if (this.hasResolved) callback.accept(this.result);
+	}
+
+	public boolean hasResolved()
+	{
+		return this.hasResolved;
+	}
+
+	private <E extends T> void call(E result)
+	{
+		for(Consumer<T> callback : this.callbacks)
 		{
-			this.callback.accept(this.result);
+			callback.accept(result);
 		}
 	}
 }

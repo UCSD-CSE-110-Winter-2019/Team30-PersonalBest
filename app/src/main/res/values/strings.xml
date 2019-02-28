@@ -15,4 +15,10 @@
 
     <string name="display_height">Your Height: %1$.2f m</string>
     <string name="display_stepgoal">Your Step Goal: %1$d m</string>
+    <string name="title_height_prompt">Enter your height in meters:</string>
+    <string name="title_stepgoal_prompt">Set your new step goal:</string>
+    <string name="prompt_confirm">Ok</string>
+    <string name="prompt_cancel">Cancel</string>
+    <string name="encouragement_nearly_significant">Good job! You have nearly doubled your steps since yesterday!</string>
+    <string name="encouragement_significant">Amazing! You have doubled your steps since yesterday!</string>
 </resources>

@@ -1,14 +1,9 @@
 package team30.personalbest;
 
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.util.Consumer;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +16,7 @@ import java.util.Iterator;
 
 import team30.personalbest.goal.FitnessGoalAchiever;
 import team30.personalbest.goal.GoalListener;
+import team30.personalbest.service.EncouragementService;
 import team30.personalbest.service.OnServicesReadyListener;
 import team30.personalbest.service.ServiceInitializer;
 import team30.personalbest.service.fitness.GoogleFitAdapter;
@@ -40,9 +36,6 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 {
 	public static final String TAG = "MainActivity";
 
-	private static final String TITLE_HEIGHT_PROMPT = "Enter your height in meters:";
-	private static final String TITLE_STEP_GOAL_PROMPT = "Set your new step goal:";
-
 	public static final int DEFAULT_GOAL_VALUE = 500;
 
 	private ServiceInitializer serviceInitializer;
@@ -52,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 
 	private GoalService goalService;
 	private FitnessGoalAchiever goalAchiever;
+
+	private EncouragementService encouragementService;
 
 	private Button startButton;
 	private Button endButton;
@@ -68,17 +63,6 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 	private Button submitTime;
 	private EditText timeSubmitText;
 
-	// Time variable
-	private long currTime;
-	private long lastCheckedTime;
-	private long fromMidnight;
-	private long oneHour = 3600000;
-	private long MILLIS_PER_DAY = oneHour * 24;//TimeUnit.DAYS.toMillis(1);
-	private long twentyOClock;
-	private long eightOClock;
-	private SharedPreferences sharedPreferences;
-	private SharedPreferences.Editor editor;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -90,12 +74,14 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		this.fitnessWatcher = new FitnessWatcher(this.fitnessService);
 		this.fitnessWatcher.addFitnessListener(this);
 		this.goalService = new GoalService(this.fitnessService);
+		this.encouragementService = new EncouragementService(this.fitnessService);
 
 		this.serviceInitializer = new ServiceInitializer.Builder()
 				.addService(this.fitnessService)
 				.addService(this.heightService)
 				.addService(this.goalService)
 				.addService(this.fitnessWatcher)
+				.addService(this.encouragementService)
 				.build();
 		this.serviceInitializer.addOnServicesReadyListener(this);
 
@@ -103,25 +89,30 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		this.goalAchiever.addGoalListener(this);
 		this.fitnessWatcher.addFitnessListener(this.goalAchiever);
 
+		this.setupUI();
+
+		/*
+		FitnessUser fitnessUser = new FitnessUser.Builder().build();
+
+		if (fitnessUser.onActivityCreate(this, savedInstanceState))
+		{
+			fitnessUser.initializeServices(this);
+		}
+		*/
+		//Initialize services...
+		this.serviceInitializer.onActivityCreate(this, savedInstanceState);
+	}
+
+	private void setupUI()
+	{
+		final MainActivity activity = this;
+
 		/** Add time edittext etc for mocking purposes */
 		this.submitTime = findViewById(R.id.subTime);
 
-		// TODO: Moved enocuragement stuff into own method
-
-		/** GUI STUFF */
-
-		final MainActivity activity = this;
-
 		// Switch to weekly snapshot
 		this.weeklySnapshotButton = findViewById(R.id.button_weekly_stats);
-		this.weeklySnapshotButton.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View view)
-			{
-				activity.launchGraphActivity();
-			}
-		});
+		this.weeklySnapshotButton.setOnClickListener(view -> activity.launchGraphActivity());
 
 		// Run statistic textview
 		this.totalRunStepsText = findViewById(R.id.total_steps);
@@ -149,61 +140,38 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		// endButton invisible/gone in the beginning
 		this.endButton.setVisibility(View.GONE);
 
-		this.startButton.setOnClickListener(new View.OnClickListener()
-		{
-			public void onClick(View v)
-			{
-				// Set endButton visible
-				activity.startButton.setVisibility(View.GONE);
-				activity.endButton.setVisibility(View.VISIBLE);
+		this.startButton.setOnClickListener(v -> {
+			// Set endButton visible
+			activity.startButton.setVisibility(View.GONE);
+			activity.endButton.setVisibility(View.VISIBLE);
 
-				// Start recording current run
-				activity.fitnessService.startRecording().addOnRecordingSnapshotUpdateListener(activity);
+			// Start recording current run
+			activity.fitnessService.startRecording().addOnRecordingSnapshotUpdateListener(activity);
 
-				// Make sure statistics are shown
-				activity.currStepsText.setVisibility(View.VISIBLE);
-				activity.timeElapsedText.setVisibility(View.VISIBLE);
-				activity.mphText.setVisibility(View.VISIBLE);
-			}
+			// Make sure statistics are shown
+			activity.currStepsText.setVisibility(View.VISIBLE);
+			activity.timeElapsedText.setVisibility(View.VISIBLE);
+			activity.mphText.setVisibility(View.VISIBLE);
 		});
 
-		this.endButton.setOnClickListener(new View.OnClickListener()
-		{
-			public void onClick(View v)
-			{
-				// Show start button again
-				activity.startButton.setVisibility(View.VISIBLE);
-				activity.endButton.setVisibility(View.GONE);
+		this.endButton.setOnClickListener(v -> {
+			// Show start button again
+			activity.startButton.setVisibility(View.VISIBLE);
+			activity.endButton.setVisibility(View.GONE);
 
-				// Stop & display recorded current run
-				activity.fitnessService.stopRecording().onResult(new Consumer<IFitnessSnapshot>()
+			// Stop & display recorded current run
+			activity.fitnessService.stopRecording().onResult(fitnessSnapshot -> {
+				if (fitnessSnapshot == null)
 				{
-					@Override
-					public void accept(IFitnessSnapshot fitnessSnapshot)
-					{
-						if (fitnessSnapshot == null)
-						{
-							throw new IllegalStateException("Unable to find recent valid active fitness snapshot");
-						}
+					throw new IllegalStateException("Unable to find recent valid active fitness snapshot");
+				}
 
-						activity.displayRecordingSnapshot(fitnessSnapshot);
-					}
-				});
-			}
+				activity.displayRecordingSnapshot(fitnessSnapshot);
+			});
 		});
 
 		// Listener for New step steps_goal
-		this.newGoalButton.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View v)
-			{
-				activity.showGoalPrompt(false);
-			}
-		});
-
-		//Initialize services...
-		this.serviceInitializer.onActivityCreate(this, savedInstanceState);
+		this.newGoalButton.setOnClickListener(v -> activity.showGoalPrompt(false));
 	}
 
 	@Override
@@ -219,46 +187,37 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		final MainActivity activity = this;
 
 		// Prompt height on initial launch of app (after google fit is ready)
-		this.resolveHeight().onResult(new Consumer<Float>()
-		{
-			@Override
-			public void accept(Float aFloat)
+		this.resolveHeight().onResult(aFloat -> {
+			if (aFloat == null)
 			{
-				if (aFloat == null)
-				{
-					throw new IllegalStateException("Unable to resolve height");
-				}
-
-				activity.heightText.setText(
-						activity.getString(R.string.display_height,
-						                   aFloat));
-
-				//Enable the app interface
-				activity.startButton.setEnabled(true);
-				activity.endButton.setEnabled(true);
-				activity.newGoalButton.setEnabled(true);
-				activity.weeklySnapshotButton.setEnabled(true);
-
-				//Get the current step goal
-				activity.goalService.getGoalSnapshot().onResult(new Consumer<IGoalSnapshot>() {
-					@Override
-					public void accept(IGoalSnapshot iGoalSnapshot)
-					{
-						if (iGoalSnapshot == null)
-						{
-							activity.stepsGoalText.setText(
-									activity.getString(R.string.display_stepgoal, DEFAULT_GOAL_VALUE));
-						}
-						else
-						{
-							activity.stepsGoalText.setText(
-									activity.getString(R.string.display_stepgoal, iGoalSnapshot.getGoalValue()));
-						}
-					}
-				});
-
-				Log.i(TAG, "Successfully initialized app services");
+				throw new IllegalStateException("Unable to resolve height");
 			}
+
+			activity.heightText.setText(
+					activity.getString(R.string.display_height,
+					                   aFloat));
+
+			//Enable the app interface
+			activity.startButton.setEnabled(true);
+			activity.endButton.setEnabled(true);
+			activity.newGoalButton.setEnabled(true);
+			activity.weeklySnapshotButton.setEnabled(true);
+
+			//Get the current step goal
+			activity.goalService.getGoalSnapshot().onResult(iGoalSnapshot -> {
+				if (iGoalSnapshot == null)
+				{
+					activity.stepsGoalText.setText(
+							activity.getString(R.string.display_stepgoal, DEFAULT_GOAL_VALUE));
+				}
+				else
+				{
+					activity.stepsGoalText.setText(
+							activity.getString(R.string.display_stepgoal, iGoalSnapshot.getGoalValue()));
+				}
+			});
+
+			Log.i(TAG, "Successfully initialized app services");
 		});
 
 		Log.i(TAG, "Successfully prepared app services");
@@ -308,67 +267,10 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		{
 			long currentTime = Long.parseLong(thisCurrTime);
 
-			this.encouragement(currentTime);
+			//this.encouragement(currentTime);
 			this.fitnessService.setCurrentTime(currentTime);
 		}
 	}
-
-
-	/**
-	 * Encouragement
-	 **/
-
-	public void encouragement(long thisTime)
-	{
-		/** Show encouragement code */
-
-		// Share pref for encouragement
-		this.sharedPreferences = getSharedPreferences("user_name", MODE_PRIVATE);
-		this.editor = sharedPreferences.edit();
-
-		this.twentyOClock = MILLIS_PER_DAY - (oneHour * 4);
-		this.eightOClock = MILLIS_PER_DAY - (oneHour * 16);
-
-		// Grab the current time when app is open
-		this.currTime = thisTime; // TODO: googleFitAdapter.getCurrentTime(); Also remember to change to GooglefitTime
-		this.fromMidnight = lastCheckedTime % MILLIS_PER_DAY;
-		this.lastCheckedTime = eightOClock; // TODO: sharedPreferences.getLong("lastcheckedtime", 0);
-
-		if (this.currTime >= this.twentyOClock)
-		{
-			//TODO: replace this with a method call to isSignificantlyImproved()
-			boolean significantlyImproved = true; //(Math.random() > 0.5);
-			if (significantlyImproved)
-			{
-				boolean isSameDay = this.currTime - this.lastCheckedTime < this.MILLIS_PER_DAY;
-
-				if (!isSameDay || this.fromMidnight <= this.twentyOClock)
-				{
-					// Update shared pref and show message
-					Toast.makeText(this, "Good job you significantly improved your steps from yesterday!", Toast.LENGTH_LONG).show();
-					this.editor.putLong("lastcheckedtime", this.currTime);
-					this.editor.commit();
-				}
-			}
-		}
-		else if (this.currTime >= this.eightOClock)
-		{
-			//TODO: replace this with a method call to isSignificantlyImproved()
-			boolean significantlyImproved = true; //(Math.random() > 0.5);
-			if (significantlyImproved)
-			{
-				boolean isSameDay = this.currTime - this.lastCheckedTime < this.MILLIS_PER_DAY;
-				if (!isSameDay && (this.fromMidnight) <= this.twentyOClock)
-				{
-					//Show message and show message
-					Toast.makeText(this, "Good job you significantly improved your steps from yesterday!", Toast.LENGTH_LONG).show();
-					this.editor.putLong("lastcheckedtime", this.currTime);
-					this.editor.commit();
-				}
-			}
-		}
-	}
-
 
 	@Override
 	public void onRecordingSnapshotUpdate(IRecordingFitnessSnapshot activeSnapshot)
@@ -384,131 +286,36 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 	private Callback<Float> resolveHeight()
 	{
 		final Callback<Float> callback = new Callback<>();
-		this.heightService.getHeight().onResult(new Consumer<Float>() {
-			@Override
-			public void accept(Float aFloat)
+		this.heightService.getHeight().onResult(aFloat -> {
+			Log.d(TAG, "Resolving height...");
+			if (aFloat == null)
 			{
-				Log.d(TAG, "Resolving height...");
-				if (aFloat == null)
-				{
-					MainActivity.this.showHeightPrompt().onResult(new Consumer<Float>() {
-						@Override
-						public void accept(Float aFloat)
-						{
-							callback.resolve(aFloat);
-						}
-					});
-				}
-				else
-				{
-					callback.resolve(aFloat);
-				}
+				HeightPrompt.show(this, this.heightService).onResult(callback::resolve);
+			}
+			else
+			{
+				callback.resolve(aFloat);
 			}
 		});
 		return callback;
 	}
 
-	private Callback<Float> showHeightPrompt()
-	{
-		final Callback<Float> callback = new Callback<>();
-		final EditText input = new EditText(this);
-		input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-		final AlertDialog.Builder builder = new AlertDialog.Builder(this)
-				.setTitle(TITLE_HEIGHT_PROMPT)
-				.setView(input)
-				.setPositiveButton("OK", new DialogInterface.OnClickListener()
-				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						try
-						{
-							final String heightString = input.getText().toString();
-							final float heightFloat = Float.parseFloat(heightString);
-
-							//TODO: This is just to show that height was set. remove this later
-							heightText.setText("Your Height in Meters: " + heightString);
-
-							heightService.setHeight(heightFloat).onResult(new Consumer<Float>()
-							{
-								@Override
-								public void accept(Float aFloat)
-								{
-									if (aFloat == null)
-										throw new IllegalArgumentException(
-												"Unable to set height for google services"
-										);
-
-									Log.i(TAG, "Successfully processed height");
-									callback.resolve(aFloat);
-								}
-							});
-						}
-						catch (Exception e)
-						{
-							Log.w(TAG, "Failed to process height", e);
-
-							showHeightPrompt();
-						}
-					}
-				})
-				.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
-				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						dialog.cancel();
-						showHeightPrompt();
-					}
-				});
-		builder.show();
-		return callback;
-	}
-
 	private void showGoalPrompt(final boolean forceMax)
 	{
-		final EditText input = new EditText(this);
-		input.setInputType(InputType.TYPE_CLASS_TEXT);
-		final AlertDialog.Builder builder = new AlertDialog.Builder(this)
-				.setTitle(TITLE_STEP_GOAL_PROMPT)
-				.setView(input)
-				.setPositiveButton("OK", new DialogInterface.OnClickListener()
-				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						try
-						{
-							final String goalString = input.getText().toString();
-							final int goalInteger = Integer.parseInt(goalString);
-							MainActivity.this.goalService.setCurrentGoal(goalInteger);
-
-							stepsGoalText.setText("Your Step Goal: " + goalString);
-
-							Log.i(TAG, "Successfully processed step goal");
-						}
-						catch (Exception e)
-						{
-							Log.w(TAG, "Failed to process step goal", e);
-
-							showGoalPrompt(forceMax);
-						}
-					}
-				})
-				.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
-				{
-					@Override
-					public void onClick(DialogInterface dialog, int which)
-					{
-						if (forceMax)
-						{
-							MainActivity.this.goalService.setCurrentGoal(Integer.MAX_VALUE);
-							MainActivity.this.stepsGoalText.setText("Your Step Goal: ---");
-						}
-						dialog.cancel();
-					}
-				});
-		builder.show();
+		GoalPrompt.show(this, this.goalService, forceMax).onResult(newGoal -> {
+			if (newGoal == null)
+			{
+				//Do nothing.
+			}
+			else if (newGoal == Integer.MAX_VALUE)
+			{
+				stepsGoalText.setText("Your Step Goal: ---");
+			}
+			else
+			{
+				stepsGoalText.setText("Your Step Goal: " + newGoal);
+			}
+		});
 	}
 
 	private void launchGraphActivity()
@@ -524,45 +331,30 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		final long minTime = Math.min(sundayTime, currentTime);
 		final long maxTime = Math.max(sundayTime, currentTime);
 		this.fitnessService.getFitnessSnapshots(minTime, maxTime)
-				.onResult(new Consumer<Iterable<IFitnessSnapshot>>()
-				{
-					@Override
-					public void accept(final Iterable<IFitnessSnapshot> incidentalSnapshots)
-					{
-						if (incidentalSnapshots == null)
-							throw new IllegalStateException("Cannot find valid incidental fitness snapshots");
+				.onResult(incidentalSnapshots -> {
+					if (incidentalSnapshots == null)
+						throw new IllegalStateException("Cannot find valid incidental fitness snapshots");
 
-						activity.fitnessService.getRecordingSnapshots(minTime, maxTime)
-								.onResult(new Consumer<Iterable<IFitnessSnapshot>>()
-								{
-									@Override
-									public void accept(final Iterable<IFitnessSnapshot> intentionalSnapshots)
-									{
-										if (intentionalSnapshots == null)
-											throw new IllegalStateException("Cannot find valid intentional fitness snapshots");
+					activity.fitnessService.getRecordingSnapshots(minTime, maxTime)
+							.onResult(intentionalSnapshots -> {
+								if (intentionalSnapshots == null)
+									throw new IllegalStateException("Cannot find valid intentional fitness snapshots");
 
-										activity.goalService.getGoalSnapshots(minTime, maxTime)
-												.onResult(new Consumer<Iterable<IGoalSnapshot>>()
-												{
-													@Override
-													public void accept(Iterable<IGoalSnapshot> iGoalSnapshots)
-													{
-														if (iGoalSnapshots == null)
-															throw new IllegalStateException("Cannot find valid step goals");
+								activity.goalService.getGoalSnapshots(minTime, maxTime)
+										.onResult(iGoalSnapshots -> {
+											if (iGoalSnapshots == null)
+												throw new IllegalStateException("Cannot find valid step goals");
 
-														final Intent intent = new Intent(activity, GraphActivity.class);
-														final Bundle weeklyBundle = activity.buildWeeklyBundle(incidentalSnapshots, intentionalSnapshots, iGoalSnapshots);
+											final Intent intent = new Intent(activity, GraphActivity.class);
+											final Bundle weeklyBundle = activity.buildWeeklyBundle(incidentalSnapshots, intentionalSnapshots, iGoalSnapshots);
 
-														final Bundle bundle = new Bundle();
-														bundle.putBundle(GraphActivity.BUNDLE_WEEKLY_STATS, weeklyBundle);
-														intent.putExtras(bundle);
+											final Bundle bundle = new Bundle();
+											bundle.putBundle(GraphActivity.BUNDLE_WEEKLY_STATS, weeklyBundle);
+											intent.putExtras(bundle);
 
-														activity.startActivity(intent);
-													}
-												});
-									}
-								});
-					}
+											activity.startActivity(intent);
+										});
+							});
 				});
 	}
 

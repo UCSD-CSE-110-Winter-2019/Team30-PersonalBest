@@ -43,8 +43,7 @@ public class HeightService implements IHeightService
 	@Override
 	public Callback<IService> onActivityCreate(ServiceInitializer serviceInitializer, Activity activity, Bundle savedInstanceState)
 	{
-		this.activity = activity;
-		return new Callback<>(this);
+		return this.initialize(activity);
 	}
 
 	@Nullable
@@ -55,7 +54,14 @@ public class HeightService implements IHeightService
 	}
 
 	@Override
-	public Callback<Float> setHeight(final float height)
+	public Callback<IService> initialize(Activity activity)
+	{
+		this.activity = activity;
+		return new Callback<>(this);
+	}
+
+	@Override
+	public Callback<Float> setHeight(float height)
 	{
 		final Callback<Float> callback = new Callback<>();
 
@@ -76,33 +82,21 @@ public class HeightService implements IHeightService
 					.setType(DataSource.TYPE_RAW)
 					.build();
 
-			DataSet dataSet = DataSet.create(dataSource);
-			DataPoint dp = dataSet.createDataPoint()
+			final DataSet dataSet = DataSet.create(dataSource);
+			final DataPoint dataPoint = dataSet.createDataPoint()
 					.setTimestamp(fitnessService.getCurrentTime(), TimeUnit.MILLISECONDS)
 					.setFloatValues(height);
-			dataSet.add(dp);
+			dataSet.add(dataPoint);
 
 			Fitness.getHistoryClient(activity, lastSignedInAccount)
 					.insertData(dataSet)
-					.addOnSuccessListener(new OnSuccessListener<Void>()
-					{
-						@Override
-						public void onSuccess(Void aVoid)
-						{
-							Log.i(TAG, "Successfully registered user's height");
-
-							callback.resolve(height);
-						}
+					.addOnSuccessListener(aVoid -> {
+						Log.i(TAG, "Successfully registered user's height");
+						callback.resolve(height);
 					})
-					.addOnFailureListener(new OnFailureListener()
-					{
-						@Override
-						public void onFailure(@NonNull Exception e)
-						{
-							Log.w(TAG, "Failed to register user's height", e);
-
-							callback.resolve(null);
-						}
+					.addOnFailureListener(e -> {
+						Log.w(TAG, "Failed to register user's height", e);
+						callback.resolve(null);
 					});
 		}
 		return callback;
@@ -132,35 +126,24 @@ public class HeightService implements IHeightService
 
 			Fitness.getHistoryClient(activity, lastSignedInAccount)
 					.readData(dataReadRequest)
-					.addOnSuccessListener(new OnSuccessListener<DataReadResponse>()
-					{
-						@Override
-						public void onSuccess(DataReadResponse dataReadResponse)
-						{
-							Log.i(TAG, "Successfully received user's height");
+					.addOnSuccessListener(dataReadResponse -> {
+						Log.i(TAG, "Successfully received user's height");
 
-							final DataSet dataSet = dataReadResponse.getDataSet(DataType.TYPE_HEIGHT);
-							if (!dataSet.isEmpty())
-							{
-								final DataPoint data = dataSet.getDataPoints().get(0);
-								final float height = data.getValue(Field.FIELD_HEIGHT).asFloat();
-								callback.resolve(height);
-							}
-							else
-							{
-								callback.resolve(null);
-							}
+						final DataSet dataSet = dataReadResponse.getDataSet(DataType.TYPE_HEIGHT);
+						if (!dataSet.isEmpty())
+						{
+							final DataPoint data = dataSet.getDataPoints().get(0);
+							final float height = data.getValue(Field.FIELD_HEIGHT).asFloat();
+							callback.resolve(height);
 						}
-					})
-					.addOnFailureListener(new OnFailureListener()
-					{
-						@Override
-						public void onFailure(@NonNull Exception e)
+						else
 						{
-							Log.w(TAG, "Failed to fetch user's height", e);
-
 							callback.resolve(null);
 						}
+					})
+					.addOnFailureListener(e -> {
+						Log.w(TAG, "Failed to fetch user's height", e);
+						callback.resolve(null);
 					});
 		}
 		return callback;

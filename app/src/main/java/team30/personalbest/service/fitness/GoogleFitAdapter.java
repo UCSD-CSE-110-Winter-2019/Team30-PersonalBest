@@ -110,22 +110,8 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
 
 				Fitness.getSessionsClient(this.activity, lastSignedInAccount)
 						.insertSession(insertRequest)
-						.addOnSuccessListener(new OnSuccessListener<Void>()
-						{
-							@Override
-							public void onSuccess(Void aVoid)
-							{
-								Log.i(TAG, "Successfully inserted session data.");
-							}
-						})
-						.addOnFailureListener(new OnFailureListener()
-						{
-							@Override
-							public void onFailure(@NonNull Exception e)
-							{
-								Log.w(TAG, "Failed to insert session data.", e);
-							}
-						});
+						.addOnSuccessListener(aVoid -> Log.i(TAG, "Successfully inserted session data."))
+						.addOnFailureListener(e -> Log.w(TAG, "Failed to insert session data.", e));
 			}
 			else
 			{
