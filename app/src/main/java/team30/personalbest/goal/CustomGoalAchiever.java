@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+
 import team30.personalbest.service.fitness.IFitnessService;
 import team30.personalbest.service.goal.IGoalService;
 import team30.personalbest.snapshot.IFitnessSnapshot;
@@ -258,4 +259,5 @@ public class CustomGoalAchiever implements GoalAchiever
 			return this.hasImproved;
 		}
 	}
+
 }
