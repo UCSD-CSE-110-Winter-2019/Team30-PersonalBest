@@ -101,6 +101,10 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		*/
 		//Initialize services...
 		this.serviceInitializer.onActivityCreate(this, savedInstanceState);
+
+		//TODO(chen): debug code for the messaging component, remove for release
+		Intent myIntent = new Intent(this, MessageActivity.class);
+		startActivity(myIntent);
 	}
 
 	private void setupUI()
