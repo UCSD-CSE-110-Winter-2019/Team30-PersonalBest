@@ -5,6 +5,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -25,7 +26,7 @@ import team30.personalbest.R;
 
 public class MessageActivity extends AppCompatActivity {
 
-    private MyUser thisUser;
+    public MyUser thisUser;
     private Messager messager;
     private final int RC_SIGN_IN = 123;
 
@@ -64,7 +65,9 @@ public class MessageActivity extends AppCompatActivity {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-                DocumentReference userRef = FirebaseFirestore.getInstance().collection("user")
+                FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+                DocumentReference userRef = firestore.collection("user")
                         .document( user.getUid() );
 
                 userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -73,7 +76,16 @@ public class MessageActivity extends AppCompatActivity {
                         if( task.isSuccessful() ) {
                             DocumentSnapshot userDoc = task.getResult();
                             if( !userDoc.exists() ) {
-                                userRef.set( new MyUser( user.getUid(), user.getDisplayName() ));
+                                userRef.set( MessageActivity.this.thisUser = new MyUser( user.getUid(), user.getDisplayName(), user.getEmail() ));
+                                firestore.document("emails/"+MessageActivity.this.thisUser.getUser_email() )
+                                        .set( MessageActivity.this.thisUser );
+                            }
+                            else if( userDoc.exists() ){
+                                Log.d("MessageActivity", "Found User in database. Retrieving data...");
+                                MessageActivity.this.thisUser = userDoc.toObject( MyUser.class );
+                                Intent myIntent = new Intent(MessageActivity.this, ContactsActivity.class);
+                                myIntent.putExtra("currentUser", MessageActivity.this.thisUser  );
+                                startActivity(myIntent);
 
                             }
                         }
@@ -82,8 +94,7 @@ public class MessageActivity extends AppCompatActivity {
 
 
 
-                Intent myIntent = new Intent(this, ContactsActivity.class);
-                startActivity(myIntent);
+
                 // ...
             } else {
                 // Sign in failed. If response is null the user canceled the
