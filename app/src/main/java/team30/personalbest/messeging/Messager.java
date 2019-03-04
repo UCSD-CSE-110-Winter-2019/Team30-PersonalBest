@@ -40,6 +40,38 @@ public class Messager {
     CollectionReference chat;
     String from;
 
+    /* Database Schema
+     *
+     * Collection contacts
+     *      Document User_id
+     *          Collections user_contacts
+     *              Document User_id
+     *              Document User_id
+     *              .....
+     * Collection emails
+     *      Document email_addresses
+     *          User{ email, userId, userName }
+     *          User{ email, userId, userName }
+     *          ....
+     *
+     * Collection User
+     *       Document User_id
+     *            User{ email, userId, userName }
+     *
+     * Collection Rooms
+     *       Document chat_id
+     *            Collection users
+     *                  Document UserID
+     *
+     * Collection Messages
+     *       Document chat_id
+     *            Collection messages
+     *                  Message{ to, from, timestamp }
+     *                  Message{ to, from, timestamp }
+     *
+     *
+     */
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     public Messager(AppCompatActivity activity) {
         this.activity = activity;
