@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 	private Button endButton;
 	private Button newGoalButton;
 	private Button weeklySnapshotButton;
+	private Button friendsPageButton;
 	private TextView stepsGoalText;
 	private TextView totalRunStepsText;
 	private TextView currStepsText;
@@ -114,7 +115,11 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		this.weeklySnapshotButton = findViewById(R.id.button_weekly_stats);
 		this.weeklySnapshotButton.setOnClickListener(view -> activity.launchGraphActivity());
 
-		// Run statistic textview
+		// Switch to friends page
+		this.friendsPageButton = findViewById(R.id.button_friends_page);
+		this.friendsPageButton.setOnClickListener(view -> activity.launchFriendsActivity());
+
+	    // Run statistic textview
 		this.totalRunStepsText = findViewById(R.id.total_steps);
 		this.stepsGoalText = findViewById(R.id.steps_goal);
 		this.currStepsText = findViewById(R.id.curr_steps);
@@ -356,6 +361,14 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 										});
 							});
 				});
+	}
+
+	private void launchFriendsActivity() {
+		final MainActivity activity = this;
+
+		Intent intent = new Intent(this, FriendsActivity.class);
+
+		activity.startActivity(intent);
 	}
 
 	private Bundle buildWeeklyBundle(Iterable<IFitnessSnapshot> incidentalSnapshots, Iterable<IFitnessSnapshot> intentionalSnapshots, Iterable<IGoalSnapshot> stepGoals)
