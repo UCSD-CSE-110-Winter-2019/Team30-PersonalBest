@@ -101,12 +101,22 @@
             android:textSize="20sp"
             android:text="@string/miles_per_hour"/>
 
+        <Button
+            android:id="@+id/button_friends_page"
+            android:layout_marginLeft="100dp"
+            android:layout_height="50dp"
+            android:layout_width="80dp"
+            android:background="@android:color/darker_gray"
+            android:textColor="@android:color/white"
+            android:text="Friends List"/>
+
     </LinearLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true">
         <Button
             android:id="@+id/button_weekly_stats"
             android:layout_height="50dp"
@@ -115,5 +125,6 @@
             android:textColor="@android:color/white"
             android:text="@string/weekly_snapshot"/>
     </RelativeLayout>
+
 
 </RelativeLayout>
