@@ -28,6 +28,8 @@ import team30.personalbest.R;
 
 public class ContactsActivity extends AppCompatActivity {
 
+    private ArrayList<String> contactsList;
+
     private MyUser thisUser;
 
     ListView listView;
@@ -52,8 +54,8 @@ public class ContactsActivity extends AppCompatActivity {
 
 
 
-        CollectionReference contacts = firestore.collection("contacts/"+user_id+"/userContacts");
-        ArrayList<String> contactsList = new ArrayList<>();
+        CollectionReference contacts = firestore.collection("contacts/"+user_id+"/user_contacts");
+        contactsList = new ArrayList<>();
 
         contacts.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -62,9 +64,13 @@ public class ContactsActivity extends AppCompatActivity {
 
 
                     for(QueryDocumentSnapshot doc : task.getResult() ) {
+
+                        Log.i("Contacts Query", "Retrieved Data: " + doc.toString() );
                         MyUser contact = doc.toObject( MyUser.class );
                         contactsList.add( contact.getUser_name() );
                     }
+
+                    ContactsActivity.this.displayContacts( contactsList );
                 }
                 else {
                     Log.d( "Contacts Query", "COuldn't retrieve contacts");
@@ -72,13 +78,17 @@ public class ContactsActivity extends AppCompatActivity {
             }
         });
 
+
+
+    }
+
+    public void displayContacts( ArrayList<String> contactsList ) {
         ArrayAdapter adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,
                 contactsList);
 
         listView = findViewById( R.id.list_view );
         listView.setAdapter(adapter);
-
     }
 
 
@@ -95,9 +105,31 @@ public class ContactsActivity extends AppCompatActivity {
             case R.id.add_friend:
                 Intent aboutIntent = new Intent(this, AddContactActivity.class);
                 aboutIntent.putExtra("currentUser", thisUser  );
-                startActivity(aboutIntent);
+                startActivityForResult( aboutIntent, 1);
+
+
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if( resultCode == 1 ) {
+            Log.d("onActivityResult", "Restarting Activity");
+            finish();
+            startActivity( getIntent() );
+        } else {
+            Log.d("onActivityResult", "Something went wrong");
+        }
     }
 }

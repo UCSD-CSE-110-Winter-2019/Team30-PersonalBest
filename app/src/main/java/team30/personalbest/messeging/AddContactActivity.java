@@ -1,10 +1,14 @@
 package team30.personalbest.messeging;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,11 +33,15 @@ public class AddContactActivity extends AppCompatActivity {
     private FirebaseFirestore firestore;
     private FirebaseUser user;
     private MyUser thisUser;
+    private final int NEEDS_REFRESH = 1;
+    private final int NO_REFRESH = 2;
+    public int resultCode = NO_REFRESH;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         thisUser =  ( MyUser) getIntent().getExtras().get("currentUser");
         if( thisUser == null ) {
             Log.d("AddContactActivity", "ThisUser is null");
@@ -44,6 +52,7 @@ public class AddContactActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_contact);
 
         Button submit_btn = findViewById( R.id.add_friend_btn );
+        //Button back = findViewById( R.id. );
         EditText email = findViewById( R.id.editText_email );
 
         submit_btn.setOnClickListener(new View.OnClickListener() {
@@ -55,6 +64,8 @@ public class AddContactActivity extends AppCompatActivity {
 
             }
         });
+
+
 
 
     }
@@ -84,6 +95,7 @@ public class AddContactActivity extends AppCompatActivity {
                                 .set( friend );
 
                         Toast.makeText(AddContactActivity.this, "Friend Successfully added", Toast.LENGTH_SHORT).show();
+                        AddContactActivity.this.resultCode = NEEDS_REFRESH;
 
 
                     }
@@ -92,4 +104,22 @@ public class AddContactActivity extends AppCompatActivity {
         });
 
     }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+        switch ( item.getItemId() ) {
+            case android.R.id.home:
+            Log.i("AddContactsActivity", "Result code: " + resultCode );
+
+            setResult( this.resultCode );
+            finish();
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 }
