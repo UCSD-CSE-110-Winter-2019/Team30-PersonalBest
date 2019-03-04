@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
     tools:context=".FriendsListActivity">
 
-</android.support.constraint.ConstraintLayout>
+    <Button
+        android:id="@+id/button_back"
+        android:layout_width="80dp"
+        android:layout_height="25dp"
+        android:text="back"
+        android:textColor="@android:color/black"
+        android:textSize="20sp"
+        android:background="@android:color/background_light"/>
+
+    <ListView
+        android:id="@+id/friendslist"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+</LinearLayout>

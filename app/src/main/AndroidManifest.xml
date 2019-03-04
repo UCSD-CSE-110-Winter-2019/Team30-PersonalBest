@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".FriendsActivity">
+        <activity android:name=".FriendsListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

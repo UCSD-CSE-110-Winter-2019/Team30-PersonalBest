@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 
 		// Switch to friends page
 		this.friendsPageButton = findViewById(R.id.button_friends_page);
-		this.friendsPageButton.setOnClickListener(view -> activity.launchFriendsActivity());
+		this.friendsPageButton.setOnClickListener(view -> activity.launchFriendsListActivity());
 
 	    // Run statistic textview
 		this.totalRunStepsText = findViewById(R.id.total_steps);
@@ -363,10 +363,10 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 				});
 	}
 
-	private void launchFriendsActivity() {
+	private void launchFriendsListActivity() {
 		final MainActivity activity = this;
 
-		Intent intent = new Intent(this, FriendsActivity.class);
+		Intent intent = new Intent(this, FriendsListActivity.class);
 
 		activity.startActivity(intent);
 	}
