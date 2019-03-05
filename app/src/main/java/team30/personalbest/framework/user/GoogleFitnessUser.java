@@ -34,6 +34,12 @@ public class GoogleFitnessUser implements IFitnessUser
 	}
 
 	@Override
+	public Callback<Integer> getCurrentDailySteps(IFitnessClock clock)
+	{
+		return this.fitnessService.getDailySteps(this, clock, clock.getCurrentTime());
+	}
+
+	@Override
 	public Callback<IFitnessSnapshot> getCurrentFitnessSnapshot(IFitnessClock clock)
 	{
 		return this.fitnessService.getFitnessSnapshot(this, clock);

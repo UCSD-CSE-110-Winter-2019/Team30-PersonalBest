@@ -21,6 +21,7 @@ import team30.personalbest.framework.google.achiever.FitnessGoalAchiever;
 import team30.personalbest.framework.service.IGoalService;
 import team30.personalbest.framework.snapshot.IFitnessSnapshot;
 import team30.personalbest.framework.snapshot.IGoalSnapshot;
+import team30.personalbest.framework.snapshot.IRecordingFitnessSnapshot;
 import team30.personalbest.framework.user.GoogleFitnessUser;
 import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.framework.watcher.FitnessWatcher;
@@ -108,14 +109,21 @@ public class MainActivity extends AppCompatActivity
 	{
 		findViewById(R.id.btn_walk_start).setVisibility(View.GONE);
 		findViewById(R.id.btn_walk_stop).setVisibility(View.VISIBLE);
-		findViewById(R.id.recordstat_steps).setVisibility(View.VISIBLE);
-		findViewById(R.id.recordstat_time).setVisibility(View.VISIBLE);
-		findViewById(R.id.recordstat_speed).setVisibility(View.VISIBLE);
+
+		TextView recordStatSteps = findViewById(R.id.recordstat_steps);
+		TextView recordStatTime = findViewById(R.id.recordstat_time);
+		TextView recordStatSpeed = findViewById(R.id.recordstat_speed);
+
+		recordStatSteps.setVisibility(View.VISIBLE);
+		recordStatTime.setVisibility(View.VISIBLE);
+		recordStatSpeed.setVisibility(View.VISIBLE);
 
 		// Start recording current run
-		this.currentUser.getRecordingService()
+		IRecordingFitnessSnapshot snapshot = this.currentUser.getRecordingService()
 				.startRecording(this.currentUser, this.currentClock)
 				.addOnRecordingSnapshotUpdateListener(this::displayRecordingSnapshot);
+
+		this.displayRecordingSnapshot(snapshot);
 	}
 
 	private void stopRecordingWalk()
@@ -186,21 +194,24 @@ public class MainActivity extends AppCompatActivity
 			this.resolveHeight().onResult(aFloat -> {
 				if (aFloat == null) throw new IllegalStateException("Unable to resolve height");
 
-				((TextView) findViewById(R.id.display_height)).setText(
-						activity.getString(R.string.display_height, aFloat));
+				((TextView) findViewById(R.id.display_height)).setText(activity.getString(R.string.display_height, aFloat));
 
 				this.currentUser.getCurrentGoalSnapshot(this.currentClock).onResult(iGoalSnapshot -> {
 					if (iGoalSnapshot == null)
 					{
-						((TextView) findViewById(R.id.display_stepgoal)).setText(
-								activity.getString(R.string.display_stepgoal, DEFAULT_GOAL_VALUE));
+						((TextView) findViewById(R.id.display_stepgoal))
+								.setText(activity.getString(R.string.display_stepgoal, DEFAULT_GOAL_VALUE));
 					}
 					else
 					{
-						((TextView) findViewById(R.id.display_stepgoal)).setText(
-								activity.getString(R.string.display_stepgoal, iGoalSnapshot.getGoalValue()));
+						((TextView) findViewById(R.id.display_stepgoal))
+								.setText(activity.getString(R.string.display_stepgoal, iGoalSnapshot.getGoalValue()));
 					}
 				});
+
+				this.currentUser.getCurrentDailySteps(this.currentClock)
+						.onResult(integer -> ((TextView) findViewById(R.id.display_steptotal))
+								.setText(activity.getString(R.string.display_steptotal, integer)));
 
 				Log.i(TAG, "Successfully initialized app services");
 			});
@@ -215,8 +226,8 @@ public class MainActivity extends AppCompatActivity
 		if (fitnessSnapshot != null)
 		{
 			final int totalSteps = fitnessSnapshot.getTotalSteps();
-			((TextView) this.findViewById(R.id.display_steptotal)).setText(
-					this.getString(R.string.display_steptotal, totalSteps));
+			((TextView) this.findViewById(R.id.display_steptotal))
+					.setText(this.getString(R.string.display_steptotal, totalSteps));
 		}
 		else
 		{

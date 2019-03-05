@@ -77,7 +77,7 @@ public class GoogleFitnessAdapter
 
 		if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_OAUTH_REQUEST_CODE)
 		{
-			this.initializeGoogleServices().onResult(googleFitness -> activity.recreate());
+			this.initializeGoogleServices();
 		}
 	}
 

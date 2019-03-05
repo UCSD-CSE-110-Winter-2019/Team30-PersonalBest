@@ -14,12 +14,12 @@ import com.google.android.gms.fitness.request.SessionInsertRequest;
 import java.util.concurrent.TimeUnit;
 
 import team30.personalbest.framework.clock.IFitnessClock;
-import team30.personalbest.framework.service.IRecordingService;
-import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.framework.google.recorder.GoogleFitDataRecorder;
+import team30.personalbest.framework.google.recorder.RecordingSnapshot;
+import team30.personalbest.framework.service.IRecordingService;
 import team30.personalbest.framework.snapshot.IFitnessSnapshot;
 import team30.personalbest.framework.snapshot.IRecordingFitnessSnapshot;
-import team30.personalbest.framework.google.recorder.RecordingSnapshot;
+import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
 
 public class RecordingService implements IRecordingService, IGoogleService
@@ -27,8 +27,9 @@ public class RecordingService implements IRecordingService, IGoogleService
 	public static final String TAG = "RecordingService";
 
 	private boolean recording = false;
-	private GoogleFitDataRecorder stepRecorder;
 	private RecordingSnapshot recordingSnapshot;
+
+	private GoogleFitDataRecorder stepRecorder;
 
 	private GoogleFitnessAdapter googleFitnessAdapter;
 
@@ -38,6 +39,9 @@ public class RecordingService implements IRecordingService, IGoogleService
 		final Callback<RecordingService> callback = new Callback<>();
 		{
 			this.googleFitnessAdapter = googleFitnessAdapter;
+
+			this.stepRecorder = new GoogleFitDataRecorder(googleFitnessAdapter, DataType.TYPE_STEP_COUNT_DELTA, GoogleFitnessAdapter.RECORDER_SAMPLING_RATE);
+
 			callback.resolve(this);
 		}
 		return callback;
@@ -51,12 +55,7 @@ public class RecordingService implements IRecordingService, IGoogleService
 		this.recording = true;
 
 		this.recordingSnapshot = new RecordingSnapshot(clock.getCurrentTime());
-
-		this.stepRecorder = new GoogleFitDataRecorder(this.googleFitnessAdapter.getActivity(),
-		                                              DataType.TYPE_STEP_COUNT_CUMULATIVE,
-		                                              GoogleFitnessAdapter.RECORDER_SAMPLING_RATE)
-				.setHandler(this.recordingSnapshot);
-		this.stepRecorder.start();
+		this.stepRecorder.start(clock, this.recordingSnapshot);
 
 		return this.recordingSnapshot;
 	}

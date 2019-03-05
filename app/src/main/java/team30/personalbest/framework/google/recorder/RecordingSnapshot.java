@@ -22,11 +22,12 @@ public class RecordingSnapshot extends FitnessSnapshot implements IRecordingFitn
 
 	private final List<OnRecordingSnapshotUpdateListener> listeners = new ArrayList<>();
 
-	private int initialSteps = 0;
+	private int stepsTaken = 0;
 
 	public RecordingSnapshot(long startTime)
 	{
 		this.setStartTime(startTime);
+		this.setStopTime(startTime);
 	}
 
 	@Override
@@ -47,32 +48,23 @@ public class RecordingSnapshot extends FitnessSnapshot implements IRecordingFitn
 		if (this.getStopTime() < endTime) this.setStopTime(endTime);
 
 		final DataPoint dst = dataSet.createDataPoint();
-		if (dataPoint.getDataType().equals(DataType.TYPE_STEP_COUNT_CUMULATIVE))
+
+		if (dataPoint.getDataType().equals(DataType.TYPE_STEP_COUNT_DELTA))
 		{
 			int result = dataPoint.getValue(Field.FIELD_STEPS).asInt();
-			if (result > 0 && this.initialSteps == 0)
-			{
-				this.initialSteps = result;
-			}
-			else
-			{
-				this.setTotalSteps(result - this.initialSteps);
-			}
+			Log.d(TAG, "Found " + result + " steps for data point...");
+			if (result <= 0) return null;
+
+			this.stepsTaken += result;
+			this.setTotalSteps(this.stepsTaken);
 
 			dst.setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
 			dst.getValue(Field.FIELD_STEPS).setInt(result);
 		}
-		else if (dataPoint.getDataType().equals(DataType.TYPE_DISTANCE_CUMULATIVE))
-		{
-			float result = dataPoint.getValue(Field.FIELD_DISTANCE).asFloat();
-			this.setSpeed(result);
-
-			dst.setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
-			dst.getValue(Field.FIELD_DISTANCE).setFloat(result);
-		}
 		else
 		{
 			Log.w(TAG, "Found unknown data point.");
+			return null;
 		}
 
 		for (OnRecordingSnapshotUpdateListener listener : this.listeners)

@@ -7,6 +7,8 @@ import team30.personalbest.util.Callback;
 
 public interface IFitnessUser
 {
+	Callback<Integer> getCurrentDailySteps(IFitnessClock clock);
+
 	Callback<IFitnessSnapshot> getCurrentFitnessSnapshot(IFitnessClock clock);
 	Callback<Iterable<IFitnessSnapshot>> getFitnessSnapshots(IFitnessClock clock, long startTime, long stopTime);
 
