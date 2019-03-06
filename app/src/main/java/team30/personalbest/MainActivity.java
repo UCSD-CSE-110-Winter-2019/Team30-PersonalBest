@@ -16,6 +16,7 @@ import java.util.Iterator;
 
 import team30.personalbest.goal.FitnessGoalAchiever;
 import team30.personalbest.goal.GoalListener;
+import team30.personalbest.messeging.ConversationsPageActivity;
 import team30.personalbest.messeging.MessageActivity;
 import team30.personalbest.service.EncouragementService;
 import team30.personalbest.service.OnServicesReadyListener;

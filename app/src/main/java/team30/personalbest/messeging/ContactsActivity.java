@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -23,12 +25,14 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 
 import team30.personalbest.R;
 
 public class ContactsActivity extends AppCompatActivity {
 
     private ArrayList<String> contactsList;
+    private ArrayList<MyUser> contactsListObject;
 
     private MyUser thisUser;
 
@@ -37,6 +41,8 @@ public class ContactsActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView( R.layout.activity_contacts_page );
+
+        contactsListObject = new ArrayList<>();
 
 
         thisUser = (MyUser) this.getIntent().getExtras().get("currentUser");
@@ -57,6 +63,9 @@ public class ContactsActivity extends AppCompatActivity {
         CollectionReference contacts = firestore.collection("contacts/"+user_id+"/user_contacts");
         contactsList = new ArrayList<>();
 
+        /*
+         * https://stackoverflow.com/questions/2468100/how-to-handle-listview-click-in-android
+         */
         contacts.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -67,10 +76,25 @@ public class ContactsActivity extends AppCompatActivity {
 
                         Log.i("Contacts Query", "Retrieved Data: " + doc.toString() );
                         MyUser contact = doc.toObject( MyUser.class );
+                        contactsListObject.add( contact );
                         contactsList.add( contact.getUser_name() );
                     }
 
                     ContactsActivity.this.displayContacts( contactsList );
+
+                    ContactsActivity.this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                            Intent startConvIntent = new Intent( ContactsActivity.this, ChatActivity.class );
+                            startConvIntent.putExtra("fromUser", ContactsActivity.this.thisUser);
+                            startConvIntent.putExtra( "toUser", contactsListObject.get( (int) id ) );
+                            Log.d("Row Clicked", ""+id);
+
+                            startActivity( startConvIntent );
+
+                        }
+                    });
                 }
                 else {
                     Log.d( "Contacts Query", "COuldn't retrieve contacts");

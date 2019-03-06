@@ -19,6 +19,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import androidx.annotation.RequiresApi;
@@ -36,7 +37,6 @@ public class MessageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message_acitvity);
 
-        this.messager = new Messager(this);
 
 
         // Choose authentication providers
@@ -50,7 +50,6 @@ public class MessageActivity extends AppCompatActivity {
                         .createSignInIntentBuilder()
                         .setAvailableProviders(providers)
                         .build(), RC_SIGN_IN);
-
 
     }
 
@@ -76,14 +75,14 @@ public class MessageActivity extends AppCompatActivity {
                         if( task.isSuccessful() ) {
                             DocumentSnapshot userDoc = task.getResult();
                             if( !userDoc.exists() ) {
-                                userRef.set( MessageActivity.this.thisUser = new MyUser( user.getUid(), user.getDisplayName(), user.getEmail() ));
+                                userRef.set( MessageActivity.this.thisUser = new MyUser( user.getUid(), user.getDisplayName(), user.getEmail(), new HashMap<String, Boolean>() ));
                                 firestore.document("emails/"+MessageActivity.this.thisUser.getUser_email() )
                                         .set( MessageActivity.this.thisUser );
                             }
                             else if( userDoc.exists() ){
                                 Log.d("MessageActivity", "Found User in database. Retrieving data...");
                                 MessageActivity.this.thisUser = userDoc.toObject( MyUser.class );
-                                Intent myIntent = new Intent(MessageActivity.this, ContactsActivity.class);
+                                Intent myIntent = new Intent(MessageActivity.this, ConversationsPageActivity.class);
                                 myIntent.putExtra("currentUser", MessageActivity.this.thisUser  );
                                 startActivity(myIntent);
 
