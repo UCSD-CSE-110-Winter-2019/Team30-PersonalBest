@@ -1,6 +1,7 @@
 package team30.personalbest.messeging;
 
 
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,6 +47,10 @@ public class ChatActivity extends AppCompatActivity {
     private String from;
     private CollectionReference chat;
 
+    private final int NEEDS_REFRESH = 1;
+    private final int NO_REFRESH = 2;
+    public int resultCode = NEEDS_REFRESH;
+
     private boolean toUserReady;
     private boolean fromUserReady;
 
@@ -61,9 +67,18 @@ public class ChatActivity extends AppCompatActivity {
         fromUser = (MyUser) getIntent().getExtras().get("fromUser");
         toUser = (MyUser) getIntent().getExtras().get("toUser");
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true );
+
+        Log.d(LOG_TAG, toUser.getChatRooms().toString());
+        Log.d( LOG_TAG, fromUser.getChatRooms().toString());
+
         from = fromUser.getUser_name();
 
-        getRoomID( fromUser, toUser );
+
+        OnUserReadyChecker checker = new OnUserReadyChecker();
+
+        resolveRoomID( fromUser, toUser );
+
 
 
 
@@ -76,63 +91,80 @@ public class ChatActivity extends AppCompatActivity {
      * If none found ( no conversation exists between the two )
      * creates a new RoomID along with a chatroom for both users
      */
-    private void getRoomID( MyUser fromUser, MyUser toUser ) {
+    private void resolveRoomID( MyUser fromUser, MyUser toUser ) {
 
         for( String fromUser_chatRoomId : fromUser.getChatRooms().keySet() ) {
 
             /* If there exists a shared roomID between users */
-            if (toUser.getChatRooms().containsKey(fromUser_chatRoomId)) {
+            if ( toUser.getChatRooms().containsKey(fromUser_chatRoomId) ) {
+
+                Log.d( LOG_TAG, "Found exisiting conversation");
                 toUserReady = true;
                 fromUserReady = true;
+                this.roomId = fromUser_chatRoomId;
                 startConversation();
+                initMessageUpdateListener();
+                return;
             }
         }
 
+        Log.d( LOG_TAG, "No existing conversations found. Creating new conversations");
+
             /* TODO: Create new chatID
              *      Set ID to both maps
-             *      craete a new chat activity, showing such conversation
+             *      Create a new chat activity, showing such conversation
              */
-            firestore.collection("chatRooms").add( fromUser ).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                @Override
-                public void onSuccess(DocumentReference documentReference) {
 
-                    Log.d("ChatActivity", "Successfully craeted new chatroom");
+        DocumentReference newChatRoom = firestore.collection("chatRooms").document();
+        this.roomId = newChatRoom.getId();
 
-                    if( ChatActivity.this.fromUser == null || ChatActivity.this.toUser == null ) {
-                        Log.e( LOG_TAG, "Error: One or more users are null");
-                        return;
+        fromUser.getChatRooms().put( newChatRoom.getId(), true );
+        toUser.getChatRooms().put( newChatRoom.getId(), true );
+
+        firestore.document("chatRooms/" + newChatRoom.getId() + "/chatUsers/"+fromUser.getUser_id())
+                .set( fromUser )
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d( LOG_TAG, "Successfully added you to chat");
+                        Log.d( LOG_TAG, "Updating User objects...");
+
+                        ChatActivity.this.fromUserReady = true;
                     }
+                });
 
-                    ChatActivity.this.fromUser.getChatRooms().put( documentReference.getId(), true );
-                    ChatActivity.this.toUser.getChatRooms().put( documentReference.getId(), true );
 
-                    ChatActivity.this.roomId = documentReference.getId();
 
-                    fromUserReady = true;
+        firestore.document("chatRooms/" + newChatRoom.getId() + "/chatUsers/"+toUser.getUser_id())
+                .set( toUser )
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d( LOG_TAG, "Successfully added your friend to chat");
+                        Log.d( LOG_TAG, "Updating User objects...");
 
-                    /* Add fromUser to the chatRoom */
-                    firestore.document("chatRooms/"+documentReference.getId())
-                            .set( ChatActivity.this.toUser, SetOptions.merge() )
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Log.d( LOG_TAG, "Both users sucessfully added to chatRoom");
-                                    toUserReady = true;
-                                    startConversation();
-                                    initMessageUpdateListener();
 
-                                }
-                            })
+                        toUserReady = true;
+                    }
+                });
 
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.e( LOG_TAG, "There was a problem adding a user to the chatroom");
-                                }
-                            });
+        firestore.document("user/"+fromUser.getUser_id()).set( fromUser, SetOptions.merge() );
+        firestore.document( "user/"+toUser.getUser_id() ).set( toUser, SetOptions.merge() );
 
-                }
-            });
+        firestore.document("emails/"+fromUser.getUser_email()).set( fromUser, SetOptions.merge() );
+        firestore.document( "emails/"+toUser.getUser_email() ).set( toUser, SetOptions.merge() );
+
+        firestore.document( "contacts/"+ toUser.getUser_id() + "/user_contacts/"+ fromUser.getUser_id() )
+                .set( fromUser, SetOptions.merge() );
+        firestore.document( "contacts/"+ fromUser.getUser_id() + "/user_contacts/"+ toUser.getUser_id() )
+                .set( toUser, SetOptions.merge() );
+
+        startConversation();
+        initMessageUpdateListener();
+
+
+
+
 
     }
 
@@ -149,14 +181,14 @@ public class ChatActivity extends AppCompatActivity {
             if (newChatSnapShot != null && !newChatSnapShot.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
                 List<DocumentChange> documentChanges = newChatSnapShot.getDocumentChanges();
-                documentChanges.forEach(change -> {
+                for( DocumentChange change : documentChanges ) {
                     QueryDocumentSnapshot document = change.getDocument();
                     sb.append(document.get(FROM_KEY));
                     sb.append(":\n");
                     sb.append(document.get(TEXT_KEY));
                     sb.append("\n");
                     sb.append("---\n");
-                });
+                }
 
                 TextView chatView = findViewById(R.id.chat);
                 chatView.append(sb.toString());
@@ -228,5 +260,54 @@ public class ChatActivity extends AppCompatActivity {
                             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                         }
                 );
+    }
+
+    private class OnUserReadyChecker extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            long timeInterval = 500;
+            while( !fromUserReady || !toUserReady ) {
+
+
+                try {
+                    Thread.sleep( timeInterval );
+                } catch (InterruptedException e) {
+                    Log.d(this.getClass().getSimpleName(), "Checker interrupted. ");
+                    e.printStackTrace();
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void v)
+        {
+            super.onPostExecute(v);
+            startConversation();
+            initMessageUpdateListener();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch ( item.getItemId() ) {
+            case android.R.id.home:
+                Log.i("ChatsActivity", "Result code: " + resultCode );
+
+                setResult( this.resultCode );
+                finish();
+
+        }
+        return  super.onOptionsItemSelected(item);
+
     }
 }

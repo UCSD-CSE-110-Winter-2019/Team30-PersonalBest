@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import team30.personalbest.R;
 
@@ -59,7 +60,13 @@ public class AddContactActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 friend_email = email.getText().toString();
-                addFriend( friend_email );
+
+                if(friend_email.equals(thisUser.getUser_email() ) ) {
+                    Toast.makeText(AddContactActivity.this, "I wish this was possible to. :( \n Add someone other than yourself.", Toast.LENGTH_LONG).show();
+                } else {
+                    addFriend( friend_email );
+                }
+
 
 
             }
@@ -90,9 +97,9 @@ public class AddContactActivity extends AppCompatActivity {
                         FirebaseFirestore fs = FirebaseFirestore.getInstance();
                         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                         fs.document("contacts/"+friend.getUser_id()+"/user_contacts/"+user.getUid() )
-                                .set( thisUser );
+                                .set( thisUser, SetOptions.merge() );
                         fs.document("contacts/"+thisUser.getUser_id()+"/user_contacts/"+friend.getUser_id())
-                                .set( friend );
+                                .set( friend, SetOptions.merge() );
 
                         Toast.makeText(AddContactActivity.this, "Friend Successfully added", Toast.LENGTH_SHORT).show();
                         AddContactActivity.this.resultCode = NEEDS_REFRESH;

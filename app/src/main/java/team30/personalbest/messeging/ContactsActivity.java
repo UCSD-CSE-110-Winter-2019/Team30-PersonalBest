@@ -16,16 +16,20 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 
 import team30.personalbest.R;
 
@@ -61,6 +65,9 @@ public class ContactsActivity extends AppCompatActivity {
 
 
         CollectionReference contacts = firestore.collection("contacts/"+user_id+"/user_contacts");
+
+
+
         contactsList = new ArrayList<>();
 
         /*
@@ -91,7 +98,7 @@ public class ContactsActivity extends AppCompatActivity {
                             startConvIntent.putExtra( "toUser", contactsListObject.get( (int) id ) );
                             Log.d("Row Clicked", ""+id);
 
-                            startActivity( startConvIntent );
+                            startActivityForResult( startConvIntent , 1);
 
                         }
                     });
@@ -149,11 +156,47 @@ public class ContactsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if( resultCode == 1 ) {
+
+
             Log.d("onActivityResult", "Restarting Activity");
-            finish();
-            startActivity( getIntent() );
+            updateUser();
+
         } else {
             Log.d("onActivityResult", "Something went wrong");
         }
+    }
+
+    private void updateUser() {
+
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+        firestore.collection("user")
+                .document( thisUser.getUser_id() )
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if( task.isSuccessful() ) {
+                            DocumentSnapshot userDoc = task.getResult();
+
+                            if( userDoc.exists() ){
+                                Log.d("MessageActivity", "Found User in database. Retrieving data...");
+                                MyUser thisUser = userDoc.toObject( MyUser.class );
+                                ContactsActivity.this.getIntent().putExtra("currentUser", thisUser );
+
+                            } else {
+                                Log.d("ContactsActivity", "Could not update user");
+                            }
+
+                        }
+
+                        restartActivity();
+                    }
+                });
+    }
+
+    private void restartActivity() {
+        finish();
+        startActivity( getIntent() );
     }
 }
