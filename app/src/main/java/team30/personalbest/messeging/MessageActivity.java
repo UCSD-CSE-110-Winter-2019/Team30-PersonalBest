@@ -106,6 +106,10 @@ public class MessageActivity extends AppCompatActivity {
                                             userRef.set( MessageActivity.this.thisUser = new MyUser( user.getUid(), user.getDisplayName(), user.getEmail(), new HashMap<String, Boolean>() ));
                                             firestore.document("emails/"+MessageActivity.this.thisUser.getUser_email() )
                                                     .set( MessageActivity.this.thisUser );
+                                            Intent myIntent = new Intent(MessageActivity.this, ConversationsPageActivity.class);
+                                            myIntent.putExtra("currentUser", MessageActivity.this.thisUser  );
+                                            startActivity(myIntent);
+
                                         }
                                         else if( userDoc.exists() ){
                                             Log.d("MessageActivity", "Found User in database. Retrieving data...");
