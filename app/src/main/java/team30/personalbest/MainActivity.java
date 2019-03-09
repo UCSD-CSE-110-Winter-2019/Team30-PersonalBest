@@ -16,7 +16,6 @@ import java.util.Iterator;
 
 import team30.personalbest.goal.FitnessGoalAchiever;
 import team30.personalbest.goal.GoalListener;
-import team30.personalbest.messeging.ConversationsPageActivity;
 import team30.personalbest.messeging.MessageActivity;
 import team30.personalbest.service.EncouragementService;
 import team30.personalbest.service.OnServicesReadyListener;
@@ -103,10 +102,6 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 		*/
 		//Initialize services...
 		this.serviceInitializer.onActivityCreate(this, savedInstanceState);
-
-		//TODO(chen): debug code for the messaging component, remove for release
-		Intent myIntent = new Intent(this, MessageActivity.class);
-		startActivity(myIntent);
 	}
 
 	private void setupUI()
@@ -192,6 +187,12 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 	{
 		final MainActivity activity = this;
 
+
+		//TODO(chen): debug code for the messaging component, remove for release
+		Intent myIntent = new Intent(this, MessageActivity.class);
+		startActivity(myIntent);
+
+		/*
 		// Prompt height on initial launch of app (after google fit is ready)
 		this.resolveHeight().onResult(aFloat -> {
 			if (aFloat == null)
@@ -225,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements OnServicesReadyLi
 
 			Log.i(TAG, "Successfully initialized app services");
 		});
-
+		*/
 		Log.i(TAG, "Successfully prepared app services");
 	}
 
