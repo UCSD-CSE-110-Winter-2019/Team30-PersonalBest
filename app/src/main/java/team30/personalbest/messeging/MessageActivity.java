@@ -61,6 +61,8 @@ import team30.personalbest.R;
  *                  Message{ to, from, timestamp }
  *
  *
+ *  Update Contacts list periodically
+ *  Update friend addition
  */
 
 public class MessageActivity extends AppCompatActivity {
