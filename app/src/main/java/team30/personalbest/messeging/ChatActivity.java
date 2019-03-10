@@ -74,15 +74,11 @@ public class ChatActivity extends AppCompatActivity {
 
         from = fromUser.getUser_name();
 
-
         OnUserReadyChecker checker = new OnUserReadyChecker();
 
         resolveRoomID( fromUser, toUser );
 
-
-
-
-
+        subscribeToNotificationsTopic();
     }
 
 
@@ -161,11 +157,6 @@ public class ChatActivity extends AppCompatActivity {
 
         startConversation();
         initMessageUpdateListener();
-
-
-
-
-
     }
 
     private void startConversation( ) {
@@ -250,7 +241,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void subscribeToNotificationsTopic() {
-        FirebaseMessaging.getInstance().subscribeToTopic("bullshit")
+        FirebaseMessaging.getInstance().subscribeToTopic("messages")
                 .addOnCompleteListener(task -> {
                             String msg = "Subscribed to notifications";
                             if (!task.isSuccessful()) {
