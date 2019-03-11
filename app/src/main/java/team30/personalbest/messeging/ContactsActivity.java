@@ -21,9 +21,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -37,6 +40,7 @@ public class ContactsActivity extends AppCompatActivity {
 
     private ArrayList<String> contactsList;
     private ArrayList<MyUser> contactsListObject;
+    private final String LOG_TAG = "ContactsActivity";
 
     private MyUser thisUser;
 
@@ -67,6 +71,38 @@ public class ContactsActivity extends AppCompatActivity {
         CollectionReference contacts = firestore.collection("contacts/"+user_id+"/user_contacts");
 
 
+
+/*        contacts.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+
+                if( e != null ) {
+                    Log.e( LOG_TAG, "Error listening");
+                    return;
+                }
+
+                boolean contactAdded = false;
+
+                for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
+                    switch (dc.getType()) {
+                        case ADDED:
+                            Log.d(LOG_TAG, "New city: " + dc.getDocument().getData());
+                            contactAdded = true;
+                            break;
+                        case MODIFIED:
+                            Log.d(LOG_TAG, "Modified city: " + dc.getDocument().getData());
+                            break;
+                        case REMOVED:
+                            Log.d(LOG_TAG, "Removed city: " + dc.getDocument().getData());
+                            break;
+                    }
+                }
+
+                if( contactAdded ) {
+                    updateUser();
+                }
+            }
+        });*/
 
         contactsList = new ArrayList<>();
 
