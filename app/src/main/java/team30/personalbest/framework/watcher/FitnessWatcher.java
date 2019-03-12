@@ -18,7 +18,7 @@ public class FitnessWatcher implements IGoogleService
 
 	public static final int WATCH_SAMPLE_RATE = 10000;
 
-	private final List<OnFitnessUpdateListener> listeners = new ArrayList<>();
+	private final List<OnStepUpdateListener> listeners = new ArrayList<>();
 	private final IFitnessUser fitnessUser;
 	private final IFitnessClock clock;
 
@@ -41,13 +41,13 @@ public class FitnessWatcher implements IGoogleService
 		return callback;
 	}
 
-	public FitnessWatcher addFitnessListener(OnFitnessUpdateListener listener)
+	public FitnessWatcher addFitnessListener(OnStepUpdateListener listener)
 	{
 		this.listeners.add(listener);
 		return this;
 	}
 
-	public void removeFitnessListener(OnFitnessUpdateListener listener)
+	public void removeFitnessListener(OnStepUpdateListener listener)
 	{
 		this.listeners.remove(listener);
 	}
@@ -66,10 +66,10 @@ public class FitnessWatcher implements IGoogleService
 
 	public void update()
 	{
-		this.fitnessUser.getCurrentFitnessSnapshot(this.clock).onResult(iFitnessSnapshot -> {
-			for (OnFitnessUpdateListener listener : FitnessWatcher.this.listeners)
+		this.fitnessUser.getCurrentDailySteps(this.clock).onResult(integer -> {
+			for (OnStepUpdateListener listener : this.listeners)
 			{
-				listener.onFitnessUpdate(this.fitnessUser, this.clock, iFitnessSnapshot);
+				listener.onStepUpdate(this.fitnessUser, this.clock, integer);
 			}
 		});
 	}

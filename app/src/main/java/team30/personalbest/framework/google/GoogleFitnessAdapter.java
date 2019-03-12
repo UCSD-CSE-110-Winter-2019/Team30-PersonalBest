@@ -43,13 +43,9 @@ public class GoogleFitnessAdapter
 		this.activity = activity;
 
 		final FitnessOptions fitnessOptions = FitnessOptions.builder()
-				.addDataType(DataType.TYPE_STEP_COUNT_DELTA)
-				.addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA)
+				.addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+				.addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
 				.addDataType(DataType.TYPE_STEP_COUNT_CUMULATIVE, FitnessOptions.ACCESS_WRITE)
-				.addDataType(DataType.TYPE_DISTANCE_DELTA)
-				.addDataType(DataType.AGGREGATE_DISTANCE_DELTA)
-				.addDataType(DataType.TYPE_SPEED)
-				.addDataType(DataType.AGGREGATE_SPEED_SUMMARY)
 				.addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_WRITE)
 				.build();
 

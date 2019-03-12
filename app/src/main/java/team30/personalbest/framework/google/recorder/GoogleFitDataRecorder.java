@@ -103,7 +103,6 @@ public class GoogleFitDataRecorder
 				Log.d(TAG, "Appending data point " + result + "...");
 				if (result != null)
 				{
-					System.out.println(result);
 					this.dataSet.add(result);
 				}
 			}

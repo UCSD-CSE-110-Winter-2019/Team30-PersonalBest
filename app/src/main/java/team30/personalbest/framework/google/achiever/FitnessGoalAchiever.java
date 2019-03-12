@@ -8,10 +8,9 @@ import java.util.List;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.service.IGoalService;
 import team30.personalbest.framework.user.IFitnessUser;
-import team30.personalbest.framework.watcher.OnFitnessUpdateListener;
-import team30.personalbest.framework.snapshot.IFitnessSnapshot;
+import team30.personalbest.framework.watcher.OnStepUpdateListener;
 
-public class FitnessGoalAchiever implements OnFitnessUpdateListener
+public class FitnessGoalAchiever implements OnStepUpdateListener
 {
 	public static final String TAG = "FitnessGoalAchiever";
 	private final List<GoalListener> listeners = new ArrayList<>();
@@ -42,17 +41,17 @@ public class FitnessGoalAchiever implements OnFitnessUpdateListener
 	}
 
 	@Override
-	public void onFitnessUpdate(IFitnessUser user, IFitnessClock clock, IFitnessSnapshot fitnessSnapshot)
+	public void onStepUpdate(IFitnessUser user, IFitnessClock clock, Integer totalSteps)
 	{
-		if (fitnessSnapshot != null)
+		if (totalSteps != null)
 		{
 			this.goalService.getGoalSnapshot(user, clock).onResult(iGoalSnapshot -> {
 				if (iGoalSnapshot != null)
 				{
-					Log.d(TAG, "Trying to achieve goal " + iGoalSnapshot.getGoalValue() + " for " + fitnessSnapshot.getTotalSteps() + "...");
-					if (fitnessSnapshot.getTotalSteps() >= iGoalSnapshot.getGoalValue())
+					Log.d(TAG, "Trying to achieve goal " + iGoalSnapshot.getGoalValue() + " for " + totalSteps + "...");
+					if (totalSteps >= iGoalSnapshot.getGoalValue())
 					{
-						FitnessGoalAchiever.this.achieveGoal();
+						this.achieveGoal();
 					}
 				}
 			});
