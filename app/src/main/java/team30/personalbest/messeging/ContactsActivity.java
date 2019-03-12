@@ -172,9 +172,9 @@ public class ContactsActivity extends AppCompatActivity {
                             return;
                         }
 
-                        if( initialContactsQuery ) {
+                        if( initialUserQuery ) {
                             Log.d(LOG_TAG, "Initial Query. Skipping...");
-                            initialContactsQuery = false;
+                            initialUserQuery = false;
                             return;
                         }
 
