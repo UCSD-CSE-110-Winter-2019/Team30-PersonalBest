@@ -27,6 +27,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -43,6 +44,10 @@ public class ContactsActivity extends AppCompatActivity {
     private final String LOG_TAG = "ContactsActivity";
 
     private MyUser thisUser;
+    private boolean initialContactsQuery;
+    private boolean initialUserQuery;
+    private ListenerRegistration contactsListener;
+    private ListenerRegistration userListener;
 
     ListView listView;
     @Override
@@ -72,43 +77,15 @@ public class ContactsActivity extends AppCompatActivity {
 
 
 
-/*        contacts.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
 
-                if( e != null ) {
-                    Log.e( LOG_TAG, "Error listening");
-                    return;
-                }
 
-                boolean contactAdded = false;
-
-                for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
-                    switch (dc.getType()) {
-                        case ADDED:
-                            Log.d(LOG_TAG, "New city: " + dc.getDocument().getData());
-                            contactAdded = true;
-                            break;
-                        case MODIFIED:
-                            Log.d(LOG_TAG, "Modified city: " + dc.getDocument().getData());
-                            break;
-                        case REMOVED:
-                            Log.d(LOG_TAG, "Removed city: " + dc.getDocument().getData());
-                            break;
-                    }
-                }
-
-                if( contactAdded ) {
-                    updateUser();
-                }
-            }
-        });*/
 
         contactsList = new ArrayList<>();
 
         /*
          * https://stackoverflow.com/questions/2468100/how-to-handle-listview-click-in-android
          */
+
         contacts.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -146,6 +123,71 @@ public class ContactsActivity extends AppCompatActivity {
         });
 
 
+        initialContactsQuery = true ;
+        contactsListener = contacts.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+
+                if( e != null ) {
+                    Log.e( LOG_TAG, "Error listening");
+                    return;
+                }
+
+                if( initialContactsQuery ) {
+                    Log.d(LOG_TAG, "Initial Query. Skipping...");
+                    initialContactsQuery = false;
+                    return;
+                }
+                boolean contactAdded = false;
+
+                for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
+                    switch (dc.getType()) {
+                        case ADDED:
+                            Log.d(LOG_TAG, "New city: " + dc.getDocument().getData());
+                            contactAdded = true;
+                            break;
+                        case MODIFIED:
+                            Log.d(LOG_TAG, "Modified city: " + dc.getDocument().getData());
+                            break;
+                        case REMOVED:
+                            Log.d(LOG_TAG, "Removed city: " + dc.getDocument().getData());
+                            break;
+                    }
+                }
+
+                if( contactAdded ) {
+                    updateUser();
+                }
+            }
+        });
+
+        initialUserQuery = true;
+        userListener = firestore.document( "user/"+thisUser.getUser_id() )
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+
+                        if( e != null ) {
+                            Log.e( LOG_TAG, "Error listening");
+                            return;
+                        }
+
+                        if( initialContactsQuery ) {
+                            Log.d(LOG_TAG, "Initial Query. Skipping...");
+                            initialContactsQuery = false;
+                            return;
+                        }
+
+                        if (documentSnapshot != null && documentSnapshot.exists()) {
+                            Log.d(LOG_TAG, "Current data: " + documentSnapshot.getData());
+                            updateUser();
+                        } else {
+                            Log.d(LOG_TAG, "Current data: null");
+                        }
+
+
+                    }
+                });
 
     }
 
@@ -205,6 +247,9 @@ public class ContactsActivity extends AppCompatActivity {
     private void updateUser() {
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+        userListener.remove();
+        contactsListener.remove();
 
         firestore.collection("user")
                 .document( thisUser.getUser_id() )
