@@ -6,7 +6,9 @@ import android.text.InputType;
 import android.util.Log;
 import android.widget.EditText;
 
-import team30.personalbest.service.height.HeightService;
+import team30.personalbest.framework.clock.IFitnessClock;
+import team30.personalbest.framework.google.HeightService;
+import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
 
 public final class HeightPrompt
@@ -15,12 +17,12 @@ public final class HeightPrompt
 
 	private HeightPrompt() {}
 
-	public static Callback<Float> show(Context context, HeightService heightService)
+	public static Callback<Float> show(Context context, HeightService heightService, IFitnessUser user, IFitnessClock clock)
 	{
-		return HeightPrompt.show(context, heightService, false);
+		return HeightPrompt.show(context, heightService, user, clock, false);
 	}
 
-	public static Callback<Float> show(Context context, HeightService heightService, boolean cancelable)
+	public static Callback<Float> show(Context context, HeightService heightService, IFitnessUser user, IFitnessClock clock, boolean cancelable)
 	{
 		final Callback<Float> callback = new Callback<>();
 		final EditText input = new EditText(context);
@@ -34,7 +36,7 @@ public final class HeightPrompt
 						final String heightString = input.getText().toString();
 						final float heightFloat = Float.parseFloat(heightString);
 
-						heightService.setHeight(heightFloat).onResult(aFloat -> {
+						heightService.setHeight(user, clock, heightFloat).onResult(aFloat -> {
 							if (aFloat == null)
 								throw new IllegalArgumentException("Unable to set height for google services");
 
@@ -46,13 +48,13 @@ public final class HeightPrompt
 					{
 						Log.w(TAG, "Failed to process height", e);
 
-						if (!cancelable) HeightPrompt.show(context, heightService, false);
+						if (!cancelable) HeightPrompt.show(context, heightService, user, clock, false);
 					}
 				})
 				.setNegativeButton(context.getString(R.string.prompt_cancel), (dialog, which) -> {
 					dialog.cancel();
 
-					if (!cancelable) HeightPrompt.show(context, heightService, false);
+					if (!cancelable) HeightPrompt.show(context, heightService, user, clock, false);
 				});
 		builder.show();
 		return callback;
