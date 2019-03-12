@@ -63,8 +63,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     for (QueryDocumentSnapshot doc : task.getResult()) {
                         Log.i("Contacts Query", "Retrieved Data: " + doc.toString());
                         MyUser contact = doc.toObject(MyUser.class);
-                        if (contact.getUser_name() == msgSenderName) {
+                        if (contact.getUser_name().equals(msgSenderName)) {
                             msgSender = contact;
+                            Log.d(TAG,  "found msgSender: " + msgSenderName);
+                        }
+                        else
+                        {
+                            Log.d(TAG, contact.getUser_name() + " != " + msgSenderName);
                         }
                     }
                 } else {
@@ -97,7 +102,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                                             Log.d("MessageActivity", "Found User in database. Retrieving data...");
                                             currentUser = userDoc.toObject( MyUser.class );
 
-                                            Intent startConvIntent = new Intent( null, ChatActivity.class );
+                                            Intent startConvIntent = new Intent(MyFirebaseMessagingService.this, ChatActivity.class );
                                             startConvIntent.putExtra("fromUser", currentUser);
                                             startConvIntent.putExtra( "toUser", msgSender);
                                             startActivity(startConvIntent);
