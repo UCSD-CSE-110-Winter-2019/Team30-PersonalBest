@@ -3,6 +3,10 @@
     <string name="the_current_time">The current time</string>
     <string name="submit_time">Submit Time</string>
     <string name="add_friend">Add Friend</string>
+    <string name="email_prompt">Enter Friend\'s Email</string>
+    <string name="submit_friend_btn">Add</string>
+
+    <string name="web_client_id">176288584716-211ilnhs82khcup8bi6uquim7kmk4cvd.apps.googleusercontent.com</string>
 
     <string name="title_walk_start">Start walk/run</string>
     <string name="title_walk_stop">End walk/run</string>
@@ -22,6 +26,4 @@
     <string name="prompt_cancel">Cancel</string>
     <string name="encouragement_nearly_significant">Good job! You have nearly doubled your steps since yesterday!</string>
     <string name="encouragement_significant">Amazing! You have doubled your steps since yesterday!</string>
-    <string name="email_prompt">Enter Friend\'s Email</string>
-    <string name="submit_friend_btn">Add</string>
 </resources>

@@ -25,6 +25,7 @@ import team30.personalbest.framework.snapshot.IRecordingFitnessSnapshot;
 import team30.personalbest.framework.user.GoogleFitnessUser;
 import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.framework.watcher.FitnessWatcher;
+import team30.personalbest.messeging.MessageActivity;
 import team30.personalbest.util.Callback;
 
 public class MainActivity extends AppCompatActivity

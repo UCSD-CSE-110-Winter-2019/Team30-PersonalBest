@@ -8,13 +8,19 @@ import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import team30.personalbest.R;
+import team30.personalbest.messeging.MessageActivity;
 import team30.personalbest.util.Callback;
 
 public class GoogleFitnessAdapter
@@ -26,6 +32,7 @@ public class GoogleFitnessAdapter
 	public static final String RECORDING_SESSION_DESCRIPTION = "Doing a run";
 	public static final int RECORDER_SAMPLING_RATE = 1;
 	public static final int REQUEST_OAUTH_REQUEST_CODE = 0x1001;
+	public static final int RC_SIGN_IN = 0x1002;
 
 	private final List<IGoogleService> googleServices = new ArrayList<>();
 
@@ -41,6 +48,15 @@ public class GoogleFitnessAdapter
 	public void onActivityCreate(Activity activity, Bundle savedInstanceState)
 	{
 		this.activity = activity;
+
+		final GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+				.requestIdToken(activity.getString(R.string.web_client_id))
+				.requestEmail()
+				.build();
+		GoogleSignInClient client = GoogleSignIn.getClient(activity, gso);
+
+		Intent signInIntent = client.getSignInIntent();
+		activity.startActivityForResult(signInIntent, RC_SIGN_IN);
 
 		final FitnessOptions fitnessOptions = FitnessOptions.builder()
 				.addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -71,7 +87,22 @@ public class GoogleFitnessAdapter
 	{
 		this.activity = activity;
 
-		if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_OAUTH_REQUEST_CODE)
+		if (requestCode == RC_SIGN_IN)
+		{
+			Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+			try
+			{
+				Log.d(TAG, "Google sign succeeded.");
+				GoogleSignInAccount account = task.getResult(ApiException.class);
+				Intent intent = new Intent(activity, MessageActivity.class);
+				activity.startActivity(intent);
+			}
+			catch (ApiException e)
+			{
+				Log.w(TAG, "Google sign in failed.", e);
+			}
+		}
+		else if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_OAUTH_REQUEST_CODE)
 		{
 			this.initializeGoogleServices();
 		}
