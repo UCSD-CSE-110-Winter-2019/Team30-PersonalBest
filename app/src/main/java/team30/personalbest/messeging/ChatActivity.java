@@ -77,7 +77,6 @@ public class ChatActivity extends AppCompatActivity {
         OnUserReadyChecker checker = new OnUserReadyChecker();
 
         resolveRoomID( fromUser, toUser );
-        subscribeToNotificationsTopic(this.roomId);
     }
 
 
@@ -235,18 +234,6 @@ public class ChatActivity extends AppCompatActivity {
                         chatView.append(sb.toString());
                     }
                 });
-    }
-
-    private void subscribeToNotificationsTopic(String topic) {
-        FirebaseMessaging.getInstance().subscribeToTopic(topic)
-                .addOnCompleteListener(task -> {
-                            String msg = "Subscribed to notifications with topic = " + topic;
-                            if (!task.isSuccessful()) {
-                                msg = "Subscribe to notifications failed";
-                            }
-                            Log.d(LOG_TAG, msg);
-                        }
-                );
     }
 
     private class OnUserReadyChecker extends AsyncTask<Void, Void, Void> {

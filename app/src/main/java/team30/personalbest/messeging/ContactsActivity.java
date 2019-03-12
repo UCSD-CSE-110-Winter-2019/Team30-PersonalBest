@@ -26,6 +26,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -95,6 +96,14 @@ public class ContactsActivity extends AppCompatActivity {
                 }
             }
         });
+
+        if (thisUser != null)
+        {
+            for (String chatId: thisUser.getChatRooms().keySet())
+            {
+                subscribeToNotificationsTopic(chatId);
+            }
+        }
     }
 
     public void displayContacts( ArrayList<String> contactsList ) {
@@ -163,6 +172,18 @@ public class ContactsActivity extends AppCompatActivity {
                         restartActivity();
                     }
                 });
+    }
+
+    private void subscribeToNotificationsTopic(String topic) {
+        FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                .addOnCompleteListener(task -> {
+                            String msg = "Subscribed to notifications with topic = " + topic;
+                            if (!task.isSuccessful()) {
+                                msg = "Subscribe to notifications failed";
+                            }
+                            Log.d("ContactsActivity", msg);
+                        }
+                );
     }
 
     private void restartActivity() {
