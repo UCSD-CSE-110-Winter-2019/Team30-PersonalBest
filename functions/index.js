@@ -15,8 +15,11 @@ exports.sendChatNotifications = functions.firestore
            title: document.from + ' sent you a message',
            body: document.text
          },
-         //topic: context.params.roomId
-         topic: context.params.roomId
+         topic: context.params.roomId,
+
+         data: {
+             msgSender: document.from,
+         }
        };
 
        return admin.messaging().send(message)

@@ -188,8 +188,6 @@ public class ChatActivity extends AppCompatActivity {
         nameView.setText(from);
     }
 
-
-
     private void sendMessage() {
         if (from == null || from.isEmpty() || chat == null ) {
             Toast.makeText(this, "Enter your name", Toast.LENGTH_SHORT).show();
