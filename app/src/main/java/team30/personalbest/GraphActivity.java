@@ -52,12 +52,29 @@ public class GraphActivity extends AppCompatActivity
 
 		// Switch between activities
 		Button switchScreen = (Button) findViewById(R.id.button_back);
-		switchScreen.setOnClickListener(new View.OnClickListener()
-		{
+		switchScreen.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view)
-			{
+			public void onClick(View view) {
 				finish();
+			}
+		});
+
+		//Weekly buttons
+		Button prevWeek = (Button) findViewById(R.id.button_prev);
+		prevWeek.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				isValidWeek();
+				getPrevWeeksData();
+			}
+		});
+
+		Button nextWeek = (Button) findViewById(R.id.button_next);
+		nextWeek.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				isValidWeek();
+				getNextWeeksData();
 			}
 		});
 
@@ -169,5 +186,20 @@ public class GraphActivity extends AppCompatActivity
 
 		chart.setData(combinedData);
 		chart.invalidate();
+	}
+
+	// TODO: Andrew
+	private boolean isValidWeek() {
+		return false;
+	}
+
+	// TODO: Andrew
+	private Bundle getPrevWeeksData() {
+		return null;
+	}
+
+	// TODO: Andrew
+	private Bundle getNextWeeksData() {
+		return null;
 	}
 }
