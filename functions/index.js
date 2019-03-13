@@ -11,12 +11,14 @@ exports.sendChatNotifications = functions.firestore
 
      if (document) {
        var message = {
-         notification: {
-           title: document.from + ' sent you a message',
-           body: document.text
-         },
          topic: context.params.roomId,
-
+         android: {
+            notification: {
+                title: document.from + ' sent you a message',
+                body: document.text,
+                click_action: 'notification',
+            }
+         },
          data: {
              msgSender: document.from,
          }
@@ -35,4 +37,16 @@ exports.sendChatNotifications = functions.firestore
      }
 
      return "document was null or emtpy";
+   });
+
+exports.addTimeStamp = functions.firestore
+   .document('messages/{roomId}/chat_messages/{chat_messageId}')
+   .onCreate((snap, context) => {
+     if (snap) {
+       return snap.ref.update({
+                   timestamp: admin.firestore.FieldValue.serverTimestamp()
+               });
+     }
+
+     return "snap was null or empty";
    });
