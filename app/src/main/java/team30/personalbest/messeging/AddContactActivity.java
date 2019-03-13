@@ -166,6 +166,7 @@ public class AddContactActivity extends AppCompatActivity {
 
                             } else {
 
+                                AddContactActivity.this.resultCode = NEEDS_REFRESH;
                                 fs.document( "friend_requests/" + thisUser.getUser_id() +"/pending/"+friend.getUser_id() ).set( friend );
                                 Toast.makeText(AddContactActivity.this, "Friend Request Pending Approval.", Toast.LENGTH_SHORT).show();
 

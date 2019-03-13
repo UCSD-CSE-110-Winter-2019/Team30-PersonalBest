@@ -110,7 +110,8 @@ public class ContactsActivity extends AppCompatActivity {
                             startConvIntent.putExtra("fromUser", ContactsActivity.this.thisUser);
                             startConvIntent.putExtra( "toUser", contactsListObject.get( (int) id ) );
                             Log.d("Row Clicked", ""+id);
-
+                            userListener.remove();
+                            contactsListener.remove();
                             startActivityForResult( startConvIntent , 1);
 
                         }
@@ -143,14 +144,15 @@ public class ContactsActivity extends AppCompatActivity {
                 for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
                     switch (dc.getType()) {
                         case ADDED:
-                            Log.d(LOG_TAG, "New city: " + dc.getDocument().getData());
+                            Log.d(LOG_TAG, "New user: " + dc.getDocument().getData());
                             contactAdded = true;
                             break;
                         case MODIFIED:
-                            Log.d(LOG_TAG, "Modified city: " + dc.getDocument().getData());
+                            Log.d(LOG_TAG, "Modified user: " + dc.getDocument().getData());
+                            contactAdded = true;
                             break;
                         case REMOVED:
-                            Log.d(LOG_TAG, "Removed city: " + dc.getDocument().getData());
+                            Log.d(LOG_TAG, "Removed user: " + dc.getDocument().getData());
                             break;
                     }
                 }
@@ -214,6 +216,8 @@ public class ContactsActivity extends AppCompatActivity {
             case R.id.add_friend:
                 Intent aboutIntent = new Intent(this, AddContactActivity.class);
                 aboutIntent.putExtra("currentUser", thisUser  );
+                userListener.remove();
+                contactsListener.remove();
                 startActivityForResult( aboutIntent, 1);
 
 
