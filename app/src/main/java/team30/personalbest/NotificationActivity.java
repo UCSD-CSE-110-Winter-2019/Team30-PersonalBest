@@ -36,15 +36,13 @@ public class NotificationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification);
 
-        /*
+        String msgSenderName = null;
         Intent intent = getIntent();
         if (intent != null && intent.getExtras() != null) {
-        Bundle extras = intent.getExtras();
-        String someData= extras.getString("data");
-        String someData2 = extras.getString("data");
-         */
+            Bundle extras = intent.getExtras();
+            msgSenderName = extras.getString("msgSender");
+        }
 
-        String msgSenderName = "David Palafox";
         this.goToConversation(GoogleSignIn.getLastSignedInAccount(this), msgSenderName);
     }
 
