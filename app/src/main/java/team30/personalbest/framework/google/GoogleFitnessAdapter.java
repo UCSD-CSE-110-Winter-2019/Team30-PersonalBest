@@ -11,6 +11,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.tasks.Task;
@@ -49,15 +50,6 @@ public class GoogleFitnessAdapter
 	{
 		this.activity = activity;
 
-		final GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-				.requestIdToken(activity.getString(R.string.web_client_id))
-				.requestEmail()
-				.build();
-		GoogleSignInClient client = GoogleSignIn.getClient(activity, gso);
-
-		Intent signInIntent = client.getSignInIntent();
-		activity.startActivityForResult(signInIntent, RC_SIGN_IN);
-
 		final FitnessOptions fitnessOptions = FitnessOptions.builder()
 				.addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
 				.addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -65,21 +57,18 @@ public class GoogleFitnessAdapter
 				.addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_WRITE)
 				.build();
 
-		if (!GoogleSignIn.hasPermissions(
-				GoogleSignIn.getLastSignedInAccount(activity),
-				fitnessOptions))
-		{
-			GoogleSignIn.requestPermissions(
-					activity,
-					REQUEST_OAUTH_REQUEST_CODE,
-					GoogleSignIn.getLastSignedInAccount(activity),
-					fitnessOptions
-			);
-		}
-		else
-		{
-			this.initializeGoogleServices();
-		}
+		List<Scope> scopes = fitnessOptions.getImpliedScopes();
+		Scope defaultScope = scopes.get(0);
+		scopes.remove(0);
+		final GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+				.requestIdToken(activity.getString(R.string.web_client_id))
+				.requestEmail()
+				.requestScopes(defaultScope, scopes.toArray(new Scope[0]))
+				.build();
+		GoogleSignInClient client = GoogleSignIn.getClient(activity, gso);
+
+		Intent signInIntent = client.getSignInIntent();
+		activity.startActivityForResult(signInIntent, RC_SIGN_IN);
 	}
 
 	@Nullable
@@ -93,9 +82,31 @@ public class GoogleFitnessAdapter
 			try
 			{
 				Log.d(TAG, "Google sign succeeded.");
-				GoogleSignInAccount account = task.getResult(ApiException.class);
-				Intent intent = new Intent(activity, MessageActivity.class);
-				activity.startActivity(intent);
+				final GoogleSignInAccount account = task.getResult(ApiException.class);
+
+				final FitnessOptions fitnessOptions = FitnessOptions.builder()
+						.addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+						.addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+						.addDataType(DataType.TYPE_STEP_COUNT_CUMULATIVE, FitnessOptions.ACCESS_WRITE)
+						.addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_WRITE)
+						.build();
+
+				if (!GoogleSignIn.hasPermissions(
+						account,
+						fitnessOptions))
+				{
+					GoogleSignIn.requestPermissions(
+							activity,
+							REQUEST_OAUTH_REQUEST_CODE,
+							account,
+							fitnessOptions
+					);
+				}
+				else
+				{
+					Log.w(TAG, "Initializing registered services...");
+					this.initializeGoogleServices();
+				}
 			}
 			catch (ApiException e)
 			{
@@ -104,6 +115,7 @@ public class GoogleFitnessAdapter
 		}
 		else if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_OAUTH_REQUEST_CODE)
 		{
+			Log.w(TAG, "Initializing registered services (restarted)...");
 			this.initializeGoogleServices();
 		}
 	}

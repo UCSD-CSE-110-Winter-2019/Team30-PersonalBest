@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity
 		Button stopWalk = findViewById(R.id.btn_walk_stop);
 		Button newGoal = findViewById(R.id.btn_stepgoal_new);
 		Button weeklyStats = findViewById(R.id.btn_weekly_stats);
+		Button friendsList = findViewById(R.id.btn_friends);
 
 		//Disable screen (until initialized)...
 		this.disableScreen();
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity
 		stopWalk.setOnClickListener(v -> this.stopRecordingWalk());
 		newGoal.setOnClickListener(v -> this.showGoalPrompt(false));
 		weeklyStats.setOnClickListener(v -> this.launchGraphActivity());
+		friendsList.setOnClickListener(v -> this.launchFriendsActivity());
 	}
 
 	private void enableScreen()
@@ -96,6 +98,7 @@ public class MainActivity extends AppCompatActivity
 		findViewById(R.id.btn_walk_stop).setEnabled(true);
 		findViewById(R.id.btn_stepgoal_new).setEnabled(true);
 		findViewById(R.id.btn_weekly_stats).setEnabled(true);
+		findViewById(R.id.btn_friends).setEnabled(true);
 	}
 
 	private void disableScreen()
@@ -104,6 +107,7 @@ public class MainActivity extends AppCompatActivity
 		findViewById(R.id.btn_walk_stop).setEnabled(false);
 		findViewById(R.id.btn_stepgoal_new).setEnabled(false);
 		findViewById(R.id.btn_weekly_stats).setEnabled(false);
+		findViewById(R.id.btn_friends).setEnabled(false);
 	}
 
 	private void startRecordingWalk()
@@ -145,7 +149,7 @@ public class MainActivity extends AppCompatActivity
 			{
 				//Do nothing.
 			}
-			else if (newGoal == Integer.MAX_VALUE)
+			else if (newGoal >= Integer.MAX_VALUE)
 			{
 				((TextView) findViewById(R.id.display_stepgoal)).setText(
 						this.getString(R.string.display_stepgoal_none));
@@ -205,8 +209,17 @@ public class MainActivity extends AppCompatActivity
 					}
 					else
 					{
-						((TextView) findViewById(R.id.display_stepgoal))
-								.setText(activity.getString(R.string.display_stepgoal, iGoalSnapshot.getGoalValue()));
+						int goalValue = iGoalSnapshot.getGoalValue();
+						if (goalValue >= Integer.MAX_VALUE)
+						{
+							((TextView) findViewById(R.id.display_stepgoal)).setText(
+									this.getString(R.string.display_stepgoal_none));
+						}
+						else
+						{
+							((TextView) findViewById(R.id.display_stepgoal))
+									.setText(activity.getString(R.string.display_stepgoal, goalValue));
+						}
 					}
 				});
 
@@ -294,8 +307,12 @@ public class MainActivity extends AppCompatActivity
 
 		final long currentTime = this.currentClock.getCurrentTime();
 		Calendar calendar = Calendar.getInstance();
+		calendar.clear();
 		calendar.setTimeInMillis(currentTime);
-		calendar.add(Calendar.WEEK_OF_YEAR, -1);
+		while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY)
+		{
+			calendar.add(Calendar.DATE, -1);
+		}
 		final long sundayTime = calendar.getTimeInMillis();
 
 		final long minTime = Math.min(sundayTime, currentTime);
@@ -331,6 +348,7 @@ public class MainActivity extends AppCompatActivity
 
 		final Bundle result = new Bundle();
 
+		int prevStepGoal = 0;
 		int dayCount = 0;
 		while (dayCount < GraphActivity.BUNDLE_WEEK_LENGTH)
 		{
@@ -352,9 +370,19 @@ public class MainActivity extends AppCompatActivity
 			if (stepGoalIterator.hasNext())
 			{
 				IGoalSnapshot snapshot = stepGoalIterator.next();
-				dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS,
-				                   snapshot.getGoalValue());
+				int stepGoal = snapshot.getGoalValue();
+				if (stepGoal >= Integer.MAX_VALUE)
+				{
+					dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS, prevStepGoal);
+				}
+				else
+				{
+					dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS, stepGoal);
+					prevStepGoal = stepGoal;
+				}
 			}
+
+			Log.d(TAG, "Day " + dayCount + ": " + dailyBundle.toString());
 
 			//Insert into result
 			result.putBundle(GraphActivity.BUNDLE_WEEKLY_PREFIX + dayCount, dailyBundle);
@@ -362,5 +390,11 @@ public class MainActivity extends AppCompatActivity
 		}
 
 		return result;
+	}
+
+	private void launchFriendsActivity()
+	{
+		Intent intent = new Intent(this, MessageActivity.class);
+		this.startActivity(intent);
 	}
 }

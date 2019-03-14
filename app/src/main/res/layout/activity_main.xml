@@ -104,9 +104,10 @@
     </LinearLayout>
 
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true">
         <Button
             android:id="@+id/btn_weekly_stats"
             android:layout_height="50dp"
@@ -114,6 +115,20 @@
             android:background="@android:color/darker_gray"
             android:textColor="@android:color/white"
             android:text="@string/title_weekly_snapshot"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true">
+        <Button
+            android:id="@+id/btn_friends"
+            android:layout_height="50dp"
+            android:layout_width="80dp"
+            android:background="@android:color/darker_gray"
+            android:textColor="@android:color/white"
+            android:text="@string/title_friends"/>
     </RelativeLayout>
 
 </RelativeLayout>
