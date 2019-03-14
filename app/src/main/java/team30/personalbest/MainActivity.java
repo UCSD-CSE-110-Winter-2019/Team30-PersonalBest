@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity
 {
 	public static final String TAG = "MainActivity";
 
-	public static final int DEFAULT_GOAL_VALUE = 500;
 	public static GoogleFitnessUser LOCAL_USER;
 	public static FitnessClock LOCAL_CLOCK;
 
@@ -204,8 +203,8 @@ public class MainActivity extends AppCompatActivity
 				this.currentUser.getCurrentGoalSnapshot(this.currentClock).onResult(iGoalSnapshot -> {
 					if (iGoalSnapshot == null)
 					{
-						((TextView) findViewById(R.id.display_stepgoal))
-								.setText(activity.getString(R.string.display_stepgoal, DEFAULT_GOAL_VALUE));
+						((TextView) findViewById(R.id.display_stepgoal)).setText(
+								this.getString(R.string.display_stepgoal_none));
 					}
 					else
 					{
