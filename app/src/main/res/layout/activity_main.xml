@@ -15,7 +15,7 @@
         android:paddingTop="20dp">
 
         <TextView
-            android:id="@+id/heightText"
+            android:id="@+id/display_height"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/display_height"
@@ -41,79 +41,94 @@
 
 
         <TextView
-            android:id="@+id/total_steps"
+            android:id="@+id/display_steptotal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="30sp"
-            android:text="@string/total_steps"
+            android:text="@string/display_steptotal"
             android:textSize="20dp" />
 
         <TextView
-            android:id="@+id/steps_goal"
+            android:id="@+id/display_stepgoal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/steps_goal"
+            android:text="@string/display_stepgoal"
             android:textSize="20dp" />
 
         <Button
-            android:id="@+id/button_start"
+            android:id="@+id/btn_walk_start"
             android:layout_height="50dp"
             android:layout_width="200dp"
             android:layout_marginTop="20sp"
             android:background="@android:color/holo_green_light"
             android:textColor="@android:color/white"
-            android:text="@string/start_walk_run"/>
+            android:text="@string/title_walk_start"/>
 
         <Button
-            android:id="@+id/button_end"
+            android:id="@+id/btn_walk_stop"
             android:layout_height="50dp"
             android:layout_width="200dp"
             android:layout_marginTop="20sp"
             android:background="@android:color/holo_red_light"
             android:textColor="@android:color/white"
-            android:text="@string/end_walk_run"/>
+            android:text="@string/title_walk_stop"/>
 
         <Button
-            android:id="@+id/newStepGoalButton"
+            android:id="@+id/btn_stepgoal_new"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/new_step_goal"/>
+            android:text="@string/title_new_stepgoal"/>
 
         <TextView
-            android:id="@+id/curr_steps"
+            android:id="@+id/recordstat_steps"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20sp"
             android:textSize="20sp"
-            android:text="@string/current_steps"/>
+            android:text="@string/display_record_steps"/>
 
         <TextView
-            android:id="@+id/time_elapsed"
+            android:id="@+id/recordstat_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="20sp"
-            android:text="@string/time_elapsed"/>
+            android:text="@string/display_record_time"/>
 
         <TextView
-            android:id="@+id/mph"
+            android:id="@+id/recordstat_speed"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="20sp"
-            android:text="@string/miles_per_hour"/>
+            android:text="@string/display_record_speed"/>
 
     </LinearLayout>
 
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true">
         <Button
-            android:id="@+id/button_weekly_stats"
+            android:id="@+id/btn_weekly_stats"
             android:layout_height="50dp"
             android:layout_width="80dp"
             android:background="@android:color/darker_gray"
             android:textColor="@android:color/white"
-            android:text="@string/weekly_snapshot"/>
+            android:text="@string/title_weekly_snapshot"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true">
+        <Button
+            android:id="@+id/btn_friends"
+            android:layout_height="50dp"
+            android:layout_width="80dp"
+            android:background="@android:color/darker_gray"
+            android:textColor="@android:color/white"
+            android:text="@string/title_friends"/>
     </RelativeLayout>
 
 </RelativeLayout>
