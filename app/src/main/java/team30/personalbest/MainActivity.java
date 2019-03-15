@@ -149,16 +149,19 @@ public class MainActivity extends AppCompatActivity
 
 		try
 		{
-			long currentTime = Long.parseLong(thisCurrTime);
+			final long MILLIS_PER_HOUR = 3600 * 1000;
+			long currentTime = Long.parseLong(thisCurrTime) * MILLIS_PER_HOUR + 172800000;
 
 			//Attempt encouragement
 			this.currentUser.getEncouragementService().tryEncouragement(this, this.currentUser, this.currentClock, currentTime);
 
 			this.currentClock.freezeTimeAt(currentTime);
+			Toast.makeText(this, "Freezing time!", Toast.LENGTH_LONG).show();
 		}
 		catch (Exception e)
 		{
-			Toast.makeText(this, "Please enter a valid time!", Toast.LENGTH_LONG).show();
+			this.currentClock.unfreeze();
+			Toast.makeText(this, "Unfreezing time!", Toast.LENGTH_LONG).show();
 		}
 	}
 
