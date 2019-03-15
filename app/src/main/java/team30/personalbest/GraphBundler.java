@@ -16,6 +16,8 @@ public class GraphBundler
 {
 	public static final String TAG = "GraphBundler";
 
+	public static final int BUNDLE_MONTH_LENGTH = 28;
+
 	private GraphBundler() {}
 
 	public static Callback<Bundle> makeBundle(IFitnessClock clock, IFitnessUser user)
@@ -59,6 +61,59 @@ public class GraphBundler
 					});
 		}
 		return callback;
+	}
+
+	public static Bundle buildMonthlyBundle(
+			Iterable<IFitnessSnapshot> fitnessSnapshots,
+			Iterable<IGoalSnapshot> goalSnapshots)
+	{
+		final Iterator<IFitnessSnapshot> fitnessIterator = fitnessSnapshots.iterator();
+		final Iterator<IGoalSnapshot> stepGoalIterator = goalSnapshots.iterator();
+
+		final Bundle result = new Bundle();
+
+		int prevStepGoal = 0;
+		int dayCount = 0;
+		while (dayCount < BUNDLE_MONTH_LENGTH)
+		{
+			final Bundle dailyBundle = new Bundle();
+
+			if (fitnessIterator.hasNext())
+			{
+				IFitnessSnapshot snapshot = fitnessIterator.next();
+				dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_STEPS,
+				                   snapshot.getTotalSteps());
+				dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_ACTIVE_STEPS,
+				                   snapshot.getRecordedSteps());
+				dailyBundle.putLong(GraphActivity.BUNDLE_DAILY_TIMES,
+				                    snapshot.getStopTime() - snapshot.getStartTime());
+				dailyBundle.putDouble(GraphActivity.BUNDLE_DAILY_MPH,
+				                      snapshot.getSpeed());
+			}
+
+			if (stepGoalIterator.hasNext())
+			{
+				IGoalSnapshot snapshot = stepGoalIterator.next();
+				int stepGoal = snapshot.getGoalValue();
+				if (stepGoal >= Integer.MAX_VALUE)
+				{
+					dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS, prevStepGoal);
+				}
+				else
+				{
+					dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS, stepGoal);
+					prevStepGoal = stepGoal;
+				}
+			}
+
+			Log.d(TAG, "Day " + dayCount + ": " + dailyBundle.toString());
+
+			//Insert into result
+			result.putBundle(GraphActivity.BUNDLE_WEEKLY_PREFIX + dayCount, dailyBundle);
+			++dayCount;
+		}
+
+		return result;
 	}
 
 	public static Bundle buildWeeklyBundle(
