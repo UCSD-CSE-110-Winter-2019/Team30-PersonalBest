@@ -61,7 +61,7 @@ public class GraphBundler
 		return callback;
 	}
 
-	private static Bundle buildWeeklyBundle(
+	public static Bundle buildWeeklyBundle(
 			Iterable<IFitnessSnapshot> fitnessSnapshots,
 			Iterable<IGoalSnapshot> stepGoals)
 	{
