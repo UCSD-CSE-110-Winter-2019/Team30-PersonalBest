@@ -17,9 +17,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Iterator;
 
+import team30.personalbest.goal.BackgroundGoalNotifier;
 import team30.personalbest.goal.FitnessGoalAchiever;
 import team30.personalbest.goal.GoalListener;
 import team30.personalbest.messeging.MessageActivity;

@@ -26,10 +26,12 @@ import com.google.android.gms.fitness.result.SessionReadResponse;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import team30.personalbest.MainActivity;
 import team30.personalbest.service.recorder.GoogleFitDataRecorder;
 import team30.personalbest.snapshot.FitnessSnapshot;
 import team30.personalbest.snapshot.IFitnessSnapshot;
@@ -40,7 +42,7 @@ import team30.personalbest.service.IService;
 import team30.personalbest.service.recorder.IRecorderService;
 import team30.personalbest.util.Callback;
 
-public class GoogleFitAdapter implements IFitnessService, IRecorderService
+public class GoogleFitAdapter implements IFitnessService, IRecorderService, Serializable
 {
 	public static final String TAG = "GoogleFitAdapter";
 
@@ -52,10 +54,10 @@ public class GoogleFitAdapter implements IFitnessService, IRecorderService
 	private static final int REQUEST_OAUTH_REQUEST_CODE = 0x1001;
 
 	private boolean recording = false;
-	private GoogleFitDataRecorder stepRecorder;
-	private RecordingSnapshot recordingSnapshot;
+	private transient GoogleFitDataRecorder stepRecorder;
+	private transient RecordingSnapshot recordingSnapshot;
 
-	private Activity activity;
+	private transient Activity activity;
 	private long customTime = -1;
 
 	public GoogleFitAdapter setCurrentTime(long millis)

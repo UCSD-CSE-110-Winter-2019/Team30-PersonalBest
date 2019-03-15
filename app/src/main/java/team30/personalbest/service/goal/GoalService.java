@@ -27,6 +27,7 @@ import com.google.android.gms.fitness.result.DataTypeResult;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,17 +39,17 @@ import team30.personalbest.snapshot.GoalSnapshot;
 import team30.personalbest.snapshot.IGoalSnapshot;
 import team30.personalbest.util.Callback;
 
-public class GoalService implements IGoalService
+public class GoalService implements IGoalService, Serializable
 {
 	public static final String TAG = "GoalService";
 	public static final String DATA_TYPE_GOAL_NAME = "team30.personalbest.goal";
 
 	private final String SESSION_NAME = "GOAL";
 
-	private Activity activity;
-	private GoogleApiClient googleApiClient;
-	private DataSource dataSource;
-	private IFitnessService fitnessService;
+	private transient Activity activity;
+	private transient GoogleApiClient googleApiClient;
+	private transient DataSource dataSource;
+	private transient IFitnessService fitnessService;
 
 	public GoalService(IFitnessService fitnessService)
 	{
