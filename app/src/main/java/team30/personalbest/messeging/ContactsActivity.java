@@ -30,6 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -57,7 +58,6 @@ public class ContactsActivity extends AppCompatActivity {
 
         contactsListObject = new ArrayList<>();
 
-
         thisUser = (MyUser) this.getIntent().getExtras().get("currentUser");
 
         if( thisUser == null ) {
@@ -68,12 +68,10 @@ public class ContactsActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String user_id = user.getUid();
 
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
-
         CollectionReference contacts = firestore.collection("contacts/"+user_id+"/user_contacts");
+
 
 
 
@@ -90,10 +88,7 @@ public class ContactsActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if( task.isSuccessful() ) {
-
-
                     for(QueryDocumentSnapshot doc : task.getResult() ) {
-
                         Log.i("Contacts Query", "Retrieved Data: " + doc.toString() );
                         MyUser contact = doc.toObject( MyUser.class );
                         contactsListObject.add( contact );
@@ -101,11 +96,9 @@ public class ContactsActivity extends AppCompatActivity {
                     }
 
                     ContactsActivity.this.displayContacts( contactsList );
-
                     ContactsActivity.this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                             Intent startConvIntent = new Intent( ContactsActivity.this, ChatActivity.class );
                             startConvIntent.putExtra("fromUser", ContactsActivity.this.thisUser);
                             startConvIntent.putExtra( "toUser", contactsListObject.get( (int) id ) );
@@ -113,16 +106,13 @@ public class ContactsActivity extends AppCompatActivity {
                             userListener.remove();
                             contactsListener.remove();
                             startActivityForResult( startConvIntent , 1);
-
                         }
                     });
-                }
-                else {
+                } else {
                     Log.d( "Contacts Query", "COuldn't retrieve contacts");
                 }
             }
         });
-
 
         initialContactsQuery = true ;
         contactsListener = contacts.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -191,6 +181,13 @@ public class ContactsActivity extends AppCompatActivity {
                     }
                 });
 
+        if (thisUser != null)
+        {
+            for (String chatId: thisUser.getChatRooms().keySet())
+            {
+                subscribeToNotificationsTopic(chatId);
+            }
+        }
     }
 
     public void displayContacts( ArrayList<String> contactsList ) {
@@ -201,7 +198,6 @@ public class ContactsActivity extends AppCompatActivity {
         listView = findViewById( R.id.list_view );
         listView.setAdapter(adapter);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -219,8 +215,6 @@ public class ContactsActivity extends AppCompatActivity {
                 userListener.remove();
                 contactsListener.remove();
                 startActivityForResult( aboutIntent, 1);
-
-
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -229,27 +223,20 @@ public class ContactsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if( resultCode == 1 ) {
-
-
             Log.d("onActivityResult", "Restarting Activity");
             updateUser();
-
         } else {
             Log.d("onActivityResult", "Something went wrong");
         }
     }
 
     private void updateUser() {
-
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
         userListener.remove();
@@ -268,16 +255,25 @@ public class ContactsActivity extends AppCompatActivity {
                                 Log.d("MessageActivity", "Found User in database. Retrieving data...");
                                 MyUser thisUser = userDoc.toObject( MyUser.class );
                                 ContactsActivity.this.getIntent().putExtra("currentUser", thisUser );
-
                             } else {
                                 Log.d("ContactsActivity", "Could not update user");
                             }
-
                         }
-
                         restartActivity();
                     }
                 });
+    }
+
+    private void subscribeToNotificationsTopic(String topic) {
+        FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                .addOnCompleteListener(task -> {
+                            String msg = "Subscribed to notifications with topic = " + topic;
+                            if (!task.isSuccessful()) {
+                                msg = "Subscribe to notifications failed";
+                            }
+                            Log.d("ContactsActivity", msg);
+                        }
+                );
     }
 
     private void restartActivity() {

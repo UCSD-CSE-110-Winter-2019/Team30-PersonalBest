@@ -7,9 +7,11 @@
     android:orientation="vertical"
     android:padding="10dp"
     tools:context=".GraphActivity">
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -20,16 +22,41 @@
                 android:id="@+id/button_back"
                 android:layout_width="80dp"
                 android:layout_height="25dp"
+                android:background="@android:color/background_light"
                 android:text="back"
                 android:textColor="@android:color/black"
-                android:textSize="20sp"
-                android:background="@android:color/background_light"/>
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <Button
+                    android:id="@+id/button_prev"
+                    android:layout_width="100dp"
+                    android:layout_height="25sp"
+                    android:text="Prev Week"
+                    android:background="@color/colorPrimary"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"/>
+
+                <Button
+                    android:id="@+id/button_next"
+                    android:layout_width="100dp"
+                    android:layout_height="25sp"
+                    android:layout_marginLeft="160dp"
+                    android:background="@color/colorPrimary"
+                    android:text="Next Week"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp" />
+            </LinearLayout>
 
             <com.github.mikephil.charting.charts.CombinedChart
                 android:id="@+id/chart"
                 android:layout_width="fill_parent"
                 android:layout_height="400dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/title"
@@ -51,16 +78,17 @@
                 android:id="@+id/sunMph"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="MPH: "
                 android:textSize="10dp" />
+
             <TextView
                 android:id="@+id/sunTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="Time elapsed: "
                 android:textSize="10dp" />
 
@@ -76,16 +104,17 @@
                 android:id="@+id/monMph"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="MPH: "
                 android:textSize="10dp" />
+
             <TextView
                 android:id="@+id/monTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="Time elapsed: "
                 android:textSize="10dp" />
 
@@ -96,20 +125,22 @@
                 android:layout_marginTop="0sp"
                 android:text="Tuesday: "
                 android:textSize="15dp" />
+
             <TextView
                 android:id="@+id/tueMph"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="MPH: "
                 android:textSize="10dp" />
+
             <TextView
                 android:id="@+id/tueTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="Time elapsed: "
                 android:textSize="10dp" />
 
@@ -120,20 +151,22 @@
                 android:layout_marginTop="0sp"
                 android:text="Wednesday: "
                 android:textSize="15dp" />
+
             <TextView
                 android:id="@+id/wedMph"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="MPH: "
                 android:textSize="10dp" />
+
             <TextView
                 android:id="@+id/wedTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="Time elapsed: "
                 android:textSize="10dp" />
 
@@ -144,20 +177,22 @@
                 android:layout_marginTop="0sp"
                 android:text="Thursday: "
                 android:textSize="15dp" />
+
             <TextView
                 android:id="@+id/thuMph"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="MPH: "
                 android:textSize="10dp" />
+
             <TextView
                 android:id="@+id/thuTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="Time elapsed: "
                 android:textSize="10dp" />
 
@@ -168,20 +203,22 @@
                 android:layout_marginTop="0sp"
                 android:text="Friday: "
                 android:textSize="15dp" />
+
             <TextView
                 android:id="@+id/friMph"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="MPH: "
                 android:textSize="10dp" />
+
             <TextView
                 android:id="@+id/friTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="Time elapsed: "
                 android:textSize="10dp" />
 
@@ -192,20 +229,22 @@
                 android:layout_marginTop="0sp"
                 android:text="Saturday: "
                 android:textSize="15dp" />
+
             <TextView
                 android:id="@+id/satMph"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="MPH: "
                 android:textSize="10dp" />
+
             <TextView
                 android:id="@+id/satTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0sp"
                 android:layout_marginLeft="20sp"
+                android:layout_marginTop="0sp"
                 android:text="Time elapsed: "
                 android:textSize="10dp" />
 

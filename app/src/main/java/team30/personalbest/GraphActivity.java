@@ -4,14 +4,13 @@
  */
 package team30.personalbest;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.Button;
 
 import com.github.mikephil.charting.charts.CombinedChart;
-import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -20,11 +19,14 @@ import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+
+import team30.personalbest.framework.clock.FitnessClock;
+import team30.personalbest.util.Callback;
 
 public class GraphActivity extends AppCompatActivity
 {
@@ -35,6 +37,7 @@ public class GraphActivity extends AppCompatActivity
 	public static final String BUNDLE_DAILY_MPH = "daily_mph";
 	public static final String BUNDLE_DAILY_TIMES = "daily_times";
 	public static final String BUNDLE_DAILY_GOALS = "daily_goals";
+	public static final String BUNDLE_WEEKLY_TIME = "weekly_time";
 	public static final int BUNDLE_WEEK_LENGTH = 7;
 
 	public static final String[] WEEK_DAY_LABELS = new String[]{
@@ -44,6 +47,8 @@ public class GraphActivity extends AppCompatActivity
 	public static final String LABEL_INCIDENTAL_STEPS = "Incidental Steps";
 	public static final String LABEL_STEP_GOAL = "Step Goal";
 
+	private long startTime = 0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -51,17 +56,33 @@ public class GraphActivity extends AppCompatActivity
 		setContentView(R.layout.activity_graph);
 
 		// Switch between activities
-		Button switchScreen = (Button) findViewById(R.id.button_back);
-		switchScreen.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View view)
-			{
-				finish();
-			}
+		Button switchScreen = findViewById(R.id.button_back);
+		switchScreen.setOnClickListener(view -> finish());
+
+		//Weekly buttons
+		Button prevWeek = findViewById(R.id.button_prev);
+		prevWeek.setOnClickListener(view -> {
+			//isValidWeek();
+			getPrevWeeksData().onResult(bundle -> {
+				this.finish();
+				final Intent intent = new Intent(this, GraphActivity.class);
+				intent.putExtra(BUNDLE_WEEKLY_STATS, bundle);
+				this.startActivity(intent);
+			});
 		});
 
-		CombinedChart chart = (CombinedChart) findViewById(R.id.chart);
+		Button nextWeek = findViewById(R.id.button_next);
+		nextWeek.setOnClickListener(view -> {
+			//isValidWeek();
+			getNextWeeksData().onResult(bundle -> {
+				this.finish();
+				final Intent intent = new Intent(this, GraphActivity.class);
+				intent.putExtra(BUNDLE_WEEKLY_STATS, bundle);
+				this.startActivity(intent);
+			});
+		});
+
+		CombinedChart chart = findViewById(R.id.chart);
 		chart.getDescription().setEnabled(false);
 		chart.setDrawGridBackground(false);
 
@@ -76,19 +97,14 @@ public class GraphActivity extends AppCompatActivity
 
 		// Creating week labels for x-axis
 		final String[] xLabels = WEEK_DAY_LABELS;
-		xAxis.setValueFormatter(new IAxisValueFormatter()
-		{
-			@Override
-			public String getFormattedValue(float value, AxisBase axis)
+		xAxis.setValueFormatter((value, axis) -> {
+			if ((int) value < xLabels.length && (int) value >= 0)
 			{
-				if ((int) value < xLabels.length && (int) value >= 0)
-				{
-					return xLabels[(int) value];
-				}
-				else
-				{
-					return "";
-				}
+				return xLabels[(int) value];
+			}
+			else
+			{
+				return "";
 			}
 		});
 		xAxis.setCenterAxisLabels(true);
@@ -106,6 +122,7 @@ public class GraphActivity extends AppCompatActivity
 			return;
 		}
 
+		this.startTime = weeklyBundle.getLong(BUNDLE_WEEKLY_TIME);
 		// Add entries for intentional steps
 		List<BarEntry> intentStepEntries = new ArrayList<>();
 		// Add entries for intentional steps
@@ -129,7 +146,7 @@ public class GraphActivity extends AppCompatActivity
 			}
 			else
 			{
-				//TODO: Randomize it if you can't get anything. Just for visualization purposes.
+				//Randomize it if you can't get anything. Just for visualization purposes.
 				stepCount = (int) Math.floor(10 * Math.random());
 				activeCount = (int) Math.floor(10 * Math.random());
 			}
@@ -169,5 +186,34 @@ public class GraphActivity extends AppCompatActivity
 
 		chart.setData(combinedData);
 		chart.invalidate();
+	}
+
+	private boolean isValidWeek()
+	{
+		return true;
+	}
+
+	private Callback<Bundle> getPrevWeeksData()
+	{
+		FitnessClock clock = new FitnessClock();
+		Calendar calendar = Calendar.getInstance();
+		calendar.clear();
+		calendar.setTimeInMillis(this.startTime);
+		calendar.add(Calendar.WEEK_OF_YEAR, -1);
+		final long nextStartTime = calendar.getTimeInMillis();
+		clock.freezeTimeAt(nextStartTime);
+		return GraphBundler.makeBundle(clock, MainActivity.LOCAL_USER);
+	}
+
+	private Callback<Bundle> getNextWeeksData()
+	{
+		FitnessClock clock = new FitnessClock();
+		Calendar calendar = Calendar.getInstance();
+		calendar.clear();
+		calendar.setTimeInMillis(this.startTime);
+		calendar.add(Calendar.WEEK_OF_YEAR, 1);
+		final long nextStartTime = calendar.getTimeInMillis();
+		clock.freezeTimeAt(nextStartTime);
+		return GraphBundler.makeBundle(clock, MainActivity.LOCAL_USER);
 	}
 }

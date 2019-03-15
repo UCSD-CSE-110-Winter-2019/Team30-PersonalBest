@@ -78,11 +78,6 @@ public class ChatActivity extends AppCompatActivity {
 
 
         resolveRoomID( fromUser, toUser );
-
-
-
-
-
     }
 
 
@@ -131,8 +126,6 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 });
 
-
-
         firestore.document("chatRooms/" + newChatRoom.getId() + "/chatUsers/"+toUser.getUser_id())
                 .set( toUser )
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -158,11 +151,6 @@ public class ChatActivity extends AppCompatActivity {
                 .set( toUser, SetOptions.merge() );
 
         initMessageUpdateListener();
-
-
-
-
-
     }
 
 
@@ -247,19 +235,6 @@ public class ChatActivity extends AppCompatActivity {
                         chatView.append(sb.toString());
                     }
                 });
-    }
-
-    private void subscribeToNotificationsTopic() {
-        FirebaseMessaging.getInstance().subscribeToTopic("bullshit")
-                .addOnCompleteListener(task -> {
-                            String msg = "Subscribed to notifications";
-                            if (!task.isSuccessful()) {
-                                msg = "Subscribe to notifications failed";
-                            }
-                            Log.d(LOG_TAG, msg);
-                            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-                        }
-                );
     }
 
     private class OnUserReadyChecker extends AsyncTask<Void, Void, Void> {
