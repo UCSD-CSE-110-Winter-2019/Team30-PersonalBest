@@ -76,11 +76,11 @@ public class BackgroundGoalNotifier extends IntentService {
     }
 
     // reference: https://www.tutorialspoint.com/android/android_push_notification.htm
-    @RequiresApi(api = Build.VERSION_CODES.M)
     private void pushGoalAchieveNotification()
     {
         Log.d(TAG, "pushing goal achieved notification");
 
+        /*
         String title = "Reached Goal";
         String body = "You have reached your step goal for today!";
         String subject = "Personal Best";
@@ -92,5 +92,6 @@ public class BackgroundGoalNotifier extends IntentService {
 
         notify.flags |= Notification.FLAG_AUTO_CANCEL;
         notif.notify(0, notify);
+        */
     }
 }
