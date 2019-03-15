@@ -6,7 +6,9 @@ import android.text.InputType;
 import android.util.Log;
 import android.widget.EditText;
 
-import team30.personalbest.service.goal.GoalService;
+import team30.personalbest.framework.clock.IFitnessClock;
+import team30.personalbest.framework.google.GoalService;
+import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
 
 public final class GoalPrompt
@@ -15,12 +17,12 @@ public final class GoalPrompt
 
 	private GoalPrompt() {}
 
-	public static Callback<Integer> show(Context context, GoalService service, boolean forceUpdate)
+	public static Callback<Integer> show(Context context, GoalService service, IFitnessUser user, IFitnessClock clock, boolean forceUpdate)
 	{
-		return GoalPrompt.show(context, service, forceUpdate, true);
+		return GoalPrompt.show(context, service, user, clock, forceUpdate, true);
 	}
 
-	public static Callback<Integer> show(Context context, GoalService service, boolean forceUpdate, boolean cancelable)
+	public static Callback<Integer> show(Context context, GoalService service, IFitnessUser user, IFitnessClock clock, boolean forceUpdate, boolean cancelable)
 	{
 		final Callback<Integer> callback = new Callback<>();
 		final EditText input = new EditText(context);
@@ -33,7 +35,7 @@ public final class GoalPrompt
 					{
 						final String goalString = input.getText().toString();
 						final int goalInteger = Integer.parseInt(goalString);
-						service.setCurrentGoal(goalInteger);
+						service.setCurrentGoal(user, clock, goalInteger).onResult(iGoalSnapshot -> callback.resolve(iGoalSnapshot.getGoalValue()));
 
 						Log.i(TAG, "Successfully processed step goal");
 					}
@@ -41,12 +43,15 @@ public final class GoalPrompt
 					{
 						Log.w(TAG, "Failed to process step goal", e);
 
-						if (!cancelable) GoalPrompt.show(context, service, forceUpdate, false);
+						if (!cancelable) GoalPrompt.show(context, service, user, clock, forceUpdate, false);
+						else callback.reject();
 					}
 				})
 				.setNegativeButton(context.getString(R.string.prompt_cancel), (dialog, which) -> {
-					if (!cancelable) GoalPrompt.show(context, service, forceUpdate, false);
-					else if (forceUpdate) service.setCurrentGoal(Integer.MAX_VALUE);
+					if (!cancelable) GoalPrompt.show(context, service, user, clock, forceUpdate, false);
+					else if (forceUpdate) service.setCurrentGoal(user, clock, Integer.MAX_VALUE).onResult(iGoalSnapshot -> callback.resolve(iGoalSnapshot.getGoalValue()));
+					else callback.reject();
+
 					dialog.cancel();
 				});
 		builder.show();
