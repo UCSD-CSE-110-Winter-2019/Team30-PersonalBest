@@ -3,10 +3,11 @@ package team30.personalbest.framework.google;
 import android.app.Activity;
 import android.util.Log;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Session;
@@ -79,9 +80,9 @@ public class FitnessService implements IFitnessService, IGoogleService
 						.aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
 						.bucketByTime(1, TimeUnit.DAYS)
 						.setTimeRange(midnightTime, dayTime, TimeUnit.MILLISECONDS)
+						.setLimit(1)
 						.build();
 				*/
-
 				Fitness.getHistoryClient(activity, lastSignedInAccount)
 						.readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
 						.addOnSuccessListener(dataSet -> {
@@ -201,10 +202,18 @@ public class FitnessService implements IFitnessService, IGoogleService
 
 				final Activity activity = this.googleFitnessAdapter.getActivity();
 
+				final DataSource estimatedSteps = new DataSource.Builder()
+						.setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+						.setType(DataSource.TYPE_DERIVED)
+						.setStreamName("estimated_steps")
+						.setAppPackageName("com.google.android.gms")
+						.build();
+
 				final DataReadRequest readRequest = new DataReadRequest.Builder()
-						.aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-						.bucketByTime(1, TimeUnit.DAYS)
+						.aggregate(estimatedSteps, DataType.AGGREGATE_STEP_COUNT_DELTA)
 						.setTimeRange(startTime, stopTime + 1, TimeUnit.MILLISECONDS)
+						.bucketByTime(1, TimeUnit.DAYS)
+						.enableServerQueries()
 						.build();
 
 				Fitness.getHistoryClient(activity, lastSignedInAccount)
@@ -212,22 +221,28 @@ public class FitnessService implements IFitnessService, IGoogleService
 						.addOnSuccessListener(dataReadResponse -> {
 							Log.d(TAG, "Retrieving multiple fitness data...");
 							final List<FitnessSnapshot> result = new ArrayList<>();
-							final List<DataSet> dataSets = dataReadResponse.getDataSets();
-							Log.d(TAG, "Data: " + dataSets.size());
-							for (DataSet dataSet : dataSets)
+							final List<Bucket> buckets = dataReadResponse.getBuckets();
+							for(Bucket bucket : buckets)
 							{
-								Log.d(TAG, "..." + dataSet.toString());
-								for (DataPoint data : dataSet.getDataPoints())
+								long bucketStartTime = bucket.getStartTime(TimeUnit.MILLISECONDS);
+								long bucketEndTime = bucket.getEndTime(TimeUnit.MILLISECONDS);
+								final List<DataSet> dataSets = bucket.getDataSets();
+								Log.d(TAG, "Data: " + dataSets.size());
+								for (DataSet dataSet : dataSets)
 								{
-									Log.d(TAG, "... ..." + data.toString());
-									final FitnessSnapshot snapshot = new FitnessSnapshot()
-											.setTotalSteps(data.getValue(Field.FIELD_STEPS).asInt())
-											.setStartTime(data.getStartTime(TimeUnit.MILLISECONDS))
-											.setStopTime(data.getEndTime(TimeUnit.MILLISECONDS));
-									result.add(snapshot);
+									Log.d(TAG, "..." + dataSet.toString());
+									for (DataPoint data : dataSet.getDataPoints())
+									{
+										Log.d(TAG, "... ..." + data.toString());
+										final FitnessSnapshot snapshot = new FitnessSnapshot()
+												.setTotalSteps(data.getValue(Field.FIELD_STEPS).asInt())
+												.setStartTime(bucketStartTime)
+												.setStopTime(bucketEndTime);
+										result.add(snapshot);
+									}
 								}
 							}
-							this.updateRecordedStatsForSnapshots(result).onResult(aVoid -> callback.resolve(new ArrayList<>(result)));
+							this.getRecordedStatsForSnapshots(result).onResult(aVoid -> callback.resolve(new ArrayList<>(result)));
 						})
 						.addOnFailureListener(e -> {
 							Log.w(TAG, "Failed to retrieve fitness data for range.", e);
@@ -238,16 +253,16 @@ public class FitnessService implements IFitnessService, IGoogleService
 		return callback;
 	}
 
-	private Callback<Void> updateRecordedStatsForSnapshots(Iterable<FitnessSnapshot> iterable)
+	private Callback<Void> getRecordedStatsForSnapshots(Iterable<FitnessSnapshot> iterable)
 	{
 		final Callback<Void> callback = new Callback<>();
 		{
-			this.updateRecordedStatsForSnapshotsImpl(iterable.iterator(), callback);
+			this.getRecordedStatsForSnapshotsImpl(iterable.iterator(), callback);
 		}
 		return callback;
 	}
 
-	private void updateRecordedStatsForSnapshotsImpl(Iterator<FitnessSnapshot> iterator, Callback<Void> callback)
+	private void getRecordedStatsForSnapshotsImpl(Iterator<FitnessSnapshot> iterator, Callback<Void> callback)
 	{
 		if (!iterator.hasNext())
 		{
@@ -261,7 +276,7 @@ public class FitnessService implements IFitnessService, IGoogleService
 			{
 				fitnessSnapshot.setRecordedSteps(integer);
 			}
-			this.updateRecordedStatsForSnapshotsImpl(iterator, callback);
+			this.getRecordedStatsForSnapshotsImpl(iterator, callback);
 		});
 	}
 
