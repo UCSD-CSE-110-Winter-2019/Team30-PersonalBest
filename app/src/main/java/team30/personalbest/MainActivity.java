@@ -10,9 +10,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Calendar;
-import java.util.Iterator;
-
 import team30.personalbest.framework.clock.FitnessClock;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.google.GoogleFitnessAdapter;
@@ -20,7 +17,6 @@ import team30.personalbest.framework.google.IGoogleService;
 import team30.personalbest.framework.google.achiever.FitnessGoalAchiever;
 import team30.personalbest.framework.service.IGoalService;
 import team30.personalbest.framework.snapshot.IFitnessSnapshot;
-import team30.personalbest.framework.snapshot.IGoalSnapshot;
 import team30.personalbest.framework.snapshot.IRecordingFitnessSnapshot;
 import team30.personalbest.framework.user.GoogleFitnessUser;
 import team30.personalbest.framework.user.IFitnessUser;
@@ -33,6 +29,8 @@ public class MainActivity extends AppCompatActivity
 	public static final String TAG = "MainActivity";
 
 	public static final int DEFAULT_GOAL_VALUE = 500;
+	public static GoogleFitnessUser LOCAL_USER;
+	public static FitnessClock LOCAL_CLOCK;
 
 	private GoogleFitnessAdapter googleFitnessAdapter;
 	private GoogleFitnessUser currentUser;
@@ -49,7 +47,9 @@ public class MainActivity extends AppCompatActivity
 
 		this.googleFitnessAdapter = new GoogleFitnessAdapter();
 		this.currentClock = new FitnessClock();
+		LOCAL_CLOCK = this.currentClock;
 		this.currentUser = new GoogleFitnessUser(this.googleFitnessAdapter);
+		LOCAL_USER = this.currentUser;
 
 		this.fitnessWatcher = new FitnessWatcher(this.currentUser, this.currentClock);
 		this.fitnessWatcher.addFitnessListener(this::onFitnessUpdate);
@@ -303,93 +303,11 @@ public class MainActivity extends AppCompatActivity
 
 	private void launchGraphActivity()
 	{
-		final MainActivity activity = this;
-
-		final long currentTime = this.currentClock.getCurrentTime();
-		Calendar calendar = Calendar.getInstance();
-		calendar.clear();
-		calendar.setTimeInMillis(currentTime);
-		while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY)
-		{
-			calendar.add(Calendar.DATE, -1);
-		}
-		final long sundayTime = calendar.getTimeInMillis();
-
-		final long minTime = Math.min(sundayTime, currentTime);
-		final long maxTime = Math.max(sundayTime, currentTime);
-		final IFitnessClock clock = this.currentClock;
-		this.currentUser.getFitnessSnapshots(clock, minTime, maxTime)
-				.onResult(iFitnessSnapshots -> {
-					if (iFitnessSnapshots == null)
-						throw new IllegalStateException("Cannot find valid fitness snapshots");
-
-					this.currentUser.getGoalSnapshots(clock, minTime, maxTime)
-							.onResult(iGoalSnapshots -> {
-								if (iGoalSnapshots == null)
-									throw new IllegalStateException("Cannot find valid step goals");
-
-								final Intent intent = new Intent(activity, GraphActivity.class);
-								final Bundle weeklyBundle = activity.buildWeeklyBundle(iFitnessSnapshots, iGoalSnapshots);
-
-								final Bundle bundle = new Bundle();
-								bundle.putBundle(GraphActivity.BUNDLE_WEEKLY_STATS, weeklyBundle);
-								intent.putExtras(bundle);
-
-								activity.startActivity(intent);
-
-							});
-				});
-	}
-
-	private Bundle buildWeeklyBundle(Iterable<IFitnessSnapshot> fitnessSnapshots, Iterable<IGoalSnapshot> stepGoals)
-	{
-		final Iterator<IFitnessSnapshot> fitnessIterator = fitnessSnapshots.iterator();
-		final Iterator<IGoalSnapshot> stepGoalIterator = stepGoals.iterator();
-
-		final Bundle result = new Bundle();
-
-		int prevStepGoal = 0;
-		int dayCount = 0;
-		while (dayCount < GraphActivity.BUNDLE_WEEK_LENGTH)
-		{
-			final Bundle dailyBundle = new Bundle();
-
-			if (fitnessIterator.hasNext())
-			{
-				IFitnessSnapshot snapshot = fitnessIterator.next();
-				dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_STEPS,
-				                   snapshot.getTotalSteps());
-				dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_ACTIVE_STEPS,
-				                   snapshot.getRecordedSteps());
-				dailyBundle.putLong(GraphActivity.BUNDLE_DAILY_TIMES,
-				                    snapshot.getStopTime() - snapshot.getStartTime());
-				dailyBundle.putDouble(GraphActivity.BUNDLE_DAILY_MPH,
-				                      snapshot.getSpeed());
-			}
-
-			if (stepGoalIterator.hasNext())
-			{
-				IGoalSnapshot snapshot = stepGoalIterator.next();
-				int stepGoal = snapshot.getGoalValue();
-				if (stepGoal >= Integer.MAX_VALUE)
-				{
-					dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS, prevStepGoal);
-				}
-				else
-				{
-					dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS, stepGoal);
-					prevStepGoal = stepGoal;
-				}
-			}
-
-			Log.d(TAG, "Day " + dayCount + ": " + dailyBundle.toString());
-
-			//Insert into result
-			result.putBundle(GraphActivity.BUNDLE_WEEKLY_PREFIX + dayCount, dailyBundle);
-			++dayCount;
-		}
-
-		return result;
+		GraphBundler.makeBundle(this.currentClock, this.currentUser).onResult(bundle -> {
+			final Intent intent = new Intent(this, GraphActivity.class);
+			intent.putExtras(bundle);
+			this.startActivity(intent);
+		});
 	}
 
 	private void launchFriendsActivity()
