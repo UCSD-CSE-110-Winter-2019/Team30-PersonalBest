@@ -1,6 +1,7 @@
 package team30.personalbest.framework.user;
 
 import team30.personalbest.framework.clock.IFitnessClock;
+import team30.personalbest.framework.google.EncouragementService;
 import team30.personalbest.framework.google.FitnessService;
 import team30.personalbest.framework.google.GoalService;
 import team30.personalbest.framework.google.GoogleFitnessAdapter;
@@ -17,6 +18,7 @@ public class GoogleFitnessUser implements IFitnessUser
 	private FitnessService fitnessService;
 	private GoalService goalService;
 	private RecordingService recordingService;
+	private EncouragementService encouragementService;
 
 	public GoogleFitnessUser(GoogleFitnessAdapter googleFitnessAdapter)
 	{
@@ -25,12 +27,14 @@ public class GoogleFitnessUser implements IFitnessUser
 		this.fitnessService = new FitnessService();
 		this.goalService = new GoalService();
 		this.recordingService = new RecordingService();
+		this.encouragementService = new EncouragementService(this.fitnessService);
 
 		googleFitnessAdapter
 				.addGoogleService(this.fitnessService)
 				.addGoogleService(this.goalService)
 				.addGoogleService(this.heightService)
-				.addGoogleService(this.recordingService);
+				.addGoogleService(this.recordingService)
+				.addGoogleService(this.encouragementService);
 	}
 
 	@Override
@@ -88,6 +92,8 @@ public class GoogleFitnessUser implements IFitnessUser
 	{
 		return this.recordingService;
 	}
+
+	public EncouragementService getEncouragementService() { return this.encouragementService; }
 
 	public GoogleFitnessAdapter getGoogleFitnessAdapter()
 	{

@@ -36,7 +36,7 @@ public class EncouragementService implements IEncouragementService, IGoogleServi
 	@Override
 	public Callback<EncouragementService> initialize(GoogleFitnessAdapter googleFitnessAdapter)
 	{
-		return null;
+		return new Callback<>(this);
 	}
 
 	public long getLastEncouragementTime(Context context)
