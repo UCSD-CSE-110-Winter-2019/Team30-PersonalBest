@@ -16,11 +16,9 @@ public class GraphBundler
 {
 	public static final String TAG = "GraphBundler";
 
-	public static final int BUNDLE_MONTH_LENGTH = 28;
-
 	private GraphBundler() {}
 
-	public static Callback<Bundle> makeBundle(IFitnessClock clock, IFitnessUser user)
+	public static Callback<Bundle> buildBundleForDays(int numberOfDays, IFitnessUser fitnessUser, IFitnessClock clock)
 	{
 		final Callback<Bundle> callback = new Callback<>();
 		{
@@ -36,7 +34,7 @@ public class GraphBundler
 
 			final long minTime = Math.min(sundayTime, currentTime);
 			final long maxTime = Math.max(sundayTime, currentTime);
-			user.getFitnessSnapshots(clock, minTime, maxTime)
+			fitnessUser.getFitnessSnapshots(clock, minTime, maxTime)
 					.onResult(iFitnessSnapshots -> {
 						if (iFitnessSnapshots == null)
 						{
@@ -44,7 +42,7 @@ public class GraphBundler
 							return;
 						}
 
-						user.getGoalSnapshots(clock, minTime, maxTime)
+						fitnessUser.getGoalSnapshots(clock, minTime, maxTime)
 								.onResult(iGoalSnapshots -> {
 									if (iGoalSnapshots == null)
 									{
@@ -52,7 +50,7 @@ public class GraphBundler
 										return;
 									}
 
-									final Bundle weeklyBundle = buildWeeklyBundle(iFitnessSnapshots, iGoalSnapshots);
+									final Bundle weeklyBundle = buildBundleForDays(numberOfDays, iFitnessSnapshots, iGoalSnapshots);
 									weeklyBundle.putLong(GraphActivity.BUNDLE_WEEKLY_TIME, minTime);
 									final Bundle bundle = new Bundle();
 									bundle.putBundle(GraphActivity.BUNDLE_WEEKLY_STATS, weeklyBundle);
@@ -63,7 +61,8 @@ public class GraphBundler
 		return callback;
 	}
 
-	public static Bundle buildMonthlyBundle(
+	public static Bundle buildBundleForDays(
+			int numberOfDays,
 			Iterable<IFitnessSnapshot> fitnessSnapshots,
 			Iterable<IGoalSnapshot> goalSnapshots)
 	{
@@ -74,60 +73,7 @@ public class GraphBundler
 
 		int prevStepGoal = 0;
 		int dayCount = 0;
-		while (dayCount < BUNDLE_MONTH_LENGTH)
-		{
-			final Bundle dailyBundle = new Bundle();
-
-			if (fitnessIterator.hasNext())
-			{
-				IFitnessSnapshot snapshot = fitnessIterator.next();
-				dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_STEPS,
-				                   snapshot.getTotalSteps());
-				dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_ACTIVE_STEPS,
-				                   snapshot.getRecordedSteps());
-				dailyBundle.putLong(GraphActivity.BUNDLE_DAILY_TIMES,
-				                    snapshot.getStopTime() - snapshot.getStartTime());
-				dailyBundle.putDouble(GraphActivity.BUNDLE_DAILY_MPH,
-				                      snapshot.getSpeed());
-			}
-
-			if (stepGoalIterator.hasNext())
-			{
-				IGoalSnapshot snapshot = stepGoalIterator.next();
-				int stepGoal = snapshot.getGoalValue();
-				if (stepGoal >= Integer.MAX_VALUE)
-				{
-					dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS, prevStepGoal);
-				}
-				else
-				{
-					dailyBundle.putInt(GraphActivity.BUNDLE_DAILY_GOALS, stepGoal);
-					prevStepGoal = stepGoal;
-				}
-			}
-
-			Log.d(TAG, "Day " + dayCount + ": " + dailyBundle.toString());
-
-			//Insert into result
-			result.putBundle(GraphActivity.BUNDLE_WEEKLY_PREFIX + dayCount, dailyBundle);
-			++dayCount;
-		}
-
-		return result;
-	}
-
-	public static Bundle buildWeeklyBundle(
-			Iterable<IFitnessSnapshot> fitnessSnapshots,
-			Iterable<IGoalSnapshot> stepGoals)
-	{
-		final Iterator<IFitnessSnapshot> fitnessIterator = fitnessSnapshots.iterator();
-		final Iterator<IGoalSnapshot> stepGoalIterator = stepGoals.iterator();
-
-		final Bundle result = new Bundle();
-
-		int prevStepGoal = 0;
-		int dayCount = 0;
-		while (dayCount < GraphActivity.BUNDLE_WEEK_LENGTH)
+		while (dayCount < numberOfDays)
 		{
 			final Bundle dailyBundle = new Bundle();
 

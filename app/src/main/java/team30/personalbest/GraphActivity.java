@@ -202,7 +202,7 @@ public class GraphActivity extends AppCompatActivity
 		calendar.add(Calendar.WEEK_OF_YEAR, -1);
 		final long nextStartTime = calendar.getTimeInMillis();
 		clock.freezeTimeAt(nextStartTime);
-		return GraphBundler.makeBundle(clock, MainActivity.LOCAL_USER);
+		return GraphBundler.buildBundleForDays(BUNDLE_WEEK_LENGTH, MainActivity.LOCAL_USER, clock);
 	}
 
 	private Callback<Bundle> getNextWeeksData()
@@ -214,6 +214,6 @@ public class GraphActivity extends AppCompatActivity
 		calendar.add(Calendar.WEEK_OF_YEAR, 1);
 		final long nextStartTime = calendar.getTimeInMillis();
 		clock.freezeTimeAt(nextStartTime);
-		return GraphBundler.makeBundle(clock, MainActivity.LOCAL_USER);
+		return GraphBundler.buildBundleForDays(BUNDLE_WEEK_LENGTH, MainActivity.LOCAL_USER, clock);
 	}
 }
