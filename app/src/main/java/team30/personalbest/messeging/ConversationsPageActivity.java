@@ -20,10 +20,6 @@ public class ConversationsPageActivity extends AppCompatActivity {
         Intent myIntent = new Intent(this, ContactsActivity.class);
         myIntent.putExtra("currentUser", (MyUser) this.getIntent().getExtras().get("currentUser")  );
         startActivity(myIntent);
-
-
-
-
     }
 
     @Override
