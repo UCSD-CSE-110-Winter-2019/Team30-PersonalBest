@@ -28,6 +28,7 @@ import team30.personalbest.framework.clock.FitnessClock;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.google.GoogleFitnessAdapter;
 import team30.personalbest.framework.google.IGoogleService;
+import team30.personalbest.framework.mock.MockFitnessAdapter;
 import team30.personalbest.framework.service.IGoalService;
 import team30.personalbest.framework.snapshot.IFitnessSnapshot;
 import team30.personalbest.framework.snapshot.IRecordingFitnessSnapshot;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity
 		IServiceManagerBuilder builder = SERVICE_MANAGER_FACTORY.get(serviceManagerKey);
 		if (builder == null)
 		{
-			this.googleFitnessAdapter = new GoogleFitnessAdapter();
+			this.googleFitnessAdapter = new MockFitnessAdapter(); //new GoogleFitnessAdapter();
 		}
 		else
 		{

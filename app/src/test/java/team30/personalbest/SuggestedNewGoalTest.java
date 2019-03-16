@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowAlertDialog;
+import org.robolectric.shadows.ShadowDialog;
 
 import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.IServiceManagerBuilder;
@@ -31,7 +32,9 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(RobolectricTestRunner.class)
 public class SuggestedNewGoalTest {
     private MainActivity mainActivity;
+    String goal = "Your Step Goal: 500 steps";
     Button newGoal;
+    TextView newGoalText;
 
     @Before
     public void setup() {
@@ -39,15 +42,18 @@ public class SuggestedNewGoalTest {
         MainActivity.SERVICE_MANAGER_KEY = "mock";
 
         this.mainActivity = Robolectric.setupActivity(MainActivity.class);
-
         newGoal = mainActivity.findViewById(R.id.btn_stepgoal_new);
+        newGoalText = mainActivity.findViewById(R.id.display_stepgoal);
+
+        //System.out.println(newGoalText.getText());
+        newGoalText.setText(goal);
+        //System.out.println(newGoalText.getText());
     }
 
     @Test
     public void newGoalOnClickTest(){
         newGoal.performClick();
         assertTrue(!ShadowAlertDialog.getShownDialogs().isEmpty());
-        //(1, ShadowAlertDialog.getShownDialogs().size());
     }
 
     @Test
@@ -57,14 +63,6 @@ public class SuggestedNewGoalTest {
         assertEquals(dialog, ShadowAlertDialog.getLatestAlertDialog());
     }
 
-
-    /*@Test
-    public void setSuggestedGoalTest() {
-        newGoal.performClick();
-        Button confirm = ShadowAlertDialog.getShownDialogs().get(0).getButton(Dialog.BUTTON_POSITIVE);
-        confirm.performClick();
-
-    }*/
 
     @Test
     public void shouldSetViewTest() {
@@ -77,7 +75,7 @@ public class SuggestedNewGoalTest {
     }
 
     @Test
-    public void clickingDismissesDialog() {
+    public void clickingDismissesOkDialogTest() {
         AlertDialog alert = new AlertDialog.Builder(mainActivity)
                 .setPositiveButton("Ok", null).create();
         alert.show();
@@ -87,4 +85,20 @@ public class SuggestedNewGoalTest {
         assertFalse(alert.isShowing());
     }
 
+    @Test
+    public void clickingDismissesCancelDialogTest() {
+        AlertDialog alert = new AlertDialog.Builder(mainActivity)
+                .setNegativeButton("Cancel", null).create();
+        alert.show();
+
+        assertTrue(alert.isShowing());
+        alert.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+        assertFalse(alert.isShowing());
+    }
+
+   @Test
+    public void onClickUpdateNewStepGoalPositiveButtonTest() {
+        newGoal.performClick();
+        assertEquals("Your Step Goal: 500 steps", newGoalText.getText());
+    }
 }
