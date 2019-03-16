@@ -74,15 +74,6 @@ public class FitnessService implements IFitnessService, IGoogleService
 
 				final Activity activity = this.googleFitnessAdapter.getActivity();
 
-				/*
-				final long midnightTime = IFitnessClock.getMidnightOfDayTime(dayTime);
-				final DataReadRequest readRequest = new DataReadRequest.Builder()
-						.aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-						.bucketByTime(1, TimeUnit.DAYS)
-						.setTimeRange(midnightTime, dayTime, TimeUnit.MILLISECONDS)
-						.setLimit(1)
-						.build();
-				*/
 				Fitness.getHistoryClient(activity, lastSignedInAccount)
 						.readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
 						.addOnSuccessListener(dataSet -> {
@@ -103,6 +94,13 @@ public class FitnessService implements IFitnessService, IGoogleService
 						});
 
 				/*
+				final long midnightTime = IFitnessClock.getMidnightOfDayTime(dayTime);
+				final DataReadRequest readRequest = new DataReadRequest.Builder()
+						.aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+						.bucketByTime(1, TimeUnit.DAYS)
+						.setTimeRange(midnightTime, dayTime, TimeUnit.MILLISECONDS)
+						.setLimit(1)
+						.build();
 				Fitness.getHistoryClient(activity, lastSignedInAccount)
 						.readData(readRequest)
 						.addOnSuccessListener(dataReadResponse -> {
@@ -194,6 +192,8 @@ public class FitnessService implements IFitnessService, IGoogleService
 		{
 			this.googleFitnessAdapter.getCurrentGoogleAccount().onResult(lastSignedInAccount -> {
 				if (lastSignedInAccount == null) { callback.reject(); return; }
+				if (startTime > stopTime) { callback.reject(); return; }
+				if (startTime < 0) { callback.reject(); return; }
 
 				Log.d(TAG, "Getting multiple fitness data between " +
 						startTime + " to " +
