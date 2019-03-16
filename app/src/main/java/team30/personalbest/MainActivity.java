@@ -1,6 +1,7 @@
 package team30.personalbest;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,7 @@ import java.util.Map;
 import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.IServiceManagerBuilder;
 import team30.personalbest.framework.achiever.FitnessGoalAchiever;
+import androidx.annotation.RequiresApi;
 import team30.personalbest.framework.clock.FitnessClock;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.google.GoogleFitnessAdapter;
@@ -361,30 +363,21 @@ public class MainActivity extends AppCompatActivity
 		this.startActivity(intent);
 	}
 
-	private void updateUserSnapshots()
-	{
+	@RequiresApi(api = Build.VERSION_CODES.O)
+	private void updateUserSnapshots() {
 
 		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		FirebaseFirestore fs = FirebaseFirestore.getInstance();
 
-		if (user == null || fs == null)
-		{
+		if( user == null || fs == null ) {
 			Log.e(TAG, "Unable to update Firebase Snapshots");
 		}
 
-		GraphBundler.buildBundleForDays(GraphActivity.BUNDLE_MONTH_LENGTH, this.currentUser, this.currentClock)
-				.onResult(bundle -> {
-
-					fs.document("snapshot/" + user.getUid())
-							.set(bundle, SetOptions.merge())
-							.addOnSuccessListener(new OnSuccessListener<Void>()
-							{
-								@Override
-								public void onSuccess(Void aVoid)
-								{
-									Log.d(TAG, "Successfully updated Firebase Snapshots");
-								}
-							});
+		GraphBundler.buildSnapshotObjectForDays(GraphActivity.BUNDLE_MONTH_LENGTH, this.currentUser, this.currentClock)
+				.onResult(snapshotObject -> {
+					fs.document("snapshot/"+ user.getUid() )
+							.set(snapshotObject, SetOptions.merge() )
+							.addOnSuccessListener(aVoid -> Log.d( TAG, "Successfully updated Firebase Snapshots"));
 				});
 
 
