@@ -33,6 +33,7 @@ public class FriendsListTest {
         friendslistbutton = mainActivity.findViewById(R.id.btn_friends);
     }
 
+    //Test to show the friends list upon button press
     @Test
     public void testShowList() {
         friendslistbutton.callOnClick();
