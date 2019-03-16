@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.service.IFitnessService;
 import team30.personalbest.framework.snapshot.FitnessSnapshot;
@@ -33,13 +34,13 @@ public class FitnessService implements IFitnessService, IGoogleService
 	private GoogleFitnessAdapter googleFitnessAdapter;
 
 	@Override
-	public Callback<FitnessService> initialize(GoogleFitnessAdapter googleFitnessAdapter)
+	public Callback<FitnessService> initialize(IFitnessAdapter googleFitnessAdapter)
 	{
 		final Callback<FitnessService> callback = new Callback<>();
 		{
-			this.googleFitnessAdapter = googleFitnessAdapter;
+			this.googleFitnessAdapter = (GoogleFitnessAdapter) googleFitnessAdapter;
 
-			googleFitnessAdapter.getCurrentGoogleAccount().onResult(lastSignedInAccount -> {
+			this.googleFitnessAdapter.getCurrentGoogleAccount().onResult(lastSignedInAccount -> {
 				if (lastSignedInAccount == null)
 				{
 					callback.reject();

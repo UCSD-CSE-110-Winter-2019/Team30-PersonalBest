@@ -4,28 +4,31 @@ import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.google.FitnessService;
 import team30.personalbest.framework.google.GoalService;
-import team30.personalbest.framework.google.GoogleFitnessAdapter;
 import team30.personalbest.framework.google.HeightService;
 import team30.personalbest.framework.google.RecordingService;
+import team30.personalbest.framework.mock.MockFitnessService;
+import team30.personalbest.framework.mock.MockGoalService;
+import team30.personalbest.framework.mock.MockHeightService;
+import team30.personalbest.framework.mock.MockRecordingService;
 import team30.personalbest.framework.snapshot.IFitnessSnapshot;
 import team30.personalbest.framework.snapshot.IGoalSnapshot;
 import team30.personalbest.util.Callback;
 
-public class GoogleFitnessUser implements IGoogleFitnessUser
+public class MockFitnessUser implements IGoogleFitnessUser
 {
-	private final GoogleFitnessAdapter googleFitnessAdapter;
+	private final IFitnessAdapter googleFitnessAdapter;
 	private HeightService heightService;
 	private FitnessService fitnessService;
 	private GoalService goalService;
 	private RecordingService recordingService;
 
-	public GoogleFitnessUser(GoogleFitnessAdapter googleFitnessAdapter)
+	public MockFitnessUser(IFitnessAdapter googleFitnessAdapter)
 	{
 		this.googleFitnessAdapter = googleFitnessAdapter;
-		this.heightService = new HeightService();
-		this.fitnessService = new FitnessService();
-		this.goalService = new GoalService();
-		this.recordingService = new RecordingService();
+		this.heightService = new MockHeightService();
+		this.fitnessService = new MockFitnessService();
+		this.goalService = new MockGoalService();
+		this.recordingService = new MockRecordingService();
 
 		googleFitnessAdapter
 				.addGoogleService(this.fitnessService)

@@ -9,11 +9,12 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import team30.personalbest.R;
+import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.service.IEncouragementService;
 import team30.personalbest.framework.service.IFitnessService;
-import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.framework.snapshot.IFitnessSnapshot;
+import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
 
 public class EncouragementService implements IEncouragementService, IGoogleService
@@ -34,9 +35,9 @@ public class EncouragementService implements IEncouragementService, IGoogleServi
 	}
 
 	@Override
-	public Callback<EncouragementService> initialize(GoogleFitnessAdapter googleFitnessAdapter)
+	public Callback<EncouragementService> initialize(IFitnessAdapter googleFitnessAdapter)
 	{
-		return null;
+		return new Callback<>(this);
 	}
 
 	public long getLastEncouragementTime(Context context)

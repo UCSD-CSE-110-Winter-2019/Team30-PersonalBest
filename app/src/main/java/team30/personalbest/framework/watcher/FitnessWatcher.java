@@ -6,8 +6,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
-import team30.personalbest.framework.google.GoogleFitnessAdapter;
 import team30.personalbest.framework.google.IGoogleService;
 import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
@@ -31,7 +31,7 @@ public class FitnessWatcher implements IGoogleService
 	}
 
 	@Override
-	public Callback<FitnessWatcher> initialize(GoogleFitnessAdapter googleFitnessAdapter)
+	public Callback<FitnessWatcher> initialize(IFitnessAdapter googleFitnessAdapter)
 	{
 		Callback<FitnessWatcher> callback = new Callback<>();
 		{
