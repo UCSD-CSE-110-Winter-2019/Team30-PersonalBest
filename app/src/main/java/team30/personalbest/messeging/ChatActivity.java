@@ -73,8 +73,9 @@ public class ChatActivity extends AppCompatActivity {
         Log.d( LOG_TAG, fromUser.getChatRooms().toString());
 
         from = fromUser.getUser_name();
+        EditText nameView = findViewById((R.id.user_name));
+        nameView.setText(from);
 
-        OnUserReadyChecker checker = new OnUserReadyChecker();
 
         resolveRoomID( fromUser, toUser );
     }
@@ -93,10 +94,8 @@ public class ChatActivity extends AppCompatActivity {
             if ( toUser.getChatRooms().containsKey(fromUser_chatRoomId) ) {
 
                 Log.d( LOG_TAG, "Found exisiting conversation");
-                toUserReady = true;
-                fromUserReady = true;
                 this.roomId = fromUser_chatRoomId;
-                startConversation();
+                //startConversation();
                 initMessageUpdateListener();
                 return;
             }
@@ -123,7 +122,7 @@ public class ChatActivity extends AppCompatActivity {
                         Log.d( LOG_TAG, "Successfully added you to chat");
                         Log.d( LOG_TAG, "Updating User objects...");
 
-                        ChatActivity.this.fromUserReady = true;
+                        //ChatActivity.this.fromUserReady = true;
                     }
                 });
 
@@ -136,7 +135,7 @@ public class ChatActivity extends AppCompatActivity {
                         Log.d( LOG_TAG, "Updating User objects...");
 
 
-                        toUserReady = true;
+                        //toUserReady = true;
                     }
                 });
 
@@ -151,8 +150,30 @@ public class ChatActivity extends AppCompatActivity {
         firestore.document( "contacts/"+ fromUser.getUser_id() + "/user_contacts/"+ toUser.getUser_id() )
                 .set( toUser, SetOptions.merge() );
 
-        startConversation();
         initMessageUpdateListener();
+    }
+
+
+
+
+
+    private void sendMessage() {
+        if (from == null || from.isEmpty() || chat == null ) {
+            Toast.makeText(this, "Enter your name", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        EditText messageView = this.findViewById(R.id.text_message);
+
+        Map<String, String> newMessage = new HashMap<>();
+        newMessage.put(FROM_KEY, from);
+        newMessage.put(TEXT_KEY, messageView.getText().toString());
+
+        chat.add(newMessage).addOnSuccessListener(result -> {
+            messageView.setText("");
+        }).addOnFailureListener(error -> {
+            Log.e(LOG_TAG, error.getLocalizedMessage());
+        });
     }
 
     private void startConversation( ) {
@@ -182,32 +203,14 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.btn_send).setOnClickListener(view -> sendMessage());
 
-        EditText nameView = findViewById((R.id.user_name));
-        nameView.setText(from);
-    }
 
-    private void sendMessage() {
-        if (from == null || from.isEmpty() || chat == null ) {
-            Toast.makeText(this, "Enter your name", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        EditText messageView = this.findViewById(R.id.text_message);
-
-        Map<String, String> newMessage = new HashMap<>();
-        newMessage.put(FROM_KEY, from);
-        newMessage.put(TEXT_KEY, messageView.getText().toString());
-
-        chat.add(newMessage).addOnSuccessListener(result -> {
-            messageView.setText("");
-        }).addOnFailureListener(error -> {
-            Log.e(LOG_TAG, error.getLocalizedMessage());
-        });
     }
 
     private void initMessageUpdateListener() {
+        chat = firestore.collection("messages/"+roomId+"/chat_messages");
+        findViewById(R.id.btn_send).setOnClickListener(view -> sendMessage());
+
         chat.orderBy(TIMESTAMP_KEY, Query.Direction.ASCENDING )
                 .addSnapshotListener((newChatSnapShot, error) -> {
                     if (error != null) {
@@ -263,7 +266,7 @@ public class ChatActivity extends AppCompatActivity {
         protected void onPostExecute(Void v)
         {
             super.onPostExecute(v);
-            startConversation();
+            //startConversation();
             initMessageUpdateListener();
         }
     }

@@ -27,13 +27,12 @@
             android:orientation="horizontal"
             android:gravity="center">
             <EditText
-                android:id="@+id/timeText"
+                android:id="@+id/input_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="@string/the_current_time"/>
             <Button
-                android:id="@+id/subTime"
-                android:onClick="onSubmitTime"
+                android:id="@+id/btn_time"
                 android:layout_height="50dp"
                 android:layout_width="150dp"
                 android:text="@string/submit_time"/>
@@ -108,13 +107,24 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true">
-        <Button
-            android:id="@+id/btn_weekly_stats"
-            android:layout_height="50dp"
-            android:layout_width="80dp"
-            android:background="@android:color/darker_gray"
-            android:textColor="@android:color/white"
-            android:text="@string/title_weekly_snapshot"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btn_weekly_stats"
+                android:layout_height="50dp"
+                android:layout_width="80dp"
+                android:background="@android:color/darker_gray"
+                android:textColor="@android:color/white"
+                android:text="@string/title_weekly_snapshot"/>
+            <Button
+                android:id="@+id/btn_monthly_stats"
+                android:layout_height="50dp"
+                android:layout_width="80dp"
+                android:background="@android:color/darker_gray"
+                android:textColor="@android:color/white"
+                android:text="@string/title_monthly_snapshot"/>
+        </LinearLayout>
     </RelativeLayout>
 
     <RelativeLayout

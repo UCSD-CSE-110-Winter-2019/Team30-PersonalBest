@@ -36,13 +36,21 @@ public class EncouragementService implements IEncouragementService, IGoogleServi
 	@Override
 	public Callback<EncouragementService> initialize(GoogleFitnessAdapter googleFitnessAdapter)
 	{
-		return null;
+		return new Callback<>(this);
 	}
 
 	public long getLastEncouragementTime(Context context)
 	{
 		final SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
 		return sharedPreferences.getLong(SHARED_PREFS_ENCOURAGEMENT_TIME_KEY, -1);
+	}
+
+	private void putLastEncouragementTime(Context context, long time)
+	{
+		final SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+		sharedPreferences.edit()
+				.putLong(SHARED_PREFS_ENCOURAGEMENT_TIME_KEY, time)
+				.apply();
 	}
 
 	public void tryEncouragement(Context context, IFitnessUser user, IFitnessClock clock, long currentTime)
@@ -52,7 +60,12 @@ public class EncouragementService implements IEncouragementService, IGoogleServi
 		current.add(Calendar.DAY_OF_YEAR, -2);
 		long previous2 = current.getTimeInMillis();
 
+		Log.d(TAG, "Trying encouragement...");
+
 		this.fitnessService.getFitnessSnapshots(user, clock, previous2, currentTime).onResult(iFitnessSnapshots -> {
+			if (iFitnessSnapshots == null) return;
+			Log.d(TAG, "...testing for encouragement...");
+
 			Iterator<IFitnessSnapshot> iterator = iFitnessSnapshots.iterator();
 			if (iterator.hasNext())
 			{
@@ -62,21 +75,30 @@ public class EncouragementService implements IEncouragementService, IGoogleServi
 					long prev1 = iterator.next().getTotalSteps();
 					if (prev1 > prev2 * FULL_FACTOR)
 					{
+						Log.d(TAG, "...full encouragement needed for " + prev1 + " > " + prev2);
+						putLastEncouragementTime(context, currentTime);
 						showFullEncouragement(context);
 					}
 					else if (prev1 > prev2 * NEARLY_FACTOR)
 					{
+						Log.d(TAG, "...partial encouragement needed for " + prev1 + " > " + prev2);
+						putLastEncouragementTime(context, currentTime);
 						showNearlyEncouragement(context);
 					}
 					else
 					{
 						//Don't show nothing.
+						Log.d(TAG, "...no encouragement needed for " + prev1 + " > " + prev2);
 					}
+				}
+				else
+				{
+					Log.w(TAG, "Unable to find steps for yesterday!");
 				}
 			}
 			else
 			{
-				Log.w(TAG, "Unable to find steps for yesterday!");
+				Log.w(TAG, "Unable to find steps for 2 days ago!");
 			}
 		});
 	}
