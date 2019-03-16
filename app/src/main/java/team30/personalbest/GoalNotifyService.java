@@ -39,7 +39,7 @@ public class GoalNotifyService extends Service {
     private FitnessWatcher fitnessWatcher;
     private FitnessGoalAchiever goalAchiever;
 
-    private int notificationId = 0;
+    private int notificationId = 0xffff;
 
     public GoalNotifyService() {
     }
@@ -71,6 +71,12 @@ public class GoalNotifyService extends Service {
         this.googleFitnessAdapter
                 .addGoogleService(this.fitnessWatcher)
                 .addGoogleService(this::onGoogleFitnessReady);
+
+
+        //TODO: can' figure out how
+        //      plus there is the problem of this service outliving mainActivity,
+        //      so I'm not sure how to deal with that
+        //this.googleFitnessAdapter.onActivityCreate(mainActivity, null);
 
         createNotificationChannel();
         return super.onStartCommand(intent, flags, startId);
