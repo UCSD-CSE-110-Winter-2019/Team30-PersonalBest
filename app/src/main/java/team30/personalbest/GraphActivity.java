@@ -32,6 +32,10 @@ import team30.personalbest.util.Callback;
 
 public class GraphActivity extends AppCompatActivity
 {
+	public static final String BUNDLE_MONTHLY_STATS = "monthly_stats";
+	public static final String BUNDLE_MONTHLY_PREFIX = "monthly_week_";
+	public static final String BUNDLE_MONTHLY_TIME = "monthly_time";
+
 	public static final String BUNDLE_WEEKLY_STATS = "weekly_stats";
 	public static final String BUNDLE_WEEKLY_PREFIX = "weekly_day_";
 	public static final String BUNDLE_DAILY_ACTIVE_STEPS = "daily_active_steps";
@@ -41,7 +45,9 @@ public class GraphActivity extends AppCompatActivity
 	public static final String BUNDLE_DAILY_GOALS = "daily_goals";
 	public static final String BUNDLE_WEEKLY_TIME = "weekly_time";
 	public static final int BUNDLE_WEEK_LENGTH = 7;
+
 	public static final int BUNDLE_MONTH_LENGTH = 28;
+
 
 	public static final String[] WEEK_DAY_LABELS = new String[]{
 			"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"

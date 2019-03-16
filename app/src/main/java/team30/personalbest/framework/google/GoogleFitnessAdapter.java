@@ -3,6 +3,7 @@ package team30.personalbest.framework.google;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -14,14 +15,26 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import team30.personalbest.R;
+import team30.personalbest.messeging.ConversationsPageActivity;
 import team30.personalbest.messeging.MessageActivity;
+import team30.personalbest.messeging.MyUser;
 import team30.personalbest.util.Callback;
 
 public class GoogleFitnessAdapter
@@ -83,6 +96,10 @@ public class GoogleFitnessAdapter
 			{
 				Log.d(TAG, "Google sign succeeded.");
 				final GoogleSignInAccount account = task.getResult(ApiException.class);
+
+				firebaseAuthWithGoogle( account );
+
+				Log.d( TAG, "Initialzing Firebase");
 
 				final FitnessOptions fitnessOptions = FitnessOptions.builder()
 						.addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -162,5 +179,31 @@ public class GoogleFitnessAdapter
 	public Activity getActivity()
 	{
 		return this.activity;
+	}
+
+
+	private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+		Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
+
+		FirebaseAuth mAuth = FirebaseAuth.getInstance();
+		AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+		mAuth.signInWithCredential(credential)
+				.addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+					@Override
+					public void onComplete(@NonNull Task<AuthResult> task) {
+						if (task.isSuccessful()) {
+							// Sign in success, update UI with the signed-in user's information
+							Log.d(TAG, "signInWithCredential:success");
+							FirebaseUser user = mAuth.getCurrentUser();
+
+							FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+						} else {
+							// If sign in fails, display a message to the user.
+							Log.w(TAG, "signInWithCredential:failure", task.getException());
+						}
+
+						// ...
+					}
+				});
 	}
 }
