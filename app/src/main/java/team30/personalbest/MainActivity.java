@@ -17,16 +17,21 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import team30.personalbest.framework.IFitnessAdapter;
+import team30.personalbest.framework.IServiceManagerBuilder;
+import team30.personalbest.framework.achiever.FitnessGoalAchiever;
 import team30.personalbest.framework.clock.FitnessClock;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.google.GoogleFitnessAdapter;
 import team30.personalbest.framework.google.IGoogleService;
-import team30.personalbest.framework.google.achiever.FitnessGoalAchiever;
 import team30.personalbest.framework.service.IGoalService;
 import team30.personalbest.framework.snapshot.IFitnessSnapshot;
 import team30.personalbest.framework.snapshot.IRecordingFitnessSnapshot;
-import team30.personalbest.framework.user.GoogleFitnessUser;
 import team30.personalbest.framework.user.IFitnessUser;
+import team30.personalbest.framework.user.IGoogleFitnessUser;
 import team30.personalbest.framework.watcher.FitnessWatcher;
 import team30.personalbest.messeging.MessageActivity;
 import team30.personalbest.util.Callback;
@@ -34,12 +39,15 @@ import team30.personalbest.util.Callback;
 public class MainActivity extends AppCompatActivity
 {
 	public static final String TAG = "MainActivity";
+	public static final String BUNDLE_SERVICE_MANAGER_KEY = "serviceManagerKey";
 
-	public static GoogleFitnessUser LOCAL_USER;
+	public static Map<String, IServiceManagerBuilder> SERVICE_MANAGER_FACTORY = new HashMap<>();
+	public static String SERVICE_MANAGER_KEY = null;
+	public static IGoogleFitnessUser LOCAL_USER;
 	public static FitnessClock LOCAL_CLOCK;
 
-	private GoogleFitnessAdapter googleFitnessAdapter;
-	private GoogleFitnessUser currentUser;
+	private IFitnessAdapter googleFitnessAdapter;
+	private IGoogleFitnessUser currentUser;
 	private FitnessClock currentClock;
 
 	private FitnessWatcher fitnessWatcher;
@@ -51,11 +59,25 @@ public class MainActivity extends AppCompatActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		this.googleFitnessAdapter = new GoogleFitnessAdapter();
+		final Bundle bundle = this.getIntent().getExtras();
+		//bundle.getString(BUNDLE_SERVICE_MANAGER_KEY);
+
+		String serviceManagerKey = "default";
+		if (SERVICE_MANAGER_KEY != null) serviceManagerKey = SERVICE_MANAGER_KEY;
+		IServiceManagerBuilder builder = SERVICE_MANAGER_FACTORY.get(serviceManagerKey);
+		if (builder == null)
+		{
+			this.googleFitnessAdapter = new GoogleFitnessAdapter();
+		}
+		else
+		{
+			this.googleFitnessAdapter = builder.build();
+		}
+
+		this.currentUser = this.googleFitnessAdapter.getFitnessUser();
+		LOCAL_USER = this.currentUser;
 		this.currentClock = new FitnessClock();
 		LOCAL_CLOCK = this.currentClock;
-		this.currentUser = new GoogleFitnessUser(this.googleFitnessAdapter);
-		LOCAL_USER = this.currentUser;
 
 		this.fitnessWatcher = new FitnessWatcher(this.currentUser, this.currentClock);
 		this.fitnessWatcher.addFitnessListener(this::onFitnessUpdate);

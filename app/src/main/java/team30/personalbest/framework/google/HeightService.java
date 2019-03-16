@@ -13,6 +13,7 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 
 import java.util.concurrent.TimeUnit;
 
+import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.service.IHeightService;
 import team30.personalbest.framework.user.IFitnessUser;
@@ -25,11 +26,11 @@ public class HeightService implements IHeightService, IGoogleService
 	private GoogleFitnessAdapter googleFitnessAdapter;
 
 	@Override
-	public Callback<HeightService> initialize(GoogleFitnessAdapter googleFitnessAdapter)
+	public Callback<HeightService> initialize(IFitnessAdapter googleFitnessAdapter)
 	{
 		final Callback<HeightService> callback = new Callback<>();
 		{
-			this.googleFitnessAdapter = googleFitnessAdapter;
+			this.googleFitnessAdapter = (GoogleFitnessAdapter) googleFitnessAdapter;
 			callback.resolve(this);
 		}
 		return callback;

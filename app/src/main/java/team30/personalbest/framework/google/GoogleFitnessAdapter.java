@@ -32,12 +32,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import team30.personalbest.R;
-import team30.personalbest.messeging.ConversationsPageActivity;
-import team30.personalbest.messeging.MessageActivity;
-import team30.personalbest.messeging.MyUser;
+import team30.personalbest.framework.IFitnessAdapter;
+import team30.personalbest.framework.user.GoogleFitnessUser;
+import team30.personalbest.framework.user.IGoogleFitnessUser;
 import team30.personalbest.util.Callback;
 
-public class GoogleFitnessAdapter
+public class GoogleFitnessAdapter implements IFitnessAdapter
 {
 	public static final String TAG = "GoogleFitnessAdapter";
 
@@ -49,9 +49,16 @@ public class GoogleFitnessAdapter
 	public static final int RC_SIGN_IN = 0x1002;
 
 	private final List<IGoogleService> googleServices = new ArrayList<>();
+	private final IGoogleFitnessUser user;
 
 	private Activity activity;
 
+	public GoogleFitnessAdapter()
+	{
+		this.user = new GoogleFitnessUser(this);
+	}
+
+	@Override
 	public GoogleFitnessAdapter addGoogleService(IGoogleService googleService)
 	{
 		this.googleServices.add(googleService);
@@ -59,6 +66,7 @@ public class GoogleFitnessAdapter
 	}
 
 	@Nullable
+	@Override
 	public void onActivityCreate(Activity activity, Bundle savedInstanceState)
 	{
 		this.activity = activity;
@@ -85,6 +93,7 @@ public class GoogleFitnessAdapter
 	}
 
 	@Nullable
+	@Override
 	public void onActivityResult(Activity activity, int requestCode, int resultCode, @Nullable Intent data)
 	{
 		this.activity = activity;
@@ -176,6 +185,7 @@ public class GoogleFitnessAdapter
 		return callback;
 	}
 
+	@Override
 	public Activity getActivity()
 	{
 		return this.activity;
@@ -205,5 +215,11 @@ public class GoogleFitnessAdapter
 						// ...
 					}
 				});
+	}
+
+	@Override
+	public IGoogleFitnessUser getFitnessUser()
+	{
+		return this.user;
 	}
 }

@@ -1,4 +1,4 @@
-package team30.personalbest.framework.google.achiever;
+package team30.personalbest.framework.achiever;
 
 import team30.personalbest.framework.service.IGoalService;
 

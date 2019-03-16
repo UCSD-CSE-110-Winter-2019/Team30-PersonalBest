@@ -13,6 +13,7 @@ import com.google.android.gms.fitness.request.SessionInsertRequest;
 
 import java.util.concurrent.TimeUnit;
 
+import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.google.recorder.GoogleFitDataRecorder;
 import team30.personalbest.framework.google.recorder.RecordingSnapshot;
@@ -34,13 +35,13 @@ public class RecordingService implements IRecordingService, IGoogleService
 	private GoogleFitnessAdapter googleFitnessAdapter;
 
 	@Override
-	public Callback<RecordingService> initialize(GoogleFitnessAdapter googleFitnessAdapter)
+	public Callback<RecordingService> initialize(IFitnessAdapter googleFitnessAdapter)
 	{
 		final Callback<RecordingService> callback = new Callback<>();
 		{
-			this.googleFitnessAdapter = googleFitnessAdapter;
+			this.googleFitnessAdapter = (GoogleFitnessAdapter) googleFitnessAdapter;
 
-			this.stepRecorder = new GoogleFitDataRecorder(googleFitnessAdapter, DataType.TYPE_STEP_COUNT_DELTA, GoogleFitnessAdapter.RECORDER_SAMPLING_RATE);
+			this.stepRecorder = new GoogleFitDataRecorder(this.googleFitnessAdapter, DataType.TYPE_STEP_COUNT_DELTA, GoogleFitnessAdapter.RECORDER_SAMPLING_RATE);
 
 			callback.resolve(this);
 		}

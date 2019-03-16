@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.data.DataPoint;
@@ -22,12 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import team30.personalbest.R;
+import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.service.IGoalService;
-import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.framework.snapshot.GoalSnapshot;
 import team30.personalbest.framework.snapshot.IGoalSnapshot;
+import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
 
 public class GoalService implements IGoalService, IGoogleService
@@ -42,11 +40,11 @@ public class GoalService implements IGoalService, IGoogleService
 	private DataSource dataSource;
 
 	@Override
-	public Callback<GoalService> initialize(GoogleFitnessAdapter googleFitnessAdapter)
+	public Callback<GoalService> initialize(IFitnessAdapter googleFitnessAdapter)
 	{
 		final Callback<GoalService> callback = new Callback<>();
 
-		this.googleFitnessAdapter = googleFitnessAdapter;
+		this.googleFitnessAdapter = (GoogleFitnessAdapter) googleFitnessAdapter;
 		this.googleApiClient = new GoogleApiClient.Builder(googleFitnessAdapter.getActivity())
 				.addApi(Fitness.CONFIG_API)
 				.addApi(Fitness.HISTORY_API)
