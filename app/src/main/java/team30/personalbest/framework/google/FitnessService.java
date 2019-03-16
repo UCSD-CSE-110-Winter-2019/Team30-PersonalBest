@@ -210,7 +210,8 @@ public class FitnessService implements IFitnessService, IGoogleService
 						.build();
 
 				final DataReadRequest readRequest = new DataReadRequest.Builder()
-						.aggregate(estimatedSteps, DataType.AGGREGATE_STEP_COUNT_DELTA)
+						.read(DataType.AGGREGATE_STEP_COUNT_DELTA)
+						//.aggregate(estimatedSteps, DataType.AGGREGATE_STEP_COUNT_DELTA)
 						.setTimeRange(startTime, stopTime + 1, TimeUnit.MILLISECONDS)
 						.bucketByTime(1, TimeUnit.DAYS)
 						.enableServerQueries()

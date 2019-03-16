@@ -150,6 +150,6 @@ public class FriendlyActivity extends AppCompatActivity
 
 	private void launchMessaging()
 	{
-
+		this.getIntent().getExtras();
 	}
 }
