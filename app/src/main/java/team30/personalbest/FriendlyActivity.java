@@ -76,7 +76,6 @@ public class FriendlyActivity extends AppCompatActivity
 		switchScreen.setOnClickListener(view -> this.launchMessaging());
 
 
-		setResult(1);
 	}
 
 	public void createCharts() {
@@ -208,6 +207,9 @@ public class FriendlyActivity extends AppCompatActivity
 
 		Log.d(LOG_TAG, "Returning to Contacts Page");
 		super.onActivityResult(requestCode, resultCode, data);
+		setResult(1);
+
+		finish();
 
 
 	}

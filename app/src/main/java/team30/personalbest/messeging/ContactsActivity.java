@@ -116,6 +116,7 @@ public class ContactsActivity extends AppCompatActivity {
                             startActivityForResult( friendGraphIntent, 1);
 
 
+
                             Intent startConvIntent = new Intent( ContactsActivity.this, ChatActivity.class );
                             startConvIntent.putExtra("fromUser", ContactsActivity.this.thisUser);
                             startConvIntent.putExtra( "toUser", contactsListObject.get( (int) id ) );

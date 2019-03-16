@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity
 		IServiceManagerBuilder builder = SERVICE_MANAGER_FACTORY.get(serviceManagerKey);
 		if (builder == null)
 		{
-			this.googleFitnessAdapter = new MockFitnessAdapter(); //new GoogleFitnessAdapter();
+			this.googleFitnessAdapter = new GoogleFitnessAdapter();
 		}
 		else
 		{
@@ -103,8 +103,12 @@ public class MainActivity extends AppCompatActivity
 		this.googleFitnessAdapter.onActivityResult(this, requestCode, resultCode, data);
 	}
 
+
 	protected Callback<IGoogleService> onGoogleFitnessReady(IFitnessAdapter googleFitnessAdapter)
 	{
+
+		updateUserSnapshots();
+
 		final Callback<IGoogleService> callback = new Callback<>(null);
 		{
 			final MainActivity activity = this;
@@ -351,6 +355,7 @@ public class MainActivity extends AppCompatActivity
 
 	private void launchMonthlyStatsActivity()
 	{
+		this.updateUserSnapshots();
 		GraphBundler.buildBundleForDays(GraphActivity.BUNDLE_MONTH_LENGTH, this.currentUser, this.currentClock).onResult(bundle -> {
 			final Intent intent = new Intent(this, MonthlyStatsActivity.class);
 			intent.putExtras(bundle);
@@ -364,7 +369,6 @@ public class MainActivity extends AppCompatActivity
 		this.startActivity(intent);
 	}
 
-	@RequiresApi(api = Build.VERSION_CODES.O)
 	private void updateUserSnapshots() {
 
 		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

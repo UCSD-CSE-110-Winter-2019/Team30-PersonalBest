@@ -109,16 +109,18 @@ public class MessageActivity extends AppCompatActivity {
                         userRef.set( MessageActivity.this.thisUser = new MyUser( user.getUid(), user.getDisplayName(), user.getEmail(), new HashMap<String, Boolean>() ));
                         firestore.document("emails/"+MessageActivity.this.thisUser.getUser_email() )
                                 .set( MessageActivity.this.thisUser );
-                        Intent myIntent = new Intent(MessageActivity.this, ConversationsPageActivity.class);
+                        Intent myIntent = new Intent(MessageActivity.this, ContactsActivity.class);
                         myIntent.putExtra("currentUser", MessageActivity.this.thisUser  );
+                        finish();
                         startActivity(myIntent);
 
                     }
                     else if( userDoc.exists() ){
                         Log.d(TAG, "Found User in database. Retrieving data...");
                         MessageActivity.this.thisUser = userDoc.toObject( MyUser.class );
-                        Intent myIntent = new Intent(MessageActivity.this, ConversationsPageActivity.class);
+                        Intent myIntent = new Intent(MessageActivity.this, ContactsActivity.class);
                         myIntent.putExtra("currentUser", MessageActivity.this.thisUser  );
+                        finish();
                         startActivity(myIntent);
                     }
                 }
@@ -130,7 +132,7 @@ public class MessageActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        finish();
+        this.finish();
 
     }
 
