@@ -12,6 +12,7 @@
     <string name="title_walk_stop">End walk/run</string>
     <string name="title_new_stepgoal">New Step Goal</string>
     <string name="title_weekly_snapshot">Weekly Overview</string>
+    <string name="title_monthly_snapshot">Monthly Overview</string>
     <string name="title_friends">Friends List</string>
 
     <string name="display_record_steps">Your Steps: %1$d steps</string>

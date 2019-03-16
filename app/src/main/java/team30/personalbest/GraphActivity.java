@@ -41,6 +41,7 @@ public class GraphActivity extends AppCompatActivity
 	public static final String BUNDLE_DAILY_GOALS = "daily_goals";
 	public static final String BUNDLE_WEEKLY_TIME = "weekly_time";
 	public static final int BUNDLE_WEEK_LENGTH = 7;
+	public static final int BUNDLE_MONTH_LENGTH = 28;
 
 	public static final String[] WEEK_DAY_LABELS = new String[]{
 			"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
