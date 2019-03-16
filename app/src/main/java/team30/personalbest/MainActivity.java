@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.googleFitnessAdapter.onActivityCreate(this, savedInstanceState);
 
-        //createNotificationChannel();
+        createNotificationChannel();
         //Intent goalNotifyServiceIntent = new Intent(MainActivity.this, GoalNotifyService.class);
         //startService(goalNotifyServiceIntent);
     }
