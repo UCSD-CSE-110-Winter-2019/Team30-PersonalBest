@@ -12,6 +12,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service
+            android:name=".GoalNotifyService"
+            android:enabled="true"
+            android:exported="true"></service>
+
         <activity android:name=".NotificationActivity">
             <intent-filter>
                 <action android:name="notification" />
