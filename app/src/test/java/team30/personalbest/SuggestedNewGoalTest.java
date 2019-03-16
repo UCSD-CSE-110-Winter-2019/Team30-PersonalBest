@@ -47,7 +47,7 @@ public class SuggestedNewGoalTest {
 
         //System.out.println(newGoalText.getText());
         newGoalText.setText(goal);
-        System.out.println(newGoalText.getText());
+        //System.out.println(newGoalText.getText());
     }
 
     @Test
