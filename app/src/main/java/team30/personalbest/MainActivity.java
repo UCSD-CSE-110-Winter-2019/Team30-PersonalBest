@@ -65,6 +65,9 @@ public class MainActivity extends AppCompatActivity
 		this.setupUI();
 
 		this.googleFitnessAdapter.onActivityCreate(this, savedInstanceState);
+
+		Intent goalNotifyServiceIntent = new Intent(MainActivity.this, GoalNotifyService.class);
+		startService(goalNotifyServiceIntent);
 	}
 
 	private void setupUI()
