@@ -67,17 +67,15 @@ public class FriendlyActivity extends AppCompatActivity
 		});
 		xAxis.setCenterAxisLabels(true);
 
-		final Bundle bundle = this.getIntent().getExtras();
+		Bundle bundle = this.getIntent().getExtras();
 		if (bundle == null)
 		{
-			this.finish();
-			return;
+			bundle = new Bundle();
 		}
-		final Bundle weeklyBundle = bundle.getBundle(GraphActivity.BUNDLE_WEEKLY_STATS);
+		Bundle weeklyBundle = bundle.getBundle(GraphActivity.BUNDLE_WEEKLY_STATS);
 		if (weeklyBundle == null)
 		{
-			this.finish();
-			return;
+			weeklyBundle = new Bundle();
 		}
 
 		this.startTime = weeklyBundle.getLong(GraphActivity.BUNDLE_WEEKLY_TIME);
