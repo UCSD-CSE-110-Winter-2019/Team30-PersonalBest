@@ -8,17 +8,16 @@ import android.support.annotation.Nullable;
 import team30.personalbest.framework.google.IGoogleService;
 import team30.personalbest.framework.user.IGoogleFitnessUser;
 
-public interface IFitnessAdapter
-{
-	IFitnessAdapter addGoogleService(IGoogleService googleService);
+public interface IFitnessAdapter {
+    IFitnessAdapter addGoogleService(IGoogleService googleService);
 
-	@Nullable
-	void onActivityCreate(Activity activity, Bundle savedInstanceState);
+    @Nullable
+    void onActivityCreate(Activity activity, Bundle savedInstanceState);
 
-	@Nullable
-	void onActivityResult(Activity activity, int requestCode, int resultCode, @Nullable Intent data);
+    @Nullable
+    void onActivityResult(Activity activity, int requestCode, int resultCode, @Nullable Intent data);
 
-	Activity getActivity();
+    Activity getActivity();
 
-	IGoogleFitnessUser getFitnessUser();
+    IGoogleFitnessUser getFitnessUser();
 }

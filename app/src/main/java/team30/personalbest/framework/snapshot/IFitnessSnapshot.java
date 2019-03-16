@@ -1,14 +1,13 @@
 package team30.personalbest.framework.snapshot;
 
-public interface IFitnessSnapshot
-{
-	int getRecordedSteps();
+public interface IFitnessSnapshot {
+    int getRecordedSteps();
 
-	int getTotalSteps();
+    int getTotalSteps();
 
-	long getStartTime();
+    long getStartTime();
 
-	long getStopTime();
+    long getStopTime();
 
-	double getSpeed();
+    double getSpeed();
 }

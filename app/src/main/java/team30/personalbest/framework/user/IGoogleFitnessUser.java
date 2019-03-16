@@ -7,17 +7,16 @@ import team30.personalbest.framework.google.GoalService;
 import team30.personalbest.framework.google.HeightService;
 import team30.personalbest.framework.google.RecordingService;
 
-public interface IGoogleFitnessUser extends IFitnessUser
-{
-	FitnessService getFitnessService();
+public interface IGoogleFitnessUser extends IFitnessUser {
+    FitnessService getFitnessService();
 
-	GoalService getGoalService();
+    GoalService getGoalService();
 
-	HeightService getHeightService();
+    HeightService getHeightService();
 
-	RecordingService getRecordingService();
+    RecordingService getRecordingService();
 
-	EncouragementService getEncouragementService();
+    EncouragementService getEncouragementService();
 
-	IFitnessAdapter getGoogleFitnessAdapter();
+    IFitnessAdapter getGoogleFitnessAdapter();
 }

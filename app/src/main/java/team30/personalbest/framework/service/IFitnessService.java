@@ -5,11 +5,10 @@ import team30.personalbest.framework.snapshot.IFitnessSnapshot;
 import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
 
-public interface IFitnessService
-{
-	Callback<Integer> getDailySteps(IFitnessUser user, IFitnessClock clock, long dayTime);
+public interface IFitnessService {
+    Callback<Integer> getDailySteps(IFitnessUser user, IFitnessClock clock, long dayTime);
 
-	Callback<IFitnessSnapshot> getFitnessSnapshot(IFitnessUser user, IFitnessClock clock);
+    Callback<IFitnessSnapshot> getFitnessSnapshot(IFitnessUser user, IFitnessClock clock);
 
-	Callback<Iterable<IFitnessSnapshot>> getFitnessSnapshots(IFitnessUser user, IFitnessClock clock, long startTime, long stopTime);
+    Callback<Iterable<IFitnessSnapshot>> getFitnessSnapshots(IFitnessUser user, IFitnessClock clock, long startTime, long stopTime);
 }

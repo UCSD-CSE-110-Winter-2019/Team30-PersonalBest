@@ -6,13 +6,12 @@ import team30.personalbest.framework.snapshot.IRecordingFitnessSnapshot;
 import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
 
-public interface IRecordingService
-{
-	IRecordingFitnessSnapshot startRecording(IFitnessUser user, IFitnessClock clock);
+public interface IRecordingService {
+    IRecordingFitnessSnapshot startRecording(IFitnessUser user, IFitnessClock clock);
 
-	Callback<IFitnessSnapshot> stopRecording(IFitnessUser user, IFitnessClock clock);
+    Callback<IFitnessSnapshot> stopRecording(IFitnessUser user, IFitnessClock clock);
 
-	IRecordingFitnessSnapshot getRecordingSnapshot(IFitnessUser user);
+    IRecordingFitnessSnapshot getRecordingSnapshot(IFitnessUser user);
 
-	boolean isRecording();
+    boolean isRecording();
 }

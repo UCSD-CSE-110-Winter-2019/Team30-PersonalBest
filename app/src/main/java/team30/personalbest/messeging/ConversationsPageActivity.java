@@ -9,26 +9,23 @@ import android.view.MenuInflater;
 
 import team30.personalbest.R;
 
-public class ConversationsPageActivity extends AppCompatActivity
-{
+public class ConversationsPageActivity extends AppCompatActivity {
 
-	@Override
-	protected void onCreate(@Nullable Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.activity_contacts_page);
+        setContentView(R.layout.activity_contacts_page);
 
-		Intent myIntent = new Intent(this, ContactsActivity.class);
-		myIntent.putExtra("currentUser", (MyUser) this.getIntent().getExtras().get("currentUser"));
-		startActivity(myIntent);
-	}
+        Intent myIntent = new Intent(this, ContactsActivity.class);
+        myIntent.putExtra("currentUser", (MyUser) this.getIntent().getExtras().get("currentUser"));
+        startActivity(myIntent);
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.chat_menu, menu);
-		return true;
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.chat_menu, menu);
+        return true;
+    }
 }

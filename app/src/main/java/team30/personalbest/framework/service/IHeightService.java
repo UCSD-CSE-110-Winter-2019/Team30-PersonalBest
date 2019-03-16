@@ -4,7 +4,6 @@ import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
 
-public interface IHeightService
-{
-	Callback<Float> getHeight(IFitnessUser user, IFitnessClock clock);
+public interface IHeightService {
+    Callback<Float> getHeight(IFitnessUser user, IFitnessClock clock);
 }

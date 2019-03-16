@@ -17,28 +17,29 @@ public class SnapshotObject implements Serializable {
         fitnessSnapshots = new ArrayList<>();
         goalSnapshots = new ArrayList<>();
     }
-    public SnapshotObject( Iterable<IFitnessSnapshot> fs, Iterable<IGoalSnapshot> gs ) {
+
+    public SnapshotObject(Iterable<IFitnessSnapshot> fs, Iterable<IGoalSnapshot> gs) {
 
         this();
 
-        for( IFitnessSnapshot s : fs ) {
-            fitnessSnapshots.add( (FitnessSnapshot) s );
+        for (IFitnessSnapshot s : fs) {
+            fitnessSnapshots.add((FitnessSnapshot) s);
         }
 
-        for( IGoalSnapshot g : gs )  {
-            goalSnapshots.add( (GoalSnapshot) g );
+        for (IGoalSnapshot g : gs) {
+            goalSnapshots.add((GoalSnapshot) g);
         }
     }
 
     public void setFitnessSnapshots(ArrayList<FitnessSnapshot> fitnessSnapshots) {
-        for( IFitnessSnapshot s : fitnessSnapshots ) {
-            this.fitnessSnapshots.add( (FitnessSnapshot) s );
+        for (IFitnessSnapshot s : fitnessSnapshots) {
+            this.fitnessSnapshots.add((FitnessSnapshot) s);
         }
     }
 
-    public void setGoalSnapshots( ArrayList<GoalSnapshot> goalSnapshots ) {
-        for( IGoalSnapshot g : goalSnapshots )  {
-            this.goalSnapshots.add( (GoalSnapshot) g );
+    public void setGoalSnapshots(ArrayList<GoalSnapshot> goalSnapshots) {
+        for (IGoalSnapshot g : goalSnapshots) {
+            this.goalSnapshots.add((GoalSnapshot) g);
         }
     }
 

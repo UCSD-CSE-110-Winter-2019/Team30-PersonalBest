@@ -16,79 +16,67 @@ import team30.personalbest.framework.user.IGoogleFitnessUser;
 import team30.personalbest.framework.user.MockFitnessUser;
 import team30.personalbest.util.Callback;
 
-public class MockFitnessAdapter implements IFitnessAdapter
-{
-	public static final String TAG = "MockFitnessAdapter";
+public class MockFitnessAdapter implements IFitnessAdapter {
+    public static final String TAG = "MockFitnessAdapter";
 
-	private final List<IGoogleService> googleServices = new ArrayList<>();
-	private final IGoogleFitnessUser user;
+    private final List<IGoogleService> googleServices = new ArrayList<>();
+    private final IGoogleFitnessUser user;
 
-	private Activity activity;
+    private Activity activity;
 
-	public MockFitnessAdapter()
-	{
-		this.user = new MockFitnessUser(this);
-	}
+    public MockFitnessAdapter() {
+        this.user = new MockFitnessUser(this);
+    }
 
-	@Override
-	public IFitnessAdapter addGoogleService(IGoogleService googleService)
-	{
-		this.googleServices.add(googleService);
-		return this;
-	}
+    @Override
+    public IFitnessAdapter addGoogleService(IGoogleService googleService) {
+        this.googleServices.add(googleService);
+        return this;
+    }
 
-	@Nullable
-	@Override
-	public void onActivityCreate(Activity activity, Bundle savedInstanceState)
-	{
-		this.activity = activity;
+    @Nullable
+    @Override
+    public void onActivityCreate(Activity activity, Bundle savedInstanceState) {
+        this.activity = activity;
 
-		Log.w(TAG, "Initializing registered services...");
-		//this.initializeGoogleServices();
-	}
+        Log.w(TAG, "Initializing registered services...");
+        //this.initializeGoogleServices();
+    }
 
-	@Nullable
-	@Override
-	public void onActivityResult(Activity activity, int requestCode, int resultCode, @Nullable Intent data)
-	{
+    @Nullable
+    @Override
+    public void onActivityResult(Activity activity, int requestCode, int resultCode, @Nullable Intent data) {
 
-	}
+    }
 
-	private Callback<IFitnessAdapter> initializeGoogleServices()
-	{
-		final Callback<IFitnessAdapter> callback = new Callback<>();
-		{
-			this.initializeRemainingGoogleServices(this.googleServices.iterator(), callback);
-		}
-		return callback;
-	}
+    private Callback<IFitnessAdapter> initializeGoogleServices() {
+        final Callback<IFitnessAdapter> callback = new Callback<>();
+        {
+            this.initializeRemainingGoogleServices(this.googleServices.iterator(), callback);
+        }
+        return callback;
+    }
 
-	private void initializeRemainingGoogleServices(Iterator<IGoogleService> iterator, Callback<IFitnessAdapter> callback)
-	{
-		if (iterator.hasNext())
-		{
-			iterator.next()
-					.initialize(this)
-					.onResult(service -> {
-						Log.d(TAG, "" + service);
-						this.initializeRemainingGoogleServices(iterator, callback);
-					});
-		}
-		else
-		{
-			callback.resolve(this);
-		}
-	}
+    private void initializeRemainingGoogleServices(Iterator<IGoogleService> iterator, Callback<IFitnessAdapter> callback) {
+        if (iterator.hasNext()) {
+            iterator.next()
+                    .initialize(this)
+                    .onResult(service -> {
+                        Log.d(TAG, "" + service);
+                        this.initializeRemainingGoogleServices(iterator, callback);
+                    });
+        } else {
+            callback.resolve(this);
+        }
+    }
 
-	@Override
-	public Activity getActivity()
-	{
-		return this.activity;
-	}
+    @Override
+    public Activity getActivity() {
+        return this.activity;
+    }
 
-	@Override
-	public IGoogleFitnessUser getFitnessUser()
-	{
-		return this.user;
-	}
+    @Override
+    public IGoogleFitnessUser getFitnessUser() {
+        return this.user;
+    }
 }
