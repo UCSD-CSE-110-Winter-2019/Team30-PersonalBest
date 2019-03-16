@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity
 	public static final String BUNDLE_SERVICE_MANAGER_KEY = "serviceManagerKey";
 
 	public static Map<String, IServiceManagerBuilder> SERVICE_MANAGER_FACTORY = new HashMap<>();
+	public static String SERVICE_MANAGER_KEY = null;
 	public static IGoogleFitnessUser LOCAL_USER;
 	public static FitnessClock LOCAL_CLOCK;
 
@@ -52,8 +53,10 @@ public class MainActivity extends AppCompatActivity
 		setContentView(R.layout.activity_main);
 
 		final Bundle bundle = this.getIntent().getExtras();
+		//bundle.getString(BUNDLE_SERVICE_MANAGER_KEY);
+
 		String serviceManagerKey = "default";
-		if (bundle != null) serviceManagerKey = bundle.getString(BUNDLE_SERVICE_MANAGER_KEY);
+		if (SERVICE_MANAGER_KEY != null) serviceManagerKey = SERVICE_MANAGER_KEY;
 		IServiceManagerBuilder builder = SERVICE_MANAGER_FACTORY.get(serviceManagerKey);
 		if (builder == null)
 		{
