@@ -15,7 +15,8 @@
         <activity android:name=".NotificationActivity">
             <intent-filter>
                 <action android:name="notification" />
-                <category android:name="android.intent.category.DEFAULT"/>
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity android:name=".messeging.MessageActivity" />
@@ -33,6 +34,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".GraphActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".MonthlyStatsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

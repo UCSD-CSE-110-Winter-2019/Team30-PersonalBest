@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 
 import com.github.mikephil.charting.charts.CombinedChart;
@@ -59,6 +61,15 @@ public class GraphActivity extends AppCompatActivity
 		Button switchScreen = findViewById(R.id.button_back);
 		switchScreen.setOnClickListener(view -> finish());
 
+		Button launchMonthly = findViewById(R.id.button_monthlystats);
+		launchMonthly.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Log.d("afdsa", "asdfjadfhksj");
+				launchMonthlyActivity();
+			}
+		});
+/*
 		//Weekly buttons
 		Button prevWeek = findViewById(R.id.button_prev);
 		prevWeek.setOnClickListener(view -> {
@@ -81,7 +92,7 @@ public class GraphActivity extends AppCompatActivity
 				this.startActivity(intent);
 			});
 		});
-
+*/
 		CombinedChart chart = findViewById(R.id.chart);
 		chart.getDescription().setEnabled(false);
 		chart.setDrawGridBackground(false);
@@ -186,6 +197,14 @@ public class GraphActivity extends AppCompatActivity
 
 		chart.setData(combinedData);
 		chart.invalidate();
+	}
+
+	public void launchMonthlyActivity() {
+		GraphBundler.buildBundleForDays(28, MainActivity.LOCAL_USER, MainActivity.LOCAL_CLOCK).onResult(bundle -> {
+			final Intent intent = new Intent(this, GraphActivity.class);
+			intent.putExtras(bundle);
+			this.startActivity(intent);
+		});
 	}
 
 	private boolean isValidWeek()
