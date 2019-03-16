@@ -2,10 +2,13 @@ package team30.personalbest;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -169,11 +172,18 @@ public class MainActivity extends AppCompatActivity
 
 		//NOTE: push notification
 		{
+			// Create an explicit intent for an Activity in your app
+			Intent intent = new Intent(this, MainActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
 			NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHANNEL_ID)
 					.setSmallIcon(R.drawable.notification_icon)
 					.setContentTitle("Achieved Goal")
 					.setContentText("You have achieved your step goal!")
-					.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+					.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+					.setContentIntent(pendingIntent)
+					.setAutoCancel(true);
 
 			NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
 			// notificationId is a unique int for each notification that you must define
