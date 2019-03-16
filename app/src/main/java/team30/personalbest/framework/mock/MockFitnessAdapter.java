@@ -33,6 +33,7 @@ public class MockFitnessAdapter implements IFitnessAdapter
 	@Override
 	public IFitnessAdapter addGoogleService(IGoogleService googleService)
 	{
+		this.googleServices.add(googleService);
 		return this;
 	}
 
@@ -43,7 +44,7 @@ public class MockFitnessAdapter implements IFitnessAdapter
 		this.activity = activity;
 
 		Log.w(TAG, "Initializing registered services...");
-		this.initializeGoogleServices();
+		//this.initializeGoogleServices();
 	}
 
 	@Nullable
@@ -68,7 +69,10 @@ public class MockFitnessAdapter implements IFitnessAdapter
 		{
 			iterator.next()
 					.initialize(this)
-					.onResult(service -> this.initializeRemainingGoogleServices(iterator, callback));
+					.onResult(service -> {
+						Log.d(TAG, "" + service);
+						this.initializeRemainingGoogleServices(iterator, callback);
+					});
 		}
 		else
 		{

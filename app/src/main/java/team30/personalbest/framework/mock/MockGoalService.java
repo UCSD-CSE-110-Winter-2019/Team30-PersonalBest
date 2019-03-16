@@ -15,7 +15,7 @@ public class MockGoalService extends GoalService
 	@Override
 	public Callback<GoalService> initialize(IFitnessAdapter googleFitnessAdapter)
 	{
-		return new Callback<>();
+		return new Callback<>(this);
 	}
 
 	@Override
