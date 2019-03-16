@@ -11,17 +11,15 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowIntent;
 
 import team30.personalbest.framework.mock.MockFitnessAdapter;
-import team30.personalbest.messeging.ContactsActivity;
-import team30.personalbest.messeging.MessageActivity;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
-public class FriendsListTest {
+public class WeeklyStatsActivityTest {
     private MainActivity mainActivity;
-    private ContactsActivity contactsActivity;
-    Button friendslistbutton;
+    private GraphActivity graphActivity;
+    Button weeklyActivityButton;
 
     @Before
     public void setup() {
@@ -29,17 +27,18 @@ public class FriendsListTest {
         MainActivity.SERVICE_MANAGER_KEY = "mock";
 
         this.mainActivity = Robolectric.setupActivity(MainActivity.class);
-        contactsActivity = new ContactsActivity();
-        friendslistbutton = mainActivity.findViewById(R.id.btn_friends);
+        graphActivity = new GraphActivity();
+        weeklyActivityButton = mainActivity.findViewById(R.id.btn_weekly_stats);
     }
 
-    //Test to show the friends list upon button press
+    //This test is to make sure that Weekly Stats activity launches after pressing on button
     @Test
-    public void testShowList() {
-        friendslistbutton.callOnClick();
+    public void testLaunchWeeklyStats() {
+        weeklyActivityButton.callOnClick();
 
-        Intent startedIntent = shadowOf(contactsActivity).getNextStartedActivity();
+        Intent startedIntent = shadowOf(graphActivity).getNextStartedActivity();
         ShadowIntent shadowIntent = shadowOf(startedIntent);
-        assertEquals(MessageActivity.class, shadowIntent.getIntentClass());
+        assertEquals(GraphActivity.class, shadowIntent.getIntentClass());
     }
 }
+
