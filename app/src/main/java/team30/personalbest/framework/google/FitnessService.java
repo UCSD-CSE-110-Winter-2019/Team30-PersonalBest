@@ -207,8 +207,8 @@ public class FitnessService implements IFitnessService, IGoogleService {
                         .build();
 
                 final DataReadRequest readRequest = new DataReadRequest.Builder()
-                        .read(DataType.AGGREGATE_STEP_COUNT_DELTA)
-                        //.aggregate(estimatedSteps, DataType.AGGREGATE_STEP_COUNT_DELTA)
+                        //.read(DataType.AGGREGATE_STEP_COUNT_DELTA)
+                        .aggregate(estimatedSteps, DataType.AGGREGATE_STEP_COUNT_DELTA)
                         .setTimeRange(startTime, stopTime + 1, TimeUnit.MILLISECONDS)
                         .bucketByTime(1, TimeUnit.DAYS)
                         .enableServerQueries()
@@ -218,6 +218,7 @@ public class FitnessService implements IFitnessService, IGoogleService {
                         .readData(readRequest)
                         .addOnSuccessListener(dataReadResponse -> {
                             Log.d(TAG, "Retrieving multiple fitness data...");
+                            new Exception().printStackTrace();
                             final List<FitnessSnapshot> result = new ArrayList<>();
                             final List<Bucket> buckets = dataReadResponse.getBuckets();
                             for (Bucket bucket : buckets) {

@@ -139,9 +139,9 @@ public class FriendlyActivity extends AppCompatActivity {
                 activeCount = dailyBundle.getInt(GraphActivity.BUNDLE_DAILY_ACTIVE_STEPS, 0);
                 prevStepGoal = stepGoal = dailyBundle.getInt(GraphActivity.BUNDLE_DAILY_GOALS, 0);
             } else {
-                //Randomize it if you can't get anything. Just for visualization purposes.
-                stepCount = (int) Math.floor(10 * Math.random());
-                activeCount = (int) Math.floor(10 * Math.random());
+                //TESTING ONLY - PLEASE REMOVE - Randomize it if you can't get anything. Just for visualization purposes.
+                stepCount = (int) Math.max(0, Math.floor(10 * Math.random()) - 4);
+                activeCount = (int) Math.max(0, Math.floor(10 * Math.random()) - 4);
             }
 
             intentStepEntries.add(new BarEntry(i, stepCount));
