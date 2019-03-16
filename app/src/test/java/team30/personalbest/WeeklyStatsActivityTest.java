@@ -31,6 +31,7 @@ public class WeeklyStatsActivityTest {
         weeklyActivityButton = mainActivity.findViewById(R.id.btn_weekly_stats);
     }
 
+    //This test is to make sure that Weekly Stats activity launches after pressing on button
     @Test
     public void testLaunchWeeklyStats() {
         weeklyActivityButton.callOnClick();
