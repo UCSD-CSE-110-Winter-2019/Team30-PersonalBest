@@ -24,6 +24,7 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 
 import team30.personalbest.framework.clock.FitnessClock;
 import team30.personalbest.util.Callback;
@@ -123,6 +124,8 @@ public class GraphActivity extends AppCompatActivity
 		}
 
 		this.startTime = weeklyBundle.getLong(BUNDLE_WEEKLY_TIME);
+		final Random rand = new Random(this.startTime);
+
 		// Add entries for intentional steps
 		List<BarEntry> intentStepEntries = new ArrayList<>();
 		// Add entries for intentional steps
@@ -135,8 +138,8 @@ public class GraphActivity extends AppCompatActivity
 		{
 			Bundle dailyBundle = weeklyBundle.getBundle(BUNDLE_WEEKLY_PREFIX + i);
 
-			int stepCount;
-			int activeCount;
+			int stepCount = 0;
+			int activeCount = 0;
 			int stepGoal = prevStepGoal;
 			if (dailyBundle != null)
 			{
@@ -144,12 +147,10 @@ public class GraphActivity extends AppCompatActivity
 				activeCount = dailyBundle.getInt(BUNDLE_DAILY_ACTIVE_STEPS, 0);
 				prevStepGoal = stepGoal = dailyBundle.getInt(BUNDLE_DAILY_GOALS, 0);
 			}
-			else
-			{
-				//Randomize it if you can't get anything. Just for visualization purposes.
-				stepCount = (int) Math.floor(10 * Math.random());
-				activeCount = (int) Math.floor(10 * Math.random());
-			}
+
+			//TESTING ONLY - Just for visualization purposes.
+			if (stepCount <= 0) stepCount = rand.nextInt(10);
+			if (activeCount <= 0) activeCount = rand.nextInt(10);
 
 			intentStepEntries.add(new BarEntry(i, stepCount));
 			incidentStepEntries.add(new BarEntry(i, activeCount));
