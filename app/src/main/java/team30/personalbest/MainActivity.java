@@ -2,6 +2,7 @@ package team30.personalbest;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -178,6 +179,20 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Achieved step goal! Good job!", Toast.LENGTH_SHORT).show();
         showGoalPrompt(true);
 
+		//NOTE: push notification
+		{
+			// Create an explicit intent for an Activity in your app
+			Intent intent = new Intent(this, MainActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHANNEL_ID)
+					.setSmallIcon(R.drawable.notification_icon)
+					.setContentTitle("Achieved Goal")
+					.setContentText("You have achieved your step goal!")
+					.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+					.setContentIntent(pendingIntent)
+					.setAutoCancel(true);
         //NOTE: push notification
         {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHANNEL_ID)
