@@ -15,11 +15,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -51,8 +54,7 @@ public class ChatActivity extends AppCompatActivity {
     private final int NO_REFRESH = 2;
     public int resultCode = NEEDS_REFRESH;
 
-    private boolean toUserReady;
-    private boolean fromUserReady;
+
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -61,8 +63,6 @@ public class ChatActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_message_acitvity );
 
-        toUserReady = false;
-        fromUserReady = false;
         firestore = FirebaseFirestore.getInstance();
         fromUser = (MyUser) getIntent().getExtras().get("fromUser");
         toUser = (MyUser) getIntent().getExtras().get("toUser");
@@ -95,7 +95,6 @@ public class ChatActivity extends AppCompatActivity {
 
                 Log.d( LOG_TAG, "Found exisiting conversation");
                 this.roomId = fromUser_chatRoomId;
-                //startConversation();
                 initMessageUpdateListener();
                 return;
             }
@@ -122,7 +121,6 @@ public class ChatActivity extends AppCompatActivity {
                         Log.d( LOG_TAG, "Successfully added you to chat");
                         Log.d( LOG_TAG, "Updating User objects...");
 
-                        //ChatActivity.this.fromUserReady = true;
                     }
                 });
 
@@ -135,7 +133,6 @@ public class ChatActivity extends AppCompatActivity {
                         Log.d( LOG_TAG, "Updating User objects...");
 
 
-                        //toUserReady = true;
                     }
                 });
 
@@ -176,36 +173,6 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void startConversation( ) {
-
-        chat = firestore.collection("messages/"+roomId+"/chat_messages");
-
-        chat.addSnapshotListener((newChatSnapShot, error) -> {
-            if (error != null) {
-                Log.e(LOG_TAG, error.getLocalizedMessage());
-                return;
-            }
-
-            if (newChatSnapShot != null && !newChatSnapShot.isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                List<DocumentChange> documentChanges = newChatSnapShot.getDocumentChanges();
-                for( DocumentChange change : documentChanges ) {
-                    QueryDocumentSnapshot document = change.getDocument();
-                    sb.append(document.get(FROM_KEY));
-                    sb.append(":\n");
-                    sb.append(document.get(TEXT_KEY));
-                    sb.append("\n");
-                    sb.append("---\n");
-                }
-
-                TextView chatView = findViewById(R.id.chat);
-                chatView.append(sb.toString());
-            }
-        });
-
-
-
-    }
 
     private void initMessageUpdateListener() {
         chat = firestore.collection("messages/"+roomId+"/chat_messages");
@@ -237,39 +204,6 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
-    private class OnUserReadyChecker extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-
-            long timeInterval = 500;
-            while( !fromUserReady || !toUserReady ) {
-
-
-                try {
-                    Thread.sleep( timeInterval );
-                } catch (InterruptedException e) {
-                    Log.d(this.getClass().getSimpleName(), "Checker interrupted. ");
-                    e.printStackTrace();
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void v)
-        {
-            super.onPostExecute(v);
-            //startConversation();
-            initMessageUpdateListener();
-        }
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

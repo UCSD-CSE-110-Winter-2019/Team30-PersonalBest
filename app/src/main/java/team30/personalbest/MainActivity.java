@@ -1,6 +1,7 @@
 package team30.personalbest;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Consumer;
@@ -12,11 +13,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.common.graph.Graph;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
+import androidx.annotation.RequiresApi;
 import team30.personalbest.framework.clock.FitnessClock;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.google.GoogleFitnessAdapter;
@@ -44,6 +47,8 @@ public class MainActivity extends AppCompatActivity
 
 	private FitnessWatcher fitnessWatcher;
 	private FitnessGoalAchiever goalAchiever;
+
+	public Bundle b;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -86,6 +91,8 @@ public class MainActivity extends AppCompatActivity
 			final MainActivity activity = this;
 
 			this.enableScreen();
+
+			updateUserSnapshots();
 
 			// Prompt height on initial launch of app (after google fit is ready)
 			this.resolveHeight().onResult(aFloat -> {
@@ -336,10 +343,13 @@ public class MainActivity extends AppCompatActivity
 
 	private void launchFriendsActivity()
 	{
+
 		Intent intent = new Intent(this, MessageActivity.class);
-		this.startActivity(intent);
+		startActivity(intent);
+
 	}
 
+	@RequiresApi(api = Build.VERSION_CODES.O)
 	private void updateUserSnapshots() {
 
 		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -349,17 +359,11 @@ public class MainActivity extends AppCompatActivity
 			Log.e(TAG, "Unable to update Firebase Snapshots");
 		}
 
-		GraphBundler.buildBundleForDays( GraphActivity.BUNDLE_MONTH_LENGTH , this.currentUser, this.currentClock  )
-				.onResult(bundle -> {
-
+		GraphBundler.buildSnapshotObjectForDays(GraphActivity.BUNDLE_MONTH_LENGTH, this.currentUser, this.currentClock)
+				.onResult(snapshotObject -> {
 					fs.document("snapshot/"+ user.getUid() )
-							.set( bundle, SetOptions.merge() )
-							.addOnSuccessListener(new OnSuccessListener<Void>() {
-								@Override
-								public void onSuccess(Void aVoid) {
-									Log.d( TAG, "Successfully updated Firebase Snapshots");
-								}
-							});
+							.set(snapshotObject, SetOptions.merge() )
+							.addOnSuccessListener(aVoid -> Log.d( TAG, "Successfully updated Firebase Snapshots"));
 				});
 
 

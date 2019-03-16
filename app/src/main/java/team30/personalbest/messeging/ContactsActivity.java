@@ -36,9 +36,14 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 
+import team30.personalbest.FriendlyActivity;
+import team30.personalbest.GraphActivity;
 import team30.personalbest.R;
 
 public class ContactsActivity extends AppCompatActivity {
+
+    public static String TO_USER = "toUser";
+    public static String FROM_USER = "fromUser";
 
     private ArrayList<String> contactsList;
     private ArrayList<MyUser> contactsListObject;
@@ -99,13 +104,24 @@ public class ContactsActivity extends AppCompatActivity {
                     ContactsActivity.this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                            Log.d("Row Clicked", ""+id);
+
+                            Intent friendGraphIntent = new Intent( ContactsActivity.this, FriendlyActivity.class );
+                            friendGraphIntent.putExtra("fromUser", ContactsActivity.this.thisUser);
+                            friendGraphIntent.putExtra( "toUser", contactsListObject.get( (int) id ) );
+                            userListener.remove();
+                            contactsListener.remove();
+                            Log.d( LOG_TAG, "Launching friendlyGraph");
+                            startActivityForResult( friendGraphIntent, 1);
+
+
                             Intent startConvIntent = new Intent( ContactsActivity.this, ChatActivity.class );
                             startConvIntent.putExtra("fromUser", ContactsActivity.this.thisUser);
                             startConvIntent.putExtra( "toUser", contactsListObject.get( (int) id ) );
-                            Log.d("Row Clicked", ""+id);
-                            userListener.remove();
-                            contactsListener.remove();
-                            startActivityForResult( startConvIntent , 1);
+
+
+                            //startActivityForResult( startConvIntent , 1);
                         }
                     });
                 } else {
@@ -216,6 +232,8 @@ public class ContactsActivity extends AppCompatActivity {
                 contactsListener.remove();
                 startActivityForResult( aboutIntent, 1);
                 break;
+            case android.R.id.home:
+                finish();
         }
         return super.onOptionsItemSelected(item);
     }
