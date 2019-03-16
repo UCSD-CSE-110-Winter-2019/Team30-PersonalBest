@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FriendlyActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <Button
+                android:id="@+id/btn_messaging"
+                android:layout_width="80dp"
+                android:layout_height="25dp"
+                android:background="@android:color/background_light"
+                android:text="back"
+                android:textColor="@android:color/black"
+                android:textSize="20sp" />
+
+            <com.github.mikephil.charting.charts.CombinedChart
+                android:id="@+id/week1_chart"
+                android:layout_width="fill_parent"
+                android:layout_height="400dp"
+                android:layout_weight="1" />
+
+            <com.github.mikephil.charting.charts.CombinedChart
+                android:id="@+id/week2_chart"
+                android:layout_width="fill_parent"
+                android:layout_height="400dp"
+                android:layout_weight="1" />
+
+            <com.github.mikephil.charting.charts.CombinedChart
+                android:id="@+id/week3_chart"
+                android:layout_width="fill_parent"
+                android:layout_height="400dp"
+                android:layout_weight="1" />
+
+            <com.github.mikephil.charting.charts.CombinedChart
+                android:id="@+id/week4_chart"
+                android:layout_width="fill_parent"
+                android:layout_height="400dp"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
