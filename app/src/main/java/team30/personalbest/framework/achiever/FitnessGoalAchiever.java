@@ -2,6 +2,7 @@ package team30.personalbest.framework.achiever;
 
 import android.util.Log;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
