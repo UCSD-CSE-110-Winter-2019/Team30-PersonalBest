@@ -2,7 +2,6 @@ package team30.personalbest;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -172,6 +171,7 @@ public class MainActivity extends AppCompatActivity
 		Button stopWalk = findViewById(R.id.btn_walk_stop);
 		Button newGoal = findViewById(R.id.btn_stepgoal_new);
 		Button weeklyStats = findViewById(R.id.btn_weekly_stats);
+		Button monthlyStats = findViewById(R.id.btn_monthly_stats);
 		Button friendsList = findViewById(R.id.btn_friends);
 		Button timeButton = findViewById(R.id.btn_time);
 
@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity
 		stopWalk.setOnClickListener(v -> this.stopRecordingWalk());
 		newGoal.setOnClickListener(v -> this.showGoalPrompt(false));
 		weeklyStats.setOnClickListener(v -> this.launchGraphActivity());
+		monthlyStats.setOnClickListener(v -> this.launchMonthlyStatsActivity());
 		friendsList.setOnClickListener(v -> this.launchFriendsActivity());
 		timeButton.setOnClickListener(this::onSubmitTime);
 	}
@@ -310,8 +311,17 @@ public class MainActivity extends AppCompatActivity
 
 	private void launchGraphActivity()
 	{
-		GraphBundler.makeBundle(this.currentClock, this.currentUser).onResult(bundle -> {
+		GraphBundler.buildBundleForDays(GraphActivity.BUNDLE_WEEK_LENGTH, this.currentUser, this.currentClock).onResult(bundle -> {
 			final Intent intent = new Intent(this, GraphActivity.class);
+			intent.putExtras(bundle);
+			this.startActivity(intent);
+		});
+	}
+
+	private void launchMonthlyStatsActivity()
+	{
+		GraphBundler.buildBundleForDays(GraphActivity.BUNDLE_MONTH_LENGTH, this.currentUser, this.currentClock).onResult(bundle -> {
+			final Intent intent = new Intent(this, MonthlyStatsActivity.class);
 			intent.putExtras(bundle);
 			this.startActivity(intent);
 		});

@@ -18,7 +18,7 @@ public class GraphBundler
 
 	private GraphBundler() {}
 
-	public static Callback<Bundle> makeBundle(IFitnessClock clock, IFitnessUser user)
+	public static Callback<Bundle> buildBundleForDays(int numberOfDays, IFitnessUser fitnessUser, IFitnessClock clock)
 	{
 		final Callback<Bundle> callback = new Callback<>();
 		{
@@ -34,7 +34,7 @@ public class GraphBundler
 
 			final long minTime = Math.min(sundayTime, currentTime);
 			final long maxTime = Math.max(sundayTime, currentTime);
-			user.getFitnessSnapshots(clock, minTime, maxTime)
+			fitnessUser.getFitnessSnapshots(clock, minTime, maxTime)
 					.onResult(iFitnessSnapshots -> {
 						if (iFitnessSnapshots == null)
 						{
@@ -42,7 +42,7 @@ public class GraphBundler
 							return;
 						}
 
-						user.getGoalSnapshots(clock, minTime, maxTime)
+						fitnessUser.getGoalSnapshots(clock, minTime, maxTime)
 								.onResult(iGoalSnapshots -> {
 									if (iGoalSnapshots == null)
 									{
@@ -50,7 +50,7 @@ public class GraphBundler
 										return;
 									}
 
-									final Bundle weeklyBundle = buildWeeklyBundle(iFitnessSnapshots, iGoalSnapshots);
+									final Bundle weeklyBundle = buildBundleForDays(numberOfDays, iFitnessSnapshots, iGoalSnapshots);
 									weeklyBundle.putLong(GraphActivity.BUNDLE_WEEKLY_TIME, minTime);
 									final Bundle bundle = new Bundle();
 									bundle.putBundle(GraphActivity.BUNDLE_WEEKLY_STATS, weeklyBundle);
@@ -61,18 +61,19 @@ public class GraphBundler
 		return callback;
 	}
 
-	private static Bundle buildWeeklyBundle(
+	public static Bundle buildBundleForDays(
+			int numberOfDays,
 			Iterable<IFitnessSnapshot> fitnessSnapshots,
-			Iterable<IGoalSnapshot> stepGoals)
+			Iterable<IGoalSnapshot> goalSnapshots)
 	{
 		final Iterator<IFitnessSnapshot> fitnessIterator = fitnessSnapshots.iterator();
-		final Iterator<IGoalSnapshot> stepGoalIterator = stepGoals.iterator();
+		final Iterator<IGoalSnapshot> stepGoalIterator = goalSnapshots.iterator();
 
 		final Bundle result = new Bundle();
 
 		int prevStepGoal = 0;
 		int dayCount = 0;
-		while (dayCount < GraphActivity.BUNDLE_WEEK_LENGTH)
+		while (dayCount < numberOfDays)
 		{
 			final Bundle dailyBundle = new Bundle();
 
