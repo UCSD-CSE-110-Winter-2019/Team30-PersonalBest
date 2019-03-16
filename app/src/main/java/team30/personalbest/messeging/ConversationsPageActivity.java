@@ -15,10 +15,10 @@ public class ConversationsPageActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView( R.layout.activity_contacts_page );
+        setContentView(R.layout.activity_contacts_page);
 
         Intent myIntent = new Intent(this, ContactsActivity.class);
-        myIntent.putExtra("currentUser", (MyUser) this.getIntent().getExtras().get("currentUser")  );
+        myIntent.putExtra("currentUser", (MyUser) this.getIntent().getExtras().get("currentUser"));
         startActivity(myIntent);
     }
 

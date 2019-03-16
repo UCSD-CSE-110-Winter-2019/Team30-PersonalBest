@@ -1,19 +1,15 @@
 package team30.personalbest.messeging;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -28,17 +24,16 @@ import com.google.firebase.firestore.SetOptions;
 import team30.personalbest.R;
 
 
-
 public class AddContactActivity extends AppCompatActivity {
 
     private final String LOG_TAG = "AddContactActivity";
+    private final int NEEDS_REFRESH = 1;
+    private final int NO_REFRESH = 2;
+    public int resultCode = NO_REFRESH;
     private String friend_email;
     private FirebaseFirestore firestore;
     private FirebaseUser user;
     private MyUser thisUser;
-    private final int NEEDS_REFRESH = 1;
-    private final int NO_REFRESH = 2;
-    public int resultCode = NO_REFRESH;
     private Context context;
 
     @Override
@@ -48,8 +43,8 @@ public class AddContactActivity extends AppCompatActivity {
         context = getApplicationContext();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        thisUser =  ( MyUser) getIntent().getExtras().get("currentUser");
-        if( thisUser == null ) {
+        thisUser = (MyUser) getIntent().getExtras().get("currentUser");
+        if (thisUser == null) {
             Log.d("AddContactActivity", "ThisUser is null");
         }
 
@@ -57,77 +52,68 @@ public class AddContactActivity extends AppCompatActivity {
         user = FirebaseAuth.getInstance().getCurrentUser();
         setContentView(R.layout.activity_add_contact);
 
-        Button submit_btn = findViewById( R.id.add_friend_btn );
+        Button submit_btn = findViewById(R.id.add_friend_btn);
         //Button back = findViewById( R.id. );
-        EditText email = findViewById( R.id.editText_email );
+        EditText email = findViewById(R.id.editText_email);
 
         submit_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 friend_email = email.getText().toString();
 
-                if(friend_email.equals(thisUser.getUser_email() ) ) {
+                if (friend_email.equals(thisUser.getUser_email())) {
                     Toast.makeText(AddContactActivity.this, "I wish this was possible to. :( \n Add someone other than yourself.", Toast.LENGTH_LONG).show();
                 } else {
-                    addFriend( friend_email );
+                    addFriend(friend_email);
                 }
-
 
 
             }
         });
 
 
-
-
-
-
     }
 
-    private void addFriend( String friend ) {
+    private void addFriend(String friend) {
 
 
-       // Check if already friends
+        // Check if already friends
 
 
-
-        DocumentReference friendDoc = firestore.document( "emails/"+friend );
+        DocumentReference friendDoc = firestore.document("emails/" + friend);
 
         friendDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if( task.isSuccessful() ) {
+                if (task.isSuccessful()) {
                     DocumentSnapshot doc = task.getResult();
 
-                    if( !doc.exists() ) {
+                    if (!doc.exists()) {
                         Toast.makeText(AddContactActivity.this, "User Not Found", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
-                        MyUser friend = doc.toObject( MyUser.class );
+                    } else {
+                        MyUser friend = doc.toObject(MyUser.class);
 
                         FirebaseFirestore fs = FirebaseFirestore.getInstance();
                         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-                        fs.document("contacts/"+friend.getUser_id()+"/user_contacts/"+user.getUid() )
+                        fs.document("contacts/" + friend.getUser_id() + "/user_contacts/" + user.getUid())
                                 .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-                                if( task.isSuccessful() ) {
+                                if (task.isSuccessful()) {
                                     DocumentSnapshot doc = task.getResult();
 
-                                    if( doc.exists() ) {
-                                        Log.d( LOG_TAG,"Already Friends");
-                                        Toast.makeText( AddContactActivity.this , "Already friends with " + friend.getUser_name(), Toast.LENGTH_LONG ).show();
+                                    if (doc.exists()) {
+                                        Log.d(LOG_TAG, "Already Friends");
+                                        Toast.makeText(AddContactActivity.this, "Already friends with " + friend.getUser_name(), Toast.LENGTH_LONG).show();
                                     } else {
-                                        Log.d( LOG_TAG, "Resolving Friend Request");
-                                        resolvePendingFriend( friend );
+                                        Log.d(LOG_TAG, "Resolving Friend Request");
+                                        resolvePendingFriend(friend);
                                     }
                                 }
                             }
                         });
-
-
 
 
                     }
@@ -141,33 +127,33 @@ public class AddContactActivity extends AppCompatActivity {
      * If not, makes a pending friends request,
      * Otherwise deleted friend request and adds friends
      */
-    private void resolvePendingFriend( MyUser friend ) {
+    private void resolvePendingFriend(MyUser friend) {
 
         FirebaseFirestore fs = FirebaseFirestore.getInstance();
 
-        fs.document( "friend_requests/" + friend.getUser_id()+ "/pending/"+thisUser.getUser_id() )
+        fs.document("friend_requests/" + friend.getUser_id() + "/pending/" + thisUser.getUser_id())
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if( task.isSuccessful() ) {
+                        if (task.isSuccessful()) {
                             DocumentSnapshot doc = task.getResult();
 
-                            if( doc.exists() ) {
+                            if (doc.exists()) {
 
-                                fs.document("contacts/"+friend.getUser_id()+"/user_contacts/"+ thisUser.getUser_id()  )
-                                        .set( thisUser, SetOptions.merge() );
-                                fs.document("contacts/"+thisUser.getUser_id()+"/user_contacts/"+friend.getUser_id())
-                                        .set( friend, SetOptions.merge() );
+                                fs.document("contacts/" + friend.getUser_id() + "/user_contacts/" + thisUser.getUser_id())
+                                        .set(thisUser, SetOptions.merge());
+                                fs.document("contacts/" + thisUser.getUser_id() + "/user_contacts/" + friend.getUser_id())
+                                        .set(friend, SetOptions.merge());
 
                                 Toast.makeText(AddContactActivity.this, "Friend Successfully added", Toast.LENGTH_SHORT).show();
                                 AddContactActivity.this.resultCode = NEEDS_REFRESH;
-                                fs.document( "friend_requests/" + friend.getUser_id() + "/pending/"+thisUser.getUser_id() ).delete();
+                                fs.document("friend_requests/" + friend.getUser_id() + "/pending/" + thisUser.getUser_id()).delete();
 
                             } else {
 
                                 AddContactActivity.this.resultCode = NEEDS_REFRESH;
-                                fs.document( "friend_requests/" + thisUser.getUser_id() +"/pending/"+friend.getUser_id() ).set( friend );
+                                fs.document("friend_requests/" + thisUser.getUser_id() + "/pending/" + friend.getUser_id()).set(friend);
                                 Toast.makeText(AddContactActivity.this, "Friend Request Pending Approval.", Toast.LENGTH_SHORT).show();
 
                             }
@@ -182,12 +168,12 @@ public class AddContactActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
 
-        switch ( item.getItemId() ) {
+        switch (item.getItemId()) {
             case android.R.id.home:
-            Log.i("AddContactsActivity", "Result code: " + resultCode );
+                Log.i("AddContactsActivity", "Result code: " + resultCode);
 
-            setResult( this.resultCode );
-            finish();
+                setResult(this.resultCode);
+                finish();
 
         }
 

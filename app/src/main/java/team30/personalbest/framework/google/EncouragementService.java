@@ -9,109 +9,91 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import team30.personalbest.R;
+import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.service.IEncouragementService;
 import team30.personalbest.framework.service.IFitnessService;
-import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.framework.snapshot.IFitnessSnapshot;
+import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;
 
-public class EncouragementService implements IEncouragementService, IGoogleService
-{
-	public static final String TAG = "EncouragementService";
+public class EncouragementService implements IEncouragementService, IGoogleService {
+    public static final String TAG = "EncouragementService";
 
-	public static final String SHARED_PREFS_NAME = "personalBest";
-	public static final String SHARED_PREFS_ENCOURAGEMENT_TIME_KEY = "lastEncouragementTime";
+    public static final String SHARED_PREFS_NAME = "personalBest";
+    public static final String SHARED_PREFS_ENCOURAGEMENT_TIME_KEY = "lastEncouragementTime";
 
-	public static final float NEARLY_FACTOR = 1.9F;
-	public static final float FULL_FACTOR = 2.0F;
+    public static final float NEARLY_FACTOR = 1.9F;
+    public static final float FULL_FACTOR = 2.0F;
 
-	private final IFitnessService fitnessService;
+    private final IFitnessService fitnessService;
 
-	public EncouragementService(IFitnessService fitnessService)
-	{
-		this.fitnessService = fitnessService;
-	}
+    public EncouragementService(IFitnessService fitnessService) {
+        this.fitnessService = fitnessService;
+    }
 
-	@Override
-	public Callback<EncouragementService> initialize(GoogleFitnessAdapter googleFitnessAdapter)
-	{
-		return new Callback<>(this);
-	}
+    @Override
+    public Callback<EncouragementService> initialize(IFitnessAdapter googleFitnessAdapter) {
+        return new Callback<>(this);
+    }
 
-	public long getLastEncouragementTime(Context context)
-	{
-		final SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
-		return sharedPreferences.getLong(SHARED_PREFS_ENCOURAGEMENT_TIME_KEY, -1);
-	}
+    public long getLastEncouragementTime(Context context) {
+        final SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getLong(SHARED_PREFS_ENCOURAGEMENT_TIME_KEY, -1);
+    }
 
-	private void putLastEncouragementTime(Context context, long time)
-	{
-		final SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
-		sharedPreferences.edit()
-				.putLong(SHARED_PREFS_ENCOURAGEMENT_TIME_KEY, time)
-				.apply();
-	}
+    private void putLastEncouragementTime(Context context, long time) {
+        final SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+        sharedPreferences.edit()
+                .putLong(SHARED_PREFS_ENCOURAGEMENT_TIME_KEY, time)
+                .apply();
+    }
 
-	public void tryEncouragement(Context context, IFitnessUser user, IFitnessClock clock, long currentTime)
-	{
-		Calendar current = Calendar.getInstance();
-		current.setTimeInMillis(currentTime);
-		current.add(Calendar.DAY_OF_YEAR, -2);
-		long previous2 = current.getTimeInMillis();
+    public void tryEncouragement(Context context, IFitnessUser user, IFitnessClock clock, long currentTime) {
+        Calendar current = Calendar.getInstance();
+        current.setTimeInMillis(currentTime);
+        current.add(Calendar.DAY_OF_YEAR, -2);
+        long previous2 = current.getTimeInMillis();
 
-		Log.d(TAG, "Trying encouragement...");
+        Log.d(TAG, "Trying encouragement...");
 
-		this.fitnessService.getFitnessSnapshots(user, clock, previous2, currentTime).onResult(iFitnessSnapshots -> {
-			if (iFitnessSnapshots == null) return;
-			Log.d(TAG, "...testing for encouragement...");
+        this.fitnessService.getFitnessSnapshots(user, clock, previous2, currentTime).onResult(iFitnessSnapshots -> {
+            if (iFitnessSnapshots == null) return;
+            Log.d(TAG, "...testing for encouragement...");
 
-			Iterator<IFitnessSnapshot> iterator = iFitnessSnapshots.iterator();
-			if (iterator.hasNext())
-			{
-				long prev2 = iterator.next().getTotalSteps();
-				if (iterator.hasNext())
-				{
-					long prev1 = iterator.next().getTotalSteps();
-					if (prev1 > prev2 * FULL_FACTOR)
-					{
-						Log.d(TAG, "...full encouragement needed for " + prev1 + " > " + prev2);
-						putLastEncouragementTime(context, currentTime);
-						showFullEncouragement(context);
-					}
-					else if (prev1 > prev2 * NEARLY_FACTOR)
-					{
-						Log.d(TAG, "...partial encouragement needed for " + prev1 + " > " + prev2);
-						putLastEncouragementTime(context, currentTime);
-						showNearlyEncouragement(context);
-					}
-					else
-					{
-						//Don't show nothing.
-						Log.d(TAG, "...no encouragement needed for " + prev1 + " > " + prev2);
-					}
-				}
-				else
-				{
-					Log.w(TAG, "Unable to find steps for yesterday!");
-				}
-			}
-			else
-			{
-				Log.w(TAG, "Unable to find steps for 2 days ago!");
-			}
-		});
-	}
+            Iterator<IFitnessSnapshot> iterator = iFitnessSnapshots.iterator();
+            if (iterator.hasNext()) {
+                long prev2 = iterator.next().getTotalSteps();
+                if (iterator.hasNext()) {
+                    long prev1 = iterator.next().getTotalSteps();
+                    if (prev1 > prev2 * FULL_FACTOR) {
+                        Log.d(TAG, "...full encouragement needed for " + prev1 + " > " + prev2);
+                        putLastEncouragementTime(context, currentTime);
+                        showFullEncouragement(context);
+                    } else if (prev1 > prev2 * NEARLY_FACTOR) {
+                        Log.d(TAG, "...partial encouragement needed for " + prev1 + " > " + prev2);
+                        putLastEncouragementTime(context, currentTime);
+                        showNearlyEncouragement(context);
+                    } else {
+                        //Don't show nothing.
+                        Log.d(TAG, "...no encouragement needed for " + prev1 + " > " + prev2);
+                    }
+                } else {
+                    Log.w(TAG, "Unable to find steps for yesterday!");
+                }
+            } else {
+                Log.w(TAG, "Unable to find steps for 2 days ago!");
+            }
+        });
+    }
 
-	private void showFullEncouragement(Context context)
-	{
-		Toast.makeText(context, context.getString(R.string.encouragement_significant), Toast.LENGTH_LONG).show();
-	}
+    private void showFullEncouragement(Context context) {
+        Toast.makeText(context, context.getString(R.string.encouragement_significant), Toast.LENGTH_LONG).show();
+    }
 
-	private void showNearlyEncouragement(Context context)
-	{
-		Toast.makeText(context, context.getString(R.string.encouragement_nearly_significant), Toast.LENGTH_LONG).show();
-	}
+    private void showNearlyEncouragement(Context context) {
+        Toast.makeText(context, context.getString(R.string.encouragement_nearly_significant), Toast.LENGTH_LONG).show();
+    }
 
 	/*
 	private void encouragement()

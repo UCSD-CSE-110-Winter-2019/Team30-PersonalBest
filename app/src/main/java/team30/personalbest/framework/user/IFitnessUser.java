@@ -5,15 +5,16 @@ import team30.personalbest.framework.snapshot.IFitnessSnapshot;
 import team30.personalbest.framework.snapshot.IGoalSnapshot;
 import team30.personalbest.util.Callback;
 
-public interface IFitnessUser
-{
-	Callback<Integer> getCurrentDailySteps(IFitnessClock clock);
+public interface IFitnessUser {
+    Callback<Integer> getCurrentDailySteps(IFitnessClock clock);
 
-	Callback<IFitnessSnapshot> getCurrentFitnessSnapshot(IFitnessClock clock);
-	Callback<Iterable<IFitnessSnapshot>> getFitnessSnapshots(IFitnessClock clock, long startTime, long stopTime);
+    Callback<IFitnessSnapshot> getCurrentFitnessSnapshot(IFitnessClock clock);
 
-	Callback<IGoalSnapshot> getCurrentGoalSnapshot(IFitnessClock clock);
-	Callback<Iterable<IGoalSnapshot>> getGoalSnapshots(IFitnessClock clock, long startTime, long stopTime);
+    Callback<Iterable<IFitnessSnapshot>> getFitnessSnapshots(IFitnessClock clock, long startTime, long stopTime);
 
-	Callback<Float> getHeight(IFitnessClock clock);
+    Callback<IGoalSnapshot> getCurrentGoalSnapshot(IFitnessClock clock);
+
+    Callback<Iterable<IGoalSnapshot>> getGoalSnapshots(IFitnessClock clock, long startTime, long stopTime);
+
+    Callback<Float> getHeight(IFitnessClock clock);
 }

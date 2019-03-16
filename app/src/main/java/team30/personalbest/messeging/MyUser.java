@@ -24,8 +24,19 @@ public class MyUser implements Serializable {
         this.chatRooms = new HashMap<>();
     }
 
-    public String getUser_id() { return user_id; }
-    public String getUser_name() { return user_name; }
-    public String getUser_email() { return user_email; }
-    public HashMap<String, Boolean> getChatRooms() { return chatRooms; }
+    public String getUser_id() {
+        return user_id;
+    }
+
+    public String getUser_name() {
+        return user_name;
+    }
+
+    public String getUser_email() {
+        return user_email;
+    }
+
+    public HashMap<String, Boolean> getChatRooms() {
+        return chatRooms;
+    }
 }

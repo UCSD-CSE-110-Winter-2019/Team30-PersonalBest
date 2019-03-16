@@ -9,16 +9,14 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.fitness.data.Goal;
-
+import team30.personalbest.framework.IFitnessAdapter;
+import team30.personalbest.framework.achiever.FitnessGoalAchiever;
 import team30.personalbest.framework.clock.FitnessClock;
 import team30.personalbest.framework.clock.IFitnessClock;
 import team30.personalbest.framework.google.GoogleFitnessAdapter;
 import team30.personalbest.framework.google.IGoogleService;
-import team30.personalbest.framework.google.achiever.FitnessGoalAchiever;
 import team30.personalbest.framework.service.IGoalService;
 import team30.personalbest.framework.user.GoogleFitnessUser;
 import team30.personalbest.framework.user.IFitnessUser;
@@ -88,20 +86,15 @@ public class GoalNotifyService extends Service {
         super.onDestroy();
     }
 
-    protected void onFitnessUpdate(IFitnessUser user, IFitnessClock clock, Integer totalSteps)
-    {
-        if (totalSteps != null)
-        {
+    protected void onFitnessUpdate(IFitnessUser user, IFitnessClock clock, Integer totalSteps) {
+        if (totalSteps != null) {
             //NOTE: do nothing
-        }
-        else
-        {
+        } else {
             Log.d(TAG, "No steps found.");
         }
     }
 
-    protected void onGoalAchievement(IGoalService goal)
-    {
+    protected void onGoalAchievement(IGoalService goal) {
         Log.d(TAG, "GoalNotifyService is notified with goal achievement");
 
         //TODO: push notification
@@ -133,9 +126,7 @@ public class GoalNotifyService extends Service {
         }
     }
 
-
-    protected Callback<IGoogleService> onGoogleFitnessReady(GoogleFitnessAdapter googleFitnessAdapter)
-    {
+    protected Callback<IGoogleService> onGoogleFitnessReady(IFitnessAdapter googleFitnessAdapter) {
         //NOTE: stub, do nothing here
         final Callback<IGoogleService> callback = new Callback<>(null);
         return callback;

@@ -47,16 +47,15 @@ public class MonthlyStatsActivity extends AppCompatActivity {
         switchScreen.setOnClickListener(view -> finish());
 
         this.createWeekChart(R.id.week1_chart, 0);
-	    this.createWeekChart(R.id.week2_chart, 1);
-	    this.createWeekChart(R.id.week3_chart, 2);
-	    this.createWeekChart(R.id.week4_chart, 3);
+        this.createWeekChart(R.id.week2_chart, 1);
+        this.createWeekChart(R.id.week3_chart, 2);
+        this.createWeekChart(R.id.week4_chart, 3);
     }
 
-    private void createWeekChart(int chartID, int weekIndex)
-    {
+    private void createWeekChart(int chartID, int weekIndex) {
         CombinedChart chart = findViewById(chartID);
         chart.getDescription().setEnabled(false);
-	    chart.setDrawGridBackground(false);
+        chart.setDrawGridBackground(false);
 
         XAxis xAxis = chart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
@@ -70,26 +69,21 @@ public class MonthlyStatsActivity extends AppCompatActivity {
         // Creating week labels for x-axis
         final String[] xLabels = WEEK_DAY_LABELS;
         xAxis.setValueFormatter((value, axis) -> {
-            if ((int) value < xLabels.length && (int) value >= 0)
-            {
+            if ((int) value < xLabels.length && (int) value >= 0) {
                 return xLabels[(int) value];
-            }
-            else
-            {
+            } else {
                 return "";
             }
         });
         xAxis.setCenterAxisLabels(true);
 
         final Bundle bundle = this.getIntent().getExtras();
-        if (bundle == null)
-        {
+        if (bundle == null) {
             this.finish();
             return;
         }
         final Bundle weeklyBundle = bundle.getBundle(BUNDLE_WEEKLY_STATS);
-        if (weeklyBundle == null)
-        {
+        if (weeklyBundle == null) {
             this.finish();
             return;
         }
@@ -105,21 +99,17 @@ public class MonthlyStatsActivity extends AppCompatActivity {
         int prevStepGoal = 0;
         int startWeekDay = weekIndex * BUNDLE_WEEK_LENGTH;
         int stopWeekDay = startWeekDay + BUNDLE_WEEK_LENGTH;
-        for (int i = startWeekDay; i < stopWeekDay; ++i)
-        {
+        for (int i = startWeekDay; i < stopWeekDay; ++i) {
             Bundle dailyBundle = weeklyBundle.getBundle(BUNDLE_WEEKLY_PREFIX + i);
 
             int stepCount;
             int activeCount;
             int stepGoal = prevStepGoal;
-            if (dailyBundle != null)
-            {
+            if (dailyBundle != null) {
                 stepCount = dailyBundle.getInt(BUNDLE_DAILY_STEPS, 0);
                 activeCount = dailyBundle.getInt(BUNDLE_DAILY_ACTIVE_STEPS, 0);
                 prevStepGoal = stepGoal = dailyBundle.getInt(BUNDLE_DAILY_GOALS, 0);
-            }
-            else
-            {
+            } else {
                 //Randomize it if you can't get anything. Just for visualization purposes.
                 stepCount = (int) Math.floor(10 * Math.random());
                 activeCount = (int) Math.floor(10 * Math.random());

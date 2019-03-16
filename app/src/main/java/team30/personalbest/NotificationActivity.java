@@ -1,9 +1,9 @@
 package team30.personalbest;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -63,10 +63,8 @@ public class NotificationActivity extends AppCompatActivity {
                         MyUser contact = doc.toObject(MyUser.class);
                         if (contact.getUser_name().equals(msgSenderName)) {
                             msgSender = contact;
-                            Log.d(TAG,  "found msgSender: " + msgSenderName);
-                        }
-                        else
-                        {
+                            Log.d(TAG, "found msgSender: " + msgSenderName);
+                        } else {
                             Log.d(TAG, contact.getUser_name() + " != " + msgSenderName);
                         }
                     }
@@ -89,20 +87,20 @@ public class NotificationActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
                             DocumentReference userRef = firestore.collection("user")
-                                    .document( user.getUid() );
+                                    .document(user.getUid());
 
                             userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if( task.isSuccessful() ) {
+                                    if (task.isSuccessful()) {
                                         DocumentSnapshot userDoc = task.getResult();
-                                        if( userDoc.exists() ){
+                                        if (userDoc.exists()) {
                                             Log.d("MessageActivity", "Found User in database. Retrieving data...");
-                                            currentUser = userDoc.toObject( MyUser.class );
+                                            currentUser = userDoc.toObject(MyUser.class);
 
-                                            Intent startConvIntent = new Intent(NotificationActivity.this, ChatActivity.class );
+                                            Intent startConvIntent = new Intent(NotificationActivity.this, ChatActivity.class);
                                             startConvIntent.putExtra("fromUser", currentUser);
-                                            startConvIntent.putExtra( "toUser", msgSender);
+                                            startConvIntent.putExtra("toUser", msgSender);
                                             startActivity(startConvIntent);
                                         }
                                     }

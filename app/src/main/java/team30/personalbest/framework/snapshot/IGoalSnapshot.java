@@ -1,8 +1,7 @@
 package team30.personalbest.framework.snapshot;
 
-public interface IGoalSnapshot
-{
-	int getGoalValue();
+public interface IGoalSnapshot {
+    int getGoalValue();
 
-	long getGoalTime();
+    long getGoalTime();
 }
