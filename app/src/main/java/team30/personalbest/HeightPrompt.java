@@ -48,7 +48,8 @@ public final class HeightPrompt
 					{
 						Log.w(TAG, "Failed to process height", e);
 
-						if (!cancelable) HeightPrompt.show(context, heightService, user, clock, false);
+						if (!cancelable)
+							HeightPrompt.show(context, heightService, user, clock, false);
 					}
 				})
 				.setNegativeButton(context.getString(R.string.prompt_cancel), (dialog, which) -> {

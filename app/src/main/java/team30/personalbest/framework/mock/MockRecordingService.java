@@ -12,7 +12,8 @@ import team30.personalbest.util.Callback;
 
 public class MockRecordingService extends RecordingService
 {
-	private final IRecordingFitnessSnapshot snapshot = new IRecordingFitnessSnapshot() {
+	private final IRecordingFitnessSnapshot snapshot = new IRecordingFitnessSnapshot()
+	{
 		@Override
 		public IRecordingFitnessSnapshot addOnRecordingSnapshotUpdateListener(OnRecordingSnapshotUpdateListener listener)
 		{

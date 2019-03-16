@@ -42,7 +42,7 @@ public class MockFitnessService extends FitnessService
 	{
 		List<IFitnessSnapshot> results = new ArrayList<>();
 		long days = (stopTime - startTime) / MILLIS_PER_DAY;
-		for(int i = 0; i < days; ++i)
+		for (int i = 0; i < days; ++i)
 		{
 			final FitnessSnapshot result = new FitnessSnapshot();
 			long time = startTime + i * MILLIS_PER_DAY;

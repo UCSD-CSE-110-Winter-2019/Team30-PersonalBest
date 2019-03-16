@@ -62,13 +62,16 @@ public final class GoalPrompt
 						{
 							Log.w(TAG, "Failed to process step goal", e);
 
-							if (!cancelable) GoalPrompt.show(context, service, user, clock, forceUpdate, false);
+							if (!cancelable)
+								GoalPrompt.show(context, service, user, clock, forceUpdate, false);
 							else callback.reject();
 						}
 					})
 					.setNegativeButton(context.getString(R.string.prompt_cancel), (dialog, which) -> {
-						if (!cancelable) GoalPrompt.show(context, service, user, clock, forceUpdate, false);
-						else if (forceUpdate) service.setCurrentGoal(user, clock, Integer.MAX_VALUE).onResult(goalSnapshot -> callback.resolve(goalSnapshot.getGoalValue()));
+						if (!cancelable)
+							GoalPrompt.show(context, service, user, clock, forceUpdate, false);
+						else if (forceUpdate)
+							service.setCurrentGoal(user, clock, Integer.MAX_VALUE).onResult(goalSnapshot -> callback.resolve(goalSnapshot.getGoalValue()));
 						else callback.reject();
 
 						dialog.cancel();

@@ -22,12 +22,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -106,9 +103,9 @@ public class GoogleFitnessAdapter implements IFitnessAdapter
 				Log.d(TAG, "Google sign succeeded.");
 				final GoogleSignInAccount account = task.getResult(ApiException.class);
 
-				firebaseAuthWithGoogle( account );
+				firebaseAuthWithGoogle(account);
 
-				Log.d( TAG, "Initialzing Firebase");
+				Log.d(TAG, "Initialzing Firebase");
 
 				final FitnessOptions fitnessOptions = FitnessOptions.builder()
 						.addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -192,22 +189,28 @@ public class GoogleFitnessAdapter implements IFitnessAdapter
 	}
 
 
-	private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+	private void firebaseAuthWithGoogle(GoogleSignInAccount acct)
+	{
 		Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
 
 		FirebaseAuth mAuth = FirebaseAuth.getInstance();
 		AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
 		mAuth.signInWithCredential(credential)
-				.addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+				.addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>()
+				{
 					@Override
-					public void onComplete(@NonNull Task<AuthResult> task) {
-						if (task.isSuccessful()) {
+					public void onComplete(@NonNull Task<AuthResult> task)
+					{
+						if (task.isSuccessful())
+						{
 							// Sign in success, update UI with the signed-in user's information
 							Log.d(TAG, "signInWithCredential:success");
 							FirebaseUser user = mAuth.getCurrentUser();
 
 							FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-						} else {
+						}
+						else
+						{
 							// If sign in fails, display a message to the user.
 							Log.w(TAG, "signInWithCredential:failure", task.getException());
 						}

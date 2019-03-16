@@ -54,7 +54,8 @@ public class GoalService implements IGoalService, IGoogleService
 				.build();
 
 		final GoalService goalService = this;
-		this.googleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+		this.googleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks()
+		{
 			@Override
 			public void onConnected(@Nullable Bundle bundle)
 			{

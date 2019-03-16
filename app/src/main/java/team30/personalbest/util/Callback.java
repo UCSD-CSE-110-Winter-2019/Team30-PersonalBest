@@ -30,7 +30,8 @@ public final class Callback<T>
 	 */
 	public <E extends T> void resolve(E result)
 	{
-		if (this.hasResolved) throw new IllegalStateException("Already resolved with value - \'" + result + "\'");
+		if (this.hasResolved)
+			throw new IllegalStateException("Already resolved with value - \'" + result + "\'");
 		this.hasResolved = true;
 
 		this.result = result;
@@ -43,7 +44,8 @@ public final class Callback<T>
 	 */
 	public void reject()
 	{
-		if (this.hasResolved) throw new IllegalStateException("Already resolved with value - \'" + this.result + "\'");
+		if (this.hasResolved)
+			throw new IllegalStateException("Already resolved with value - \'" + this.result + "\'");
 		this.hasResolved = true;
 
 		if (!this.callbacks.isEmpty()) this.call(null);
@@ -66,7 +68,7 @@ public final class Callback<T>
 
 	private <E extends T> void call(E result)
 	{
-		for(Consumer<T> callback : this.callbacks)
+		for (Consumer<T> callback : this.callbacks)
 		{
 			callback.accept(result);
 		}

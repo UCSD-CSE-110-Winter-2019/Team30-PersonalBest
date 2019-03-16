@@ -2,7 +2,6 @@ package team30.personalbest.framework.mock;
 
 import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
-import team30.personalbest.framework.google.GoogleFitnessAdapter;
 import team30.personalbest.framework.google.HeightService;
 import team30.personalbest.framework.user.IFitnessUser;
 import team30.personalbest.util.Callback;

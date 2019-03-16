@@ -3,7 +3,6 @@ package team30.personalbest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.util.Consumer;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -101,7 +100,7 @@ public class MainActivity extends AppCompatActivity
 		this.googleFitnessAdapter.onActivityResult(this, requestCode, resultCode, data);
 	}
 
-	protected Callback<IGoogleService> onGoogleFitnessReady(GoogleFitnessAdapter googleFitnessAdapter)
+	protected Callback<IGoogleService> onGoogleFitnessReady(IFitnessAdapter googleFitnessAdapter)
 	{
 		final Callback<IGoogleService> callback = new Callback<>(null);
 		{
@@ -362,24 +361,28 @@ public class MainActivity extends AppCompatActivity
 		this.startActivity(intent);
 	}
 
-	private void updateUserSnapshots() {
+	private void updateUserSnapshots()
+	{
 
 		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		FirebaseFirestore fs = FirebaseFirestore.getInstance();
 
-		if( user == null || fs == null ) {
+		if (user == null || fs == null)
+		{
 			Log.e(TAG, "Unable to update Firebase Snapshots");
 		}
 
-		GraphBundler.buildBundleForDays( GraphActivity.BUNDLE_MONTH_LENGTH , this.currentUser, this.currentClock  )
+		GraphBundler.buildBundleForDays(GraphActivity.BUNDLE_MONTH_LENGTH, this.currentUser, this.currentClock)
 				.onResult(bundle -> {
 
-					fs.document("snapshot/"+ user.getUid() )
-							.set( bundle, SetOptions.merge() )
-							.addOnSuccessListener(new OnSuccessListener<Void>() {
+					fs.document("snapshot/" + user.getUid())
+							.set(bundle, SetOptions.merge())
+							.addOnSuccessListener(new OnSuccessListener<Void>()
+							{
 								@Override
-								public void onSuccess(Void aVoid) {
-									Log.d( TAG, "Successfully updated Firebase Snapshots");
+								public void onSuccess(Void aVoid)
+								{
+									Log.d(TAG, "Successfully updated Firebase Snapshots");
 								}
 							});
 				});

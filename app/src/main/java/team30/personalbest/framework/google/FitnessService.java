@@ -192,9 +192,21 @@ public class FitnessService implements IFitnessService, IGoogleService
 		final Callback<Iterable<IFitnessSnapshot>> callback = new Callback<>();
 		{
 			this.googleFitnessAdapter.getCurrentGoogleAccount().onResult(lastSignedInAccount -> {
-				if (lastSignedInAccount == null) { callback.reject(); return; }
-				if (startTime > stopTime) { callback.reject(); return; }
-				if (startTime < 0) { callback.reject(); return; }
+				if (lastSignedInAccount == null)
+				{
+					callback.reject();
+					return;
+				}
+				if (startTime > stopTime)
+				{
+					callback.reject();
+					return;
+				}
+				if (startTime < 0)
+				{
+					callback.reject();
+					return;
+				}
 
 				Log.d(TAG, "Getting multiple fitness data between " +
 						startTime + " to " +
@@ -224,7 +236,7 @@ public class FitnessService implements IFitnessService, IGoogleService
 							Log.d(TAG, "Retrieving multiple fitness data...");
 							final List<FitnessSnapshot> result = new ArrayList<>();
 							final List<Bucket> buckets = dataReadResponse.getBuckets();
-							for(Bucket bucket : buckets)
+							for (Bucket bucket : buckets)
 							{
 								long bucketStartTime = bucket.getStartTime(TimeUnit.MILLISECONDS);
 								long bucketEndTime = bucket.getEndTime(TimeUnit.MILLISECONDS);

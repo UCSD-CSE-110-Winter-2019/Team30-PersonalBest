@@ -2,10 +2,12 @@ package team30.personalbest.framework.user;
 
 import team30.personalbest.framework.IFitnessAdapter;
 import team30.personalbest.framework.clock.IFitnessClock;
+import team30.personalbest.framework.google.EncouragementService;
 import team30.personalbest.framework.google.FitnessService;
 import team30.personalbest.framework.google.GoalService;
 import team30.personalbest.framework.google.HeightService;
 import team30.personalbest.framework.google.RecordingService;
+import team30.personalbest.framework.mock.MockEncouragementService;
 import team30.personalbest.framework.mock.MockFitnessService;
 import team30.personalbest.framework.mock.MockGoalService;
 import team30.personalbest.framework.mock.MockHeightService;
@@ -20,6 +22,7 @@ public class MockFitnessUser implements IGoogleFitnessUser
 	private HeightService heightService;
 	private FitnessService fitnessService;
 	private GoalService goalService;
+	private EncouragementService encouragementService;
 	private RecordingService recordingService;
 
 	public MockFitnessUser(IFitnessAdapter googleFitnessAdapter)
@@ -29,12 +32,14 @@ public class MockFitnessUser implements IGoogleFitnessUser
 		this.fitnessService = new MockFitnessService();
 		this.goalService = new MockGoalService();
 		this.recordingService = new MockRecordingService();
+		this.encouragementService = new MockEncouragementService(this.fitnessService);
 
 		googleFitnessAdapter
 				.addGoogleService(this.fitnessService)
 				.addGoogleService(this.goalService)
 				.addGoogleService(this.heightService)
-				.addGoogleService(this.recordingService);
+				.addGoogleService(this.recordingService)
+				.addGoogleService(this.encouragementService);
 	}
 
 	@Override
@@ -95,6 +100,12 @@ public class MockFitnessUser implements IGoogleFitnessUser
 	public RecordingService getRecordingService()
 	{
 		return this.recordingService;
+	}
+
+	@Override
+	public EncouragementService getEncouragementService()
+	{
+		return this.encouragementService;
 	}
 
 	@Override
