@@ -44,7 +44,10 @@ public class SuggestedNewGoalTest {
         this.mainActivity = Robolectric.setupActivity(MainActivity.class);
         newGoal = mainActivity.findViewById(R.id.btn_stepgoal_new);
         newGoalText = mainActivity.findViewById(R.id.display_stepgoal);
+
+        //System.out.println(newGoalText.getText());
         newGoalText.setText(goal);
+        System.out.println(newGoalText.getText());
     }
 
     @Test
@@ -93,12 +96,9 @@ public class SuggestedNewGoalTest {
         assertFalse(alert.isShowing());
     }
 
-   /* @Test
+   @Test
     public void onClickUpdateNewStepGoalPositiveButtonTest() {
         newGoal.performClick();
-        AlertDialog alert = new AlertDialog.Builder(mainActivity)
-                .setPositiveButton("Ok", null).create();
-        alert.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
         assertEquals("Your Step Goal: 500 steps", newGoalText.getText());
-    }*/
+    }
 }
