@@ -5,7 +5,6 @@ import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -95,13 +94,128 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+	{
+		this.googleFitnessAdapter.onActivityResult(this, requestCode, resultCode, data);
+	}
+
+	protected Callback<IGoogleService> onGoogleFitnessReady(GoogleFitnessAdapter googleFitnessAdapter)
+	{
+		final Callback<IGoogleService> callback = new Callback<>(null);
+		{
+			final MainActivity activity = this;
+
+			this.enableScreen();
+
+			// Prompt height on initial launch of app (after google fit is ready)
+			this.resolveHeight().onResult(aFloat -> {
+				if (aFloat == null) throw new IllegalStateException("Unable to resolve height");
+
+				((TextView) findViewById(R.id.display_height)).setText(activity.getString(R.string.display_height, aFloat));
+
+				this.currentUser.getCurrentGoalSnapshot(this.currentClock).onResult(iGoalSnapshot -> {
+					if (iGoalSnapshot == null)
+					{
+						((TextView) findViewById(R.id.display_stepgoal)).setText(
+								this.getString(R.string.display_stepgoal_none));
+					}
+					else
+					{
+						int goalValue = iGoalSnapshot.getGoalValue();
+						if (goalValue >= Integer.MAX_VALUE)
+						{
+							((TextView) findViewById(R.id.display_stepgoal)).setText(
+									this.getString(R.string.display_stepgoal_none));
+						}
+						else
+						{
+							((TextView) findViewById(R.id.display_stepgoal))
+									.setText(activity.getString(R.string.display_stepgoal, goalValue));
+						}
+					}
+				});
+
+				this.currentUser.getCurrentDailySteps(this.currentClock)
+						.onResult(integer -> ((TextView) findViewById(R.id.display_steptotal))
+								.setText(activity.getString(R.string.display_steptotal, integer)));
+
+				Log.i(TAG, "Successfully initialized app services");
+			});
+
+			this.currentUser.getEncouragementService().tryEncouragement(this, this.currentUser, this.currentClock, this.currentClock.getCurrentTime());
+
+			Log.i(TAG, "Successfully prepared app services");
+		}
+		return callback;
+	}
+
+	protected void onFitnessUpdate(IFitnessUser user, IFitnessClock clock, Integer totalSteps)
+	{
+		if (totalSteps != null)
+		{
+			((TextView) this.findViewById(R.id.display_steptotal))
+					.setText(this.getString(R.string.display_steptotal, totalSteps));
+		}
+		else
+		{
+			Log.d(TAG, "No steps found.");
+		}
+	}
+
+	protected void onGoalAchievement(IGoalService goal)
+	{
+		//Achieved Goal!
+		Toast.makeText(this, "Achieved step goal! Good job!", Toast.LENGTH_SHORT).show();
+		showGoalPrompt(true);
+
+		//NOTE: push notification
+		{
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHANNEL_ID)
+					.setSmallIcon(R.drawable.notification_icon)
+					.setContentTitle("Achieved Goal")
+					.setContentText("You have achieved your step goal!")
+					.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+			NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+			// notificationId is a unique int for each notification that you must define
+			notificationManager.notify(goalNotificationId, builder.build());
+			goalNotificationId += 1;
+		}
+	}
+
+	protected void onSubmitTime(View view)
+	{
+		TextView timeSubmitText = findViewById(R.id.input_time);
+		String thisCurrTime = timeSubmitText.getText().toString();
+
+		try
+		{
+			final long MILLIS_PER_HOUR = 3600 * 1000;
+			long currentTime = Long.parseLong(thisCurrTime) * MILLIS_PER_HOUR + 172800000;
+
+			//Attempt encouragement
+			this.currentUser.getEncouragementService().tryEncouragement(this, this.currentUser, this.currentClock, currentTime);
+
+			this.currentClock.freezeTimeAt(currentTime);
+			Toast.makeText(this, "Freezing time!", Toast.LENGTH_LONG).show();
+		}
+		catch (Exception e)
+		{
+			this.currentClock.unfreeze();
+			Toast.makeText(this, "Unfreezing time!", Toast.LENGTH_LONG).show();
+		}
+	}
+
 	private void setupUI()
 	{
 		Button startWalk = findViewById(R.id.btn_walk_start);
 		Button stopWalk = findViewById(R.id.btn_walk_stop);
 		Button newGoal = findViewById(R.id.btn_stepgoal_new);
 		Button weeklyStats = findViewById(R.id.btn_weekly_stats);
+		Button monthlyStats = findViewById(R.id.btn_monthly_stats);
 		Button friendsList = findViewById(R.id.btn_friends);
+		Button timeButton = findViewById(R.id.btn_time);
 
 		//Disable screen (until initialized)...
 		this.disableScreen();
@@ -117,7 +231,9 @@ public class MainActivity extends AppCompatActivity
 		stopWalk.setOnClickListener(v -> this.stopRecordingWalk());
 		newGoal.setOnClickListener(v -> this.showGoalPrompt(false));
 		weeklyStats.setOnClickListener(v -> this.launchGraphActivity());
+		monthlyStats.setOnClickListener(v -> this.launchMonthlyStatsActivity());
 		friendsList.setOnClickListener(v -> this.launchFriendsActivity());
+		timeButton.setOnClickListener(this::onSubmitTime);
 	}
 
 	private void enableScreen()
@@ -170,133 +286,6 @@ public class MainActivity extends AppCompatActivity
 				.onResult(this::displayRecordingSnapshot);
 	}
 
-	private void showGoalPrompt(boolean forceMax)
-	{
-		GoalPrompt.show(this, this.currentUser.getGoalService(), this.currentUser, this.currentClock, forceMax).onResult(newGoal -> {
-			if (newGoal == null)
-			{
-				//Do nothing.
-			}
-			else if (newGoal >= Integer.MAX_VALUE)
-			{
-				((TextView) findViewById(R.id.display_stepgoal)).setText(
-						this.getString(R.string.display_stepgoal_none));
-			}
-			else
-			{
-				((TextView) findViewById(R.id.display_stepgoal)).setText(
-						this.getString(R.string.display_stepgoal, newGoal));
-			}
-		});
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-	{
-		this.googleFitnessAdapter.onActivityResult(this, requestCode, resultCode, data);
-	}
-
-	public void onSubmitTime(View view)
-	{
-		TextView timeSubmitText = findViewById(R.id.timeText);
-		String thisCurrTime = timeSubmitText.getText().toString();
-
-		if (thisCurrTime.isEmpty())
-		{
-			Toast.makeText(this, "Please enter a valid time!", Toast.LENGTH_LONG).show();
-		}
-
-		else
-		{
-			long currentTime = Long.parseLong(thisCurrTime);
-
-			//this.encouragement(currentTime);
-			this.currentClock.freezeTimeAt(currentTime);
-		}
-	}
-
-	protected Callback<IGoogleService> onGoogleFitnessReady(GoogleFitnessAdapter googleFitnessAdapter)
-	{
-		final Callback<IGoogleService> callback = new Callback<>(null);
-		{
-			final MainActivity activity = this;
-
-			this.enableScreen();
-
-			// Prompt height on initial launch of app (after google fit is ready)
-			this.resolveHeight().onResult(aFloat -> {
-				if (aFloat == null) throw new IllegalStateException("Unable to resolve height");
-
-				((TextView) findViewById(R.id.display_height)).setText(activity.getString(R.string.display_height, aFloat));
-
-				this.currentUser.getCurrentGoalSnapshot(this.currentClock).onResult(iGoalSnapshot -> {
-					if (iGoalSnapshot == null)
-					{
-						((TextView) findViewById(R.id.display_stepgoal)).setText(
-								this.getString(R.string.display_stepgoal_none));
-					}
-					else
-					{
-						int goalValue = iGoalSnapshot.getGoalValue();
-						if (goalValue >= Integer.MAX_VALUE)
-						{
-							((TextView) findViewById(R.id.display_stepgoal)).setText(
-									this.getString(R.string.display_stepgoal_none));
-						}
-						else
-						{
-							((TextView) findViewById(R.id.display_stepgoal))
-									.setText(activity.getString(R.string.display_stepgoal, goalValue));
-						}
-					}
-				});
-
-				this.currentUser.getCurrentDailySteps(this.currentClock)
-						.onResult(integer -> ((TextView) findViewById(R.id.display_steptotal))
-								.setText(activity.getString(R.string.display_steptotal, integer)));
-
-				Log.i(TAG, "Successfully initialized app services");
-			});
-
-			Log.i(TAG, "Successfully prepared app services");
-		}
-		return callback;
-	}
-
-	protected void onFitnessUpdate(IFitnessUser user, IFitnessClock clock, Integer totalSteps)
-	{
-		if (totalSteps != null)
-		{
-			((TextView) this.findViewById(R.id.display_steptotal))
-					.setText(this.getString(R.string.display_steptotal, totalSteps));
-		}
-		else
-		{
-			Log.d(TAG, "No steps found.");
-		}
-	}
-
-	protected void onGoalAchievement(IGoalService goal)
-	{
-		//Achieved Goal!
-		Toast.makeText(this, "Achieved step goal! Good job!", Toast.LENGTH_SHORT).show();
-		showGoalPrompt(true);
-
-		//NOTE: push notification
-		{
-			NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHANNEL_ID)
-					.setSmallIcon(R.drawable.notification_icon)
-					.setContentTitle("Achieved Goal")
-					.setContentText("You have achieved your step goal!")
-					.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-			NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-			// notificationId is a unique int for each notification that you must define
-			notificationManager.notify(goalNotificationId, builder.build());
-			goalNotificationId += 1;
-		}
-	}
-
 	private void displayRecordingSnapshot(IFitnessSnapshot iFitnessSnapshot)
 	{
 		if (iFitnessSnapshot != null)
@@ -342,11 +331,39 @@ public class MainActivity extends AppCompatActivity
 		return callback;
 	}
 
+	private void showGoalPrompt(boolean forceMax)
+	{
+		GoalPrompt.show(this, this.currentUser.getGoalService(), this.currentUser, this.currentClock, forceMax).onResult(newGoal -> {
+			if (newGoal == null)
+			{
+				//Do nothing.
+			}
+			else if (newGoal >= Integer.MAX_VALUE)
+			{
+				((TextView) findViewById(R.id.display_stepgoal)).setText(
+						this.getString(R.string.display_stepgoal_none));
+			}
+			else
+			{
+				((TextView) findViewById(R.id.display_stepgoal)).setText(
+						this.getString(R.string.display_stepgoal, newGoal));
+			}
+		});
+	}
 
 	private void launchGraphActivity()
 	{
-		GraphBundler.makeBundle(this.currentClock, this.currentUser).onResult(bundle -> {
+		GraphBundler.buildBundleForDays(GraphActivity.BUNDLE_WEEK_LENGTH, this.currentUser, this.currentClock).onResult(bundle -> {
 			final Intent intent = new Intent(this, GraphActivity.class);
+			intent.putExtras(bundle);
+			this.startActivity(intent);
+		});
+	}
+
+	private void launchMonthlyStatsActivity()
+	{
+		GraphBundler.buildBundleForDays(GraphActivity.BUNDLE_MONTH_LENGTH, this.currentUser, this.currentClock).onResult(bundle -> {
+			final Intent intent = new Intent(this, MonthlyStatsActivity.class);
 			intent.putExtras(bundle);
 			this.startActivity(intent);
 		});
