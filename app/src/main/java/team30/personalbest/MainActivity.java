@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.googleFitnessAdapter.onActivityCreate(this, savedInstanceState);
 
-        createNotificationChannel();
+        //createNotificationChannel();
         //Intent goalNotifyServiceIntent = new Intent(MainActivity.this, GoalNotifyService.class);
         //startService(goalNotifyServiceIntent);
     }
@@ -193,13 +193,6 @@ public class MainActivity extends AppCompatActivity {
 					.setPriority(NotificationCompat.PRIORITY_DEFAULT)
 					.setContentIntent(pendingIntent)
 					.setAutoCancel(true);
-        //NOTE: push notification
-        {
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHANNEL_ID)
-                    .setSmallIcon(R.drawable.notification_icon)
-                    .setContentTitle("Achieved Goal")
-                    .setContentText("You have achieved your step goal!")
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
             // notificationId is a unique int for each notification that you must define
