@@ -164,6 +164,18 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 
+	@Override
+	public void onNewIntent(Intent intent) {
+		Log.d(TAG, "retrieving new intent");
+		Bundle intentData = intent.getExtras();
+		if (intentData != null &&
+			intentData.containsKey("showGoalPrompt") &&
+			intentData.getBoolean("showGoalPrompt"))
+		{
+			showGoalPrompt(true);
+		}
+	}
+
 	protected void onGoalAchievement(IGoalService goal)
 	{
 		//Achieved Goal!
@@ -173,8 +185,9 @@ public class MainActivity extends AppCompatActivity
 		//NOTE: push notification
 		{
 			// Create an explicit intent for an Activity in your app
-			Intent intent = new Intent(this, MainActivity.class);
-			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+			Intent intent = new Intent(this, getClass());
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+			intent.putExtra("showGoalPrompt", true);
 			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
 			NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFY_CHANNEL_ID)
